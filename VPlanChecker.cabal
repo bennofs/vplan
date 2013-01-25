@@ -16,7 +16,7 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 executable vplan-cli
-  build-depends:     base, mtl, cmdargs, ansi-terminal, MissingH, split, text, hxt, hxt-tagsoup, hxt-http, has, gtk, poppler, glib, directory, lens
+  build-depends:     base, mtl, cmdargs, ansi-terminal, MissingH, split, text, hxt, hxt-tagsoup, hxt-http, has, gtk, poppler, glib, directory, lens, HTTP
   main-is: 	     UI/CLI.hs
   other-modules:     Core.Checker, Bindings.Manos
   hs-source-dirs:    src
