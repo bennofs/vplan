@@ -2,14 +2,14 @@ name:                VPlanChecker
 version:             0.1.0.0
 synopsis:            Ein Programm zum Abrufen und Auswerten des Vertretungsplans
 -- description:         
-homepage:            http://bitbucket.org/vplanchecker
+homepage:            http://github.com/bennofs/vplan-utils
 license:             GPL-3
 license-file:        LICENSE
 author:              Benno Fünfstück
 maintainer:          benno.fuenfstueck@gmail.com
-copyright:           © 2012 Benno Fünfstück
-stability:	     experminetal
-tested-with:         GHC ==7.4.2
+copyright:           © 2013 Benno Fünfstück
+stability:	     experimental
+tested-with:         GHC ==7.6.1
 
 -- category:            
 build-type:          Simple
@@ -18,5 +18,4 @@ cabal-version:       >=1.8
 executable vplan-cli
   build-depends:     base, mtl, cmdargs, ansi-terminal, MissingH, split, text, hxt, hxt-tagsoup, hxt-http, has, gtk, poppler, glib, directory, lens, HTTP
   main-is: 	     UI/CLI.hs
-  other-modules:     Core.Checker, Bindings.Manos
   hs-source-dirs:    src
