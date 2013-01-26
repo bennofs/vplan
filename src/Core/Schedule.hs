@@ -1,5 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving, TemplateHaskell #-}
-module Core.Schedule where
+module Core.Schedule (skipRange, repeatEvery, validRange, val, Item, Schedule, Range, iAt, iShiftStart, sAt, makeWeekSchedule) where
 
 import Core.Course
 import Control.Monad

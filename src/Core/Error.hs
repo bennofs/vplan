@@ -1,4 +1,4 @@
-module Core.Error (connectionE, requestE, GenError) where
+module Core.Error (connectionE, requestE, GenError, GenErrorT) where
 
 import Network.Stream
 import Network.HTTP.Base
@@ -8,6 +8,8 @@ data GenError = ConError ConnError | RequestError ResponseCode String | ErrorMsg
 instance Error GenError where
   noMsg = ErrorUnkn
   strMsg = ErrorMsg
+  
+type GenErrorT m a = E.ErrorT GenError m a
   
 connectionE :: ConnError -> GenError
 connectionE = ConError

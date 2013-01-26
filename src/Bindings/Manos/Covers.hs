@@ -1,9 +1,7 @@
-module Bindings.Manos.VPlan (fetchTable, TimetableChange, getCourse, getTeacher, getLesson, getLessonNumber, getRoom, getInfo)  where
+module Bindings.Manos.Covers (fetchTable, TimetableChange, getCourse, getTeacher, getLesson, getLessonNumber, getRoom, getInfo)  where
 
-import Data.List (isPrefixOf, all, init, tail, last, drop)
+import Data.List (isPrefixOf)
 import Control.Applicative ((<$>),(<*>))
-import Data.Ix (inRange)
-import Data.List.Utils (replace)
 import Data.List.Split (splitOn)
 import Data.Char (isLower, isNumber)
 import Data.Text (strip, pack, unpack)
