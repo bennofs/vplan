@@ -13,7 +13,7 @@ data VPlanCheck = VPlanCheck { classes :: [String] }
                   deriving (Show, Data, Typeable)
 
 opts = VPlanCheck { 
-  classes = def &= help "Specify class to include in the result. To specify multiple classes, just uses this options multiple times" &= typ "CLASS_ID"
+  classes = def &= help "Specify class to include in the result. To specify multiple classes, just use this options multiple times" &= typ "CLASS_ID"
   }
        
 formatChanges :: [TimetableChange] -> String
@@ -34,12 +34,14 @@ getClasses = concat . map genCls . classes
           | length x <= 2 && all isNumber x = concat $ genCls `map` (map (x++) ["a","b","c"]) 
           | length x == 2 && isNumber (head x) && isLower (last x) = ['0' : x]
           | otherwise = [x]
+                        
+filterImportantChanges :: [
 
 main :: IO ()
 main = do 
  args  <- cmdArgs opts
  allChanges <- fetchTable
- let changes = runReader (filterImportantChanges allChanges) $ CheckerConfig {tracked = getClasses args}
+ let changes = (filterImportantChanges allChanges) $ getClasses args
  if null changes 
    then setSGR [SetColor Foreground Vivid Green] >> putStrLn "Keine Änderungen" >> exitSuccess
    else return ()

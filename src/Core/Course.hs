@@ -12,5 +12,5 @@ type instance TypeOf ShortName = ShortName
 type Teacher = FieldOf Name :&: FieldOf ShortName
 type Subject = FieldOf Name :&: FieldOf ShortName
 type Group = FieldOf ShortName
-data Course = Split [(Group, Course)] | Course Subject Teacher Room
+data Course = Split [(Group, Course)] | Course Subject Teacher Room | Canceled | Free
 
