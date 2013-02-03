@@ -1,16 +1,16 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, TemplateHaskell #-}
-module Core.Schedule (skipRange, repeatEvery, validRange, val, Item, Schedule, Range, iAt, iShiftStart, sAt, makeWeekSchedule) where
+{-# LANGUAGE TemplateHaskell #-}
+module Core.Schedule (skipRange, repeatEvery, validRange, val, at, Item, Schedule, Range, shiftStart, makeWeekSchedule, 
+                      query, addSkipRange, (.?), shiftEnd, shift) where 
 
-import Core.Course
-import Control.Monad
 import Data.Monoid
+import Core.Course
 import Data.List
-import Control.Lens
+import Control.Lens hiding (at)
 
 type Range d = (d,d)
 data Item d a = Item { _skipRange :: [Range d], _repeatEvery :: d, _validRange :: (Range d), _val :: a}
 makeLenses ''Item
-type Schedule = [Item Int [Course]]
+type Schedule d a = [Item d a]
 
 inRange :: (Ord d) => d -> Range d -> Bool
 inRange x (s,e) = x >= s && x < e
@@ -28,18 +28,30 @@ skip x es d
   where es' = filter (`isInnerRangeOf` (d, d + x)) es
         skipExtra = sum . map rangeLength
 
-iAt :: (Num d, Ord d, MonadPlus m) => Item d a -> d -> m a
-iAt i d
-  | not $ d `inRange` (i^.validRange) = mzero
-  | d == i^.validRange._1 = return $ i^.val
-  | otherwise = flip iAt d $ i & validRange._1 .~ next
+at :: (Num d, Ord d) => Item d a -> d -> Maybe a
+at i d
+  | not $ d `inRange` (i^.validRange) = Nothing
+  | d == i^.validRange._1 = Just $ i^.val
+  | otherwise = (`at` d) $ validRange._1 .~ next $ i
   where next = skip (i^.repeatEvery) (i^.skipRange) (i^.validRange._1)
 
-iShiftStart :: (Num d) => d -> Item d a -> Item d a
-iShiftStart = over (validRange._1) . (+)
+shiftStart :: (Num d, Ord d) => d -> Item d a -> Item d a
+shiftStart d i = i & validRange._1 %~ (skip d $ i^.skipRange)
 
-sAt :: Schedule -> Int -> [Course]
-sAt = flip $ \d -> maybe [] id . getFirst . mconcat . map (First . (`iAt` d))
+shiftEnd :: (Num d, Ord d) => d -> Item d a -> Item d a
+shiftEnd d i = i & validRange._2 %~ (skip d $ i^.skipRange)
 
-makeWeekSchedule :: Range Int -> [[Course]] -> Schedule
-makeWeekSchedule v = zipWith iShiftStart [0..] .  map (Item [] 7 v)
+shift :: (Num d, Ord d) => d -> Item d a -> Item d a
+shift d i = i & validRange.both %~ (skip d $ i^.skipRange)
+
+query :: (Item d a -> Maybe a) -> Schedule d a -> Maybe a
+query = alaf First ((mconcat.) . map)
+
+(.?) :: Schedule d a -> (Item d a -> Maybe a) -> Maybe a
+(.?) = flip query
+
+makeWeekSchedule :: Range Int -> [[Course]] -> Schedule Int [Course]
+makeWeekSchedule v = zipWith shiftStart [0..] .  map (Item [] 7 v)
+
+addSkipRange :: Range d -> Item d a -> Item d a
+addSkipRange r = skipRange %~ (r:)
