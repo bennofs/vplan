@@ -1,16 +1,18 @@
-{-# LANGUAGE TypeFamilies,TypeOperators, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TypeFamilies,TypeOperators, GeneralizedNewtypeDeriving, NoMonomorphismRestriction, TemplateHaskell, MultiParamTypeClasses, FunctionalDependencies, TypeSynonymInstances, FlexibleInstances #-}
 module Core.Course where
 
-import Data.Has
+import Control.Lens.TH
 
-newtype Name = Name String
-newtype ShortName = ShortName String
-newtype Room = Room Int
-type instance TypeOf Name = Name
-type instance TypeOf ShortName = ShortName
+newtype Room = Room Int deriving (Show)
+makeIso ''Room
 
-type Teacher = FieldOf Name :&: FieldOf ShortName
-type Subject = FieldOf Name :&: FieldOf ShortName
-type Group = FieldOf ShortName
-data Course = Split [(Group, Course)] | Course Subject Teacher Room | Canceled | Free
+data Teacher = Teacher { _teacherName :: String, _teacherShortName :: String } deriving (Show)
+makeFields ''Teacher
 
+data Subject = Subject { _subjectName :: String, _subjectShortName :: String } deriving (Show)
+makeFields ''Subject
+
+data Group = Group { _groupShortName :: String } deriving (Show)
+makeFields ''Group
+
+data Course = Split [(Group, Course)] | Course Subject Teacher Room deriving (Show)

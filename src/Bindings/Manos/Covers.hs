@@ -20,33 +20,6 @@ hxtConfig = configSysVars
   , withInputEncoding "ISO-8859-1"
   ]
 
--- |An entry in the substitution table
-type TimetableChange = [String]
-
--- |Get the course affected by the substituion entry
-getCourse :: TimetableChange -> String
-getCourse = (!!0)
-
--- |Get the number of the lesson affected by the entry
-getLessonNumber :: TimetableChange -> String
-getLessonNumber = (!!1)
-
--- |Get the subject of the entry
-getLesson :: TimetableChange -> String
-getLesson = (!!2)
-
--- |Get the substituting teacher
-getTeacher :: TimetableChange -> String
-getTeacher = (!!3)
-
--- |Get the room 
-getRoom :: TimetableChange -> String
-getRoom = (!!4)
-
--- |Get additional info
-getInfo :: TimetableChange -> String
-getInfo = (!!5)
-
 -- |An arrow that fetches the html document with the table
 subPlanHtml :: IOSArrow b XmlTree
 subPlanHtml = hxtConfig
@@ -79,9 +52,9 @@ subTableMainData = filterA mainItem
   where mainItem = listA tableRowData >>> isA ((==6) . length)
 
 -- |An arrow that creates a table entry for each row
-makeEntry :: (ArrowXml a) => a XmlTree TimetableChange
+makeEntry :: (ArrowXml a) => a XmlTree [String]
 makeEntry = listA $ tableRowData >>> deep getText
 
 -- |An IO action that gets the table
-fetchTable :: IO [TimetableChange]
+fetchTable :: IO [[String]]
 fetchTable = runX $ subPlanHtml >>> subTable >>> subTableMainData >>> makeEntry

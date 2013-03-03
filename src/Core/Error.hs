@@ -1,10 +1,11 @@
 module Core.Error (
-  GenError(..), IOErr(..), NetworkErr(..), ParseErr(..), FileErr(..), GtkErr(..), ResponseErr(..), GenErrorT, 
-  withSource, tryMaybe, tryEither, fileE, parseE, networkE, responseE, gtkE, gErrorMessage, gErrorCode, gErrorDomain, _GError, 
+  GenError(..), IOErr(..), NetworkErr(..), FileErr(..), ResponseErr(..), GenErrorT, 
+  withSource, tryMaybe, tryEither, fileE, networkE, responseE,
   check, checkM, (?->), (<-?), (=-?), (?-=),
   module Control.Error, module Control.Lens
   ) where
 
+import Core.Resource
 import Network.Stream
 import Network.HTTP.Headers
 import Network.URI
@@ -16,35 +17,26 @@ import Control.Applicative
 import Control.Lens
 import Control.Exception
 import Control.Exception.Lens
-import System.Glib.GError
 import Control.Monad.CatchIO as E
 
-data GenError = IoE {source :: URI, ioErr :: IOErr} deriving (Show)
-data IOErr = NetworkE NetworkErr | ParseE ParseErr | GtkE GtkErr | FileE FileErr deriving (Show)
+data GenError = IoE {source :: Resource, ioErr :: IOErr}
+data IOErr = NetworkE NetworkErr | FileE FileErr deriving (Show)
 data FileErr = NotFoundE deriving (Show)
-data GtkErr = GTKInitE deriving (Show)
 data NetworkErr = ConnectionE ConnError | RequestE ResponseCode | ResponseE ResponseErr | URLInvalidE | ConnOpenE String deriving (Show)
 data ResponseErr = MissingHeader HeaderName deriving (Show)
-data ParseErr = PDFParseE deriving (Show)
 type GenErrorT m a = EitherT GenError m a
 
-withSource :: (Monad m) => URI -> EitherT IOErr m a -> EitherT GenError m a
+withSource :: (Monad m) => Resource -> EitherT IOErr m a -> EitherT GenError m a
 withSource = fmapLT . IoE
 
 networkE :: NetworkErr -> IOErr
 networkE = NetworkE
-
-parseE :: ParseErr -> IOErr
-parseE = ParseE
 
 fileE :: FileErr -> IOErr
 fileE = FileE
 
 responseE :: ResponseErr -> NetworkErr
 responseE = ResponseE
-
-gtkE :: GtkErr -> IOErr
-gtkE = GtkE
 
 tryMaybe :: (MonadCatchIO m) => Getting (First a) SomeException t a b -> m r -> MaybeT m r
 tryMaybe p = hushT . tryEither p
@@ -57,18 +49,6 @@ check = (() <$) . guard
 
 checkM :: (Monad m, Functor m) => MaybeT m Bool -> MaybeT m ()
 checkM = (() <$) . (>>= guard)
-
-_GError :: Prism' SomeException GError
-_GError = prism' toException fromException
-
-gErrorDomain :: Lens' GError GErrorDomain
-gErrorDomain = lens (\(GError x _ _) -> x) $ \(GError _ y z) x -> GError x y z
-
-gErrorCode :: Lens' GError GErrorCode
-gErrorCode = lens (\(GError _ x _) -> x) $ \(GError x _ z) y -> GError x y z
-
-gErrorMessage :: Lens' GError GErrorMessage
-gErrorMessage = lens (\(GError _ _ x) -> x) $ \(GError x y _) z -> GError x y z
 
 instance (E.MonadCatchIO m) => E.MonadCatchIO (EitherT e m) where
   block x = EitherT $ E.block (runEitherT x)
