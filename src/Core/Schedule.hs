@@ -1,138 +1,115 @@
-{-# LANGUAGE TemplateHaskell, GeneralizedNewtypeDeriving, TupleSections, FlexibleInstances, OverlappingInstances, UndecidableInstances, MultiParamTypeClasses, TypeSynonymInstances #-}
--- | Contains the schedule data type and combinators for building schedules.
+{-# LANGUAGE TemplateHaskell, GeneralizedNewtypeDeriving, TupleSections, FlexibleInstances, OverlappingInstances, UndecidableInstances, MultiParamTypeClasses, TypeSynonymInstances, NoImplicitPrelude, TypeFamilies, FlexibleContexts, DeriveFunctor, DeriveFoldable, DeriveTraversable #-}
+-- | This module provides the schedule data type and combinators for building schedules.
 module Core.Schedule (
-  -- * The schedule
-  -- 
-  -- 
+  
+  {-|
+    A schedule is just a list of modifications. This module provides the basic interface for modifications and a  
+    schedule type. For a concrete implementation, look at 'Core.SimpleSchedule'.
+  -}
+  
+    ExpandedSchedule, runExpandedSchedule
+  , Schedule, modifiers, schedulePeriod, expandSchedule, modifySchedule, (|&)
+  , ScheduleModifier, PeriodType, expandModifier, modifierPeriod
+  ,  Builder, ScheduleBuilder, runBuilder, mapBuilder, buildItem, buildParallel, runScheduleBuilder, mapScheduleBuilder 
+  , module Core.Time, module Control.Monad.Writer
   )
        where 
 
 import Core.Course
+import Core.Time
+import qualified Core.FunctionMap as M
 import qualified Data.DList as DL
 import Data.DList (DList)
-import Control.Monad.Reader
-import Control.Monad.Writer
-import Control.Applicative
-import Control.Arrow
+import NumericPrelude hiding ((^?), foldr, foldl, concatMap, foldr1, foldl1, sequence_)
+import Control.Monad.Reader hiding (sequence_)
+import Control.Monad.Writer hiding (sequence_)
 import Control.Lens
-import qualified Data.Map as M
+import Data.Foldable
 
+-- | A fully expanded schedule. This is the result of evaluating a schedule. 
+-- There can be several possible courses at one point in the schedule (Courses that are overwritten are never 
+-- removed from the schedule, but instead, a new course is added at the same time), this is why it's a
+-- a map from (Date,Int) to a list of 'Course's.
+-- You should not use this data type to save a schedule to a file, because it is
+-- infinite if the original schedule uses RepeatEvery at least once.
+type ExpandedSchedule = M.Map Date (M.Map Int [Maybe Course])
 
+-- | Convert an 'ExpandedSchedule' to a map, where only the most recent courses are 
+-- kept.
+runExpandedSchedule :: ExpandedSchedule -> M.Map Date (M.Map Int Course)
+runExpandedSchedule = M.map cat
+  where cat x = M.fromAscList $ x ^@.. itraversed <. (_head . traversed)
 
-{-| A base schedule, on which more complex schedules can be build. 
-    The base schedule is a map from the day of the week and the lesson number to the course 
-    that shall be taking place at that time.
- -}
-type BaseSchedule = M.Map Day (M.Map Int Course)
+-- | The repeat interval type for modifierPeriod.
+type family PeriodType a
 
-{-| A course locator is used to point to a specific course in a schedule.
- -}
-data CourseLocator = CourseLocator { 
-  _courseDay :: Date, -- ^ The day on which the curse to be located is taking place. This is relative to the schedule's origin.
-  _courseNr :: Int    -- ^ The number of the course to be located.
-}
-makeLenses ''CourseLocator
+-- | A class for schedule modifiers. Modifiers have access to the current state of the schedule.
+class ScheduleModifier a where
+  
+  -- | Expand the modifier.
+  expandModifier :: a                  -- ^ The modifier
+                 -> ExpandedSchedule   -- ^ The current schedule
+                 -> ExpandedSchedule   -- ^ The additions to the current schedule
+                 
+  -- | Get the period of a modifier, i.e. how long it takes till the modifier repeats. Not all 
+  -- modifier have a repeat interval, so the result value is a maybe. You only need to overwrite this
+  -- if you have periodic modifiers.
+  modifierPeriod :: a -> Maybe (PeriodType a)
+  modifierPeriod _ = Nothing
 
-{-| A change to the 'BaseSchedule'. The current day for the change to be applied is always 0. You can offset the day by using
-    the 'Offset' data constructor.
- -}
-data Change = Move CourseLocator CourseLocator   -- ^ Move c d moves 'Course' from d to c overwriting any existing 'Course' at c
-            | Set CourseLocator (Maybe Course)   -- ^ Set l c sets the 'Course' at l to c, overwriting any existing 'Course'. If c is Nothing, it 
-                                                 --   cancels the curse at l.
-            | RepeatEvery Weeks Change           -- ^ RepeatEvery w c repeats the 'Change' c every w weeks
-            | Offset DateTimespan Change         -- ^ Offset t c offsets the 'Change' c for t.
-type Changes = [Change] 
-
-{-| The data type for a schedule. A schedule is just the base schedule plus
-    a list of ordered changes.
- -}
-data Schedule = Schedule {
-  _baseSchedule :: BaseSchedule,  -- ^ The base schedule
-  _changes :: Changes             -- ^ List of changes to the base schedule
-  }
+-- | The data type for a schedule. A schedule is just a list of ordered modifications to an empty schedule. A modification is itself
+-- a list of modifiers, which will be all applied to the same schedule and don't affect each other. The result is then combined and
+-- used for the input to the next modification.
+newtype Schedule c = Schedule {
+  _modifiers :: [[c]] -- ^ List of modifications to the base schedule
+  } deriving (Monoid, Show)
 makeLenses ''Schedule
 
-{-| Set a map of courses to use for a given day. Use this combinator to build
-    the base schedule.
+-- | Apply a 'ScheduleModifier' to an 'ExpandedSchedule'.
+(|&) :: (ScheduleModifier m) => ExpandedSchedule -> m -> ExpandedSchedule
+s |& m = s <> expandModifier m s
 
-    Example: on Monday x uses the schedule x for monday. 
- -}
-on :: Day -> M.Map Int Course -> Writer (Endo BaseSchedule) ()
-on d w = tell $ Endo $ M.insert d w
+-- | Add some modifiers to a 'Schedule'. The modifications are placed after the current modifiers in the 'Schedule'.
+modifySchedule :: Schedule c -> [[c]] -> Schedule c
+modifySchedule = flip $ (modifiers %~) . (++)
 
-{-| Builds a map of courses from the number of the first course and a list of courses
+-- | Expand a schedule, applying the modifications one after another, from head to tail of the list.
+-- The resulting ExpandedSchedule might be infinite.
+expandSchedule :: (ScheduleModifier m) => Schedule m -> ExpandedSchedule
+expandSchedule = foldr expand mempty . view modifiers
+  where expand x c = c <> mconcat (map (`expandModifier` c) x)
+        
+-- | Get the period of a schedule. Not all schedules have a periodic repeat interval, so the result type is a maybe.
+schedulePeriod :: (ScheduleModifier m, HasDaysPrism (PeriodType m)) => Schedule m -> Maybe (PeriodType m)
+schedulePeriod s = (^? daysPrism) . uncurry (foldr lcs) =<< periods ^? _Cons
+  where periods = map (view toDays) $ s ^.. modifiers . traverse . traverse . to modifierPeriod . folded
 
-    Example:
-    >>> dayCourses 2 [a, b, c]
-    M.fromList [(2,a), (3,b), (4,c)]
- -}
-dayCourses :: Int -> [Course] -> M.Map Int Course
-dayCourses s cs = M.fromList $ zip [s..] cs
-
-{-| Runs the base schedule builder and returns the base schedule.
- -}
-generateBaseSchedule :: Writer (Endo BaseSchedule) () -> BaseSchedule
-generateBaseSchedule s = appEndo (execWriter s) M.empty
-
-{-| Add some changes to a schedule. The changes are placed after the current changes in the schedule.
- -}
-addChanges :: Schedule -> Changes -> Schedule
-addChanges = flip $ (changes %~) . (++)
-
-{-| A mini-DSL for lists of things.
- -}
+-- | A mini-DSL for lists of things
 type Builder b = Writer (DList b) ()
 
-{-| Run a builder. 
- -}
+-- | Run a builder
 runBuilder :: Builder b -> [b]
-runBuilder b = DL.toList $ (execWriter b)
+runBuilder b = DL.toList $ execWriter b
 
-{-| Offset all changes in a change builder by the given amount of time.
- -}
-offset :: DateTimespan -> Builder Change -> Builder Change
-offset t = censor (DL.map (Offset t))
+-- | Add a single item to a 'Builder'
+buildItem :: a -> Builder a
+buildItem = tell . DL.singleton
 
-{-| Repeat all changes in a change builder every n weeks.
- -}
-repeatEvery :: Weeks -> Builder Change -> Builder Change
-repeatEvery n = censor (DL.map (RepeatEvery n))
+-- | Run some 'ScheduleBuilder's in parallel, meaning they won't influence each other and the result will be combined. 
+buildParallel :: ScheduleBuilder m -> ScheduleBuilder m
+buildParallel bs = listen bs >>= buildItem . sequence_ . DL.toList . snd
 
-{-| Lookup a day in the base schedule.
- -}
-baseLookup :: BaseSchedule -> Date -> M.Map Int [Course]
-baseLookup s d = maybe M.empty (M.map (:[])) $ M.lookup (d ^. dateDay) s
+-- | Map a function over the output of a builder
+mapBuilder :: (a -> a) -> Builder a -> Builder a
+mapBuilder f = censor (DL.map f)
 
-{-| Lookup a day in a changed schedule with a list of changes
- -}
-changesLookup :: (Date -> M.Map Int [Course]) -> Changes -> Date -> M.Map Int [Course]
-changesLookup u (c:cs) d = changesLookup (changeLookup u c) cs d
-changesLookup u _ d = u d
+-- | A handy alias
+type ScheduleBuilder a = Builder (Builder a)
 
-{-| Lookup a day in a changed schedule.
- -}
-changeLookup :: (Date -> M.Map Int [Course]) -> Change -> Date -> M.Map Int [Course]
-changeLookup u (Move t f) d = changesLookup u [Set t ch, Set f Nothing] d
-  where ch = u (f ^. courseDay) ^? ix (f ^. courseNr) . _last
-changeLookup u (Set t c) d 
-  | d == t ^. courseDay = u d & at (t ^. courseNr) %~ liftM2 (:) c 
-changeLookup u (RepeatEvery (Weeks w) c) d
-  | views (dateWeek . from week) (`mod` w) d == 0 = changeLookup u c $ d & dateWeek . from week .~ 0
-changeLookup u (Offset t c) d
-  | views daysFromOrigin (>= toDays t) d = changeLookup u c $ d & daysFromOrigin -~ (toDays t)
-changeLookup fallback _ d = fallback d   
+-- | Map a function over a schedule builder
+mapScheduleBuilder :: (a -> a) -> ScheduleBuilder a -> ScheduleBuilder a
+mapScheduleBuilder f = mapBuilder (mapBuilder f)
 
-{-| Runs a schedule. Determines the list of courses for a given day.
- -}
-runSchedule :: Schedule                 -- ^ The schedule
-            -> Date                     -- ^ The date to lookup in the schedule
-            -> [(Date, Date)]           -- ^ List of ranges of dates to exclude in the calculation (for example holidays)
-            -> M.Map Int Course        -- ^ The courses taking place at the given day.
-runSchedule s d es 
-  | any ((&&) <$> (d>=) . fst <*> (d<=) . snd) es = M.empty
-  | otherwise = M.fromList $ courses ^@.. traversed <. _last
-  where dateRangeSize (r1,r2) = r2 ^. daysFromOrigin - r1 ^. daysFromOrigin
-        daysSkip = sum $ [dateRangeSize r | r <- es, fst r < d] 
-        d' = backward daysSkip d
-        courses = changesLookup (baseLookup $ s ^. baseSchedule) (s ^. changes) d'
-        
+-- | Runs a builder and creates a schedule out of the returned list of modifiers
+runScheduleBuilder :: (ScheduleModifier m) => ScheduleBuilder m -> Schedule m
+runScheduleBuilder = Schedule . map runBuilder . runBuilder

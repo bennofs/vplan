@@ -16,6 +16,6 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 executable vplan-cli
-  build-depends:     base, mtl, cmdargs, ansi-terminal, MissingH, split, text, hxt, hxt-tagsoup, hxt-http, has, directory, lens, filepath, network, conduit, http-conduit, MonadCatchIO-transformers, errors, safe, transformers, polyparse, time, system-filepath, containers, dlist, numeric-prelude
+  build-depends:     base, mtl, cmdargs, ansi-terminal, MissingH, split, text, hxt, hxt-tagsoup, hxt-http, has, directory, lens, filepath, network, conduit, http-conduit, MonadCatchIO-transformers, errors, safe, transformers, polyparse, time, system-filepath, containers, dlist, numeric-prelude, bifunctors, semigroupoids, keys
   main-is: 	     UI/CLI.hs
   hs-source-dirs:    src
