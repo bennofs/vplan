@@ -1,17 +1,18 @@
 {-# LANGUAGE TemplateHaskell
  , GeneralizedNewtypeDeriving
  , TupleSections
- , UndecidableInstances
  , FlexibleInstances
- , OverlappingInstances
+ , MultiParamTypeClasses
  , NoImplicitPrelude
- , FunctionalDependencies #-}
+ #-}
 
 -- | 
 -- Provides datestructures and utilities for working with time and dates.
 
 module Core.Time (
   {-|
+    * Usage
+
     This module provides the data types and lenses for working with times and dates.
 
     The core data type for dates is 'Date'. It stores the date in weekdate format, accessible with the lenses 'dateWeek' and 'dateDay':
@@ -21,8 +22,6 @@ module Core.Time (
 
     >>> date 1 Monday ^. dateDay :: Day
     Monday
-
-
 
     The module features a strict separation between timespans and dates, the only way to convert between the two is the' daysFromOrigin' lens.
 
@@ -35,8 +34,6 @@ module Core.Time (
     >>> (2 ^. weeks) `add` (1 ^. days) -- Can't add days to weeks, that would result in a loss of precision (because the result is also in weeks)
         No instance for (HasDaysIso Weeks) arising from a use of `add' ...
 
-
-
     There are also serveral operations on dates, such as going forward or backward:
 
     >>> forward (1 ^. weeks) $ date 1 Monday :: Date
@@ -46,19 +43,22 @@ module Core.Time (
     Date (Week 0,Monday)
 
   -}
-  
     Day (..)
   , Days (), days, daysPrism, daysIso, toDays
   , Week (), week
   , Weeks (), weeks
   , Date, daysFromOrigin, date, dateWeek, dateDay
-  , convertTimespanIso, forward, backward, add, sub, difference
+  , DateTimespan, dateTimespan, dtimespan
+  , HasDaysIso, HasDaysPrism
+  , convertTimespan, convertTimespanIso, forward, backward, add, sub, difference, lcs
   )
        where
 
+import Control.Applicative hiding ((*>))
+import Control.Monad
 import Control.Arrow
 import Control.Lens
-import NumericPrelude
+import NumericPrelude hiding ((^?), concat)
 import qualified Algebra.Additive as Additive
 import qualified Algebra.Module as Module
 
@@ -102,6 +102,9 @@ dateDay = lens (\(Date (_,y)) -> y) $ \(Date (x,_)) y -> Date (x,y)
 newtype DateTimespan = DateTimespan (Weeks, Days) deriving (Ord, Show, Eq, Read)
 makeIso ''DateTimespan
 
+dtimespan :: Weeks -> Days -> DateTimespan 
+dtimespan = curry DateTimespan
+
 instance Additive.C DateTimespan where
   t + s = t `add` s
   t - s = sub s t
@@ -116,6 +119,9 @@ daysFromOrigin = iso t f
   where t (Date (Week w, d)) = (w * 7 + fromEnum d) ^. days
         f d = let (Weeks w, Days x) = d ^. re daysIso . from dateTimespan in Date (Week w, toEnum x)
 
+instance Enum Date where
+  toEnum x = x ^. days . from daysFromOrigin
+  fromEnum x = x ^. daysFromOrigin . from days
 
 -- | Overload daysPrism
 class HasDaysPrism a where
@@ -124,19 +130,21 @@ class HasDaysPrism a where
   daysPrism :: Prism' Days a
   
 instance HasDaysPrism Weeks where
-  daysPrism = prism' (view days . (* 7) . review weeks) undefined
+  daysPrism = prism' (view days . (* 7) . review weeks) (t . review days)
+    where t x = let (m,r) = x `divMod` 7 in m ^. weeks <$ guard (r == 0)
 
-instance (HasDaysIso a) => HasDaysPrism a where
-  daysPrism = prism' (view daysIso) (Just . review daysIso)
+instance HasDaysPrism Days where daysPrism = defaultDaysPrism
+instance HasDaysPrism DateTimespan where daysPrism = defaultDaysPrism
+
+-- | A default value for daysPrism for types that are an instance of HasDaysIso
+defaultDaysPrism :: (HasDaysIso a) => Prism' Days a
+defaultDaysPrism = prism' (view daysIso) (Just . review daysIso)
 
 -- | Overload daysIso
-class HasDaysIso a where
+class (HasDaysPrism a) => HasDaysIso a where
   
   -- | An iso between a and days
   daysIso :: Iso' a Days
-  
-instance HasDaysIso Int where
-  daysIso = days
   
 instance HasDaysIso Days where
   daysIso = iso id id
@@ -151,6 +159,10 @@ toDays :: (HasDaysPrism a) => Getter a Days
 toDays = re daysPrism
 
 -- | Convert from one representation of a timespan to another
+convertTimespan :: (HasDaysIso s, HasDaysPrism t) => Getter t s
+convertTimespan = toDays . from daysIso
+
+-- | Convert from one representation of a timespan to another
 convertTimespanIso :: (HasDaysIso t, HasDaysIso s) => Iso' t s
 convertTimespanIso = iso (review daysIso . view daysIso) (review daysIso . view daysIso)
 
@@ -160,7 +172,7 @@ forward s = daysFromOrigin %~ (+ s ^. toDays)
 
 -- | Subtract a timespan from a date
 backward :: (HasDaysPrism s) => s -> Date -> Date
-backward s = daysFromOrigin %~ (subtract $ s ^. toDays)
+backward s = daysFromOrigin %~ subtract (s ^. toDays)
 
 -- | Add two timspans, this is to ease adding timespans of different types.
 add :: (HasDaysPrism s, HasDaysIso t) => t -> s -> t
@@ -168,8 +180,12 @@ add = flip $ \s -> daysIso %~ (+ s ^. toDays)
 
 -- | Subtract a timespan from another one. This function exists to ease working with timespans of different types.
 sub :: (HasDaysPrism s, HasDaysIso t) => t -> s -> t
-sub = flip $ \s -> daysIso %~ (flip subtract $ s ^. toDays)
+sub = flip $ \s -> daysIso %~ flip subtract (s ^. toDays)
 
 -- | Calculate the difference between to dates in days
 difference :: Date -> Date -> Days
 difference d e = e ^. daysFromOrigin - d ^. daysFromOrigin
+
+-- | Calculate the least common timespan of two timespans
+lcs :: (HasDaysIso a, HasDaysPrism b) => a -> b -> a
+lcs a b = view (days . from daysIso) $ lcm (a ^. daysIso . from days) (b ^. toDays . from days)
