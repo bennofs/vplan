@@ -8,7 +8,7 @@
 
 -- |
 -- Module      : $Header$
--- Description : Provides type-safe utilities for working with dates and times in weekdate format
+-- Description : Type-safe utilities for working with dates and times in weekdate format
 --               in a calendar that doesn't have to deal with real-world times and because of that
 --               can be a lot simpler than the one in Data.Time.Calendar.WeekDate.
 -- Copyright   : (c) Benno Fünfstück
