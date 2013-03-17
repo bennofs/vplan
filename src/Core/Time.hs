@@ -6,16 +6,25 @@
  , NoImplicitPrelude
  #-}
 
--- | 
--- Provides datestructures and utilities for working with time and dates.
-
+-- |
+-- Module      : $Header$
+-- Description : Provides type-safe utilities for working with dates and times in weekdate format
+--               in a calendar that doesn't have to deal with real-world times and because of that
+--               can be a lot simpler than the one in Data.Time.Calendar.WeekDate.
+-- Copyright   : (c) Benno Fünfstück
+-- License     : GPL-3
+--
+-- Maintainer  : benno.fuenfstueck@gmail.com
+-- Stability   : experimental
+-- Portability : non-portable (Only works in GHC because of lens)
 module Core.Time (
   {-|
-    * Usage
+    * Usage:
 
     This module provides the data types and lenses for working with times and dates.
 
-    The core data type for dates is 'Date'. It stores the date in weekdate format, accessible with the lenses 'dateWeek' and 'dateDay':
+    The core data type for dates is 'Date'. It stores the date in weekdate format,
+    accessible by the lenses 'dateWeek' and 'dateDay':
 
     >>> date 1 Monday ^. dateWeek :: Week
     Week 1
@@ -23,7 +32,8 @@ module Core.Time (
     >>> date 1 Monday ^. dateDay :: Day
     Monday
 
-    The module features a strict separation between timespans and dates, the only way to convert between the two is the' daysFromOrigin' lens.
+    The module features a strict separation between timespans and dates, the only way to
+    convert between the two is the' daysFromOrigin' lens.
 
     >>> date 1 Tuesday + date 1 Monday -- Dates can't be added, that wouldn't make sense
         No instance for (Additive.C Date) arising from a use of `+' ...
@@ -31,7 +41,7 @@ module Core.Time (
     >>> (3 ^. days) `add` (2 ^. weeks) :: Days
     Days 17
 
-    >>> (2 ^. weeks) `add` (1 ^. days) -- Can't add days to weeks, that would result in a loss of precision (because the result is also in weeks)
+    >>> (2 ^. weeks) `add` (1 ^. days) -- Can't add days to weeks, that would result in a loss of precision (because the result would also be in weeks)
         No instance for (HasDaysIso Weeks) arising from a use of `add' ...
 
     There are also serveral operations on dates, such as going forward or backward:
@@ -65,7 +75,7 @@ import qualified Algebra.Module as Module
 -- | A day of the week
 data Day = Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday deriving (Eq, Ord, Enum, Bounded, Read, Show)
 
--- | A timespan in days. 
+-- | A timespan in days.
 newtype Days = Days Int deriving (Eq, Ord, Read, Show, Enum, Additive.C)
 makeIso ''Days
 
@@ -102,7 +112,9 @@ dateDay = lens (\(Date (_,y)) -> y) $ \(Date (x,_)) y -> Date (x,y)
 newtype DateTimespan = DateTimespan (Weeks, Days) deriving (Ord, Show, Eq, Read)
 makeIso ''DateTimespan
 
-dtimespan :: Weeks -> Days -> DateTimespan 
+-- | Construct a 'DateTimespan' from a timespan in weeks and a timespan in days. The timespan in
+-- days should be lower than 7.
+dtimespan :: Weeks -> Days -> DateTimespan
 dtimespan = curry DateTimespan
 
 instance Additive.C DateTimespan where
@@ -125,10 +137,10 @@ instance Enum Date where
 
 -- | Overload daysPrism
 class HasDaysPrism a where
-  
+
   -- | A Prism from days to a
   daysPrism :: Prism' Days a
-  
+
 instance HasDaysPrism Weeks where
   daysPrism = prism' (view days . (* 7) . review weeks) (t . review days)
     where t x = let (m,r) = x `divMod` 7 in m ^. weeks <$ guard (r == 0)
@@ -142,15 +154,15 @@ defaultDaysPrism = prism' (view daysIso) (Just . review daysIso)
 
 -- | Overload daysIso
 class (HasDaysPrism a) => HasDaysIso a where
-  
+
   -- | An iso between a and days
   daysIso :: Iso' a Days
-  
+
 instance HasDaysIso Days where
   daysIso = iso id id
-  
+
 instance HasDaysIso DateTimespan where
-  daysIso = iso t f 
+  daysIso = iso t f
     where f d = DateTimespan $ Weeks *** Days $ (d ^. from days) `divMod` 7
           t d = uncurry (+) $ d ^. from dateTimespan & _1 %~ (view days . (* 7) . review weeks)
 
