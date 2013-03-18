@@ -60,10 +60,11 @@ module Core.Time (
   , Date, daysFromOrigin, date, dateWeek, dateDay
   , DateTimespan, dateTimespan, dtimespan
   , HasDaysIso, HasDaysPrism
-  , convertTimespan, convertTimespanIso, forward, backward, add, sub, difference, lcs
+  , convertTimespan, convertTimespanIso, forward, backward, add, sub, mult, difference, lcs
   )
        where
 
+import Data.List (foldl')
 import Control.Applicative hiding ((*>))
 import Control.Monad
 import Control.Arrow
@@ -71,6 +72,7 @@ import Control.Lens
 import NumericPrelude hiding ((^?), concat)
 import qualified Algebra.Additive as Additive
 import qualified Algebra.Module as Module
+import qualified Algebra.ToInteger as ToInteger
 
 -- | A day of the week
 data Day = Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday deriving (Eq, Ord, Enum, Bounded, Read, Show)
@@ -166,7 +168,7 @@ instance HasDaysIso DateTimespan where
     where f d = DateTimespan $ Weeks *** Days $ (d ^. from days) `divMod` 7
           t d = uncurry (+) $ d ^. from dateTimespan & _1 %~ (view days . (* 7) . review weeks)
 
--- | Convert a timespan to days
+
 toDays :: (HasDaysPrism a) => Getter a Days
 toDays = re daysPrism
 
@@ -194,10 +196,14 @@ add = flip $ \s -> daysIso %~ (+ s ^. toDays)
 sub :: (HasDaysPrism s, HasDaysIso t) => t -> s -> t
 sub = flip $ \s -> daysIso %~ flip subtract (s ^. toDays)
 
+-- | Multiplicate a timespan with a number, which means repeating the timespan n times.
+mult :: (HasDaysPrism a, Additive.C a, ToInteger.C b) => a -> b -> a
+mult a b = sum $ replicate (fromInteger $ toInteger b) a
+
 -- | Calculate the difference between to dates in days
 difference :: Date -> Date -> Days
 difference d e = e ^. daysFromOrigin - d ^. daysFromOrigin
 
--- | Calculate the least common timespan of two timespans
-lcs :: (HasDaysIso a, HasDaysPrism b) => a -> b -> a
-lcs a b = view (days . from daysIso) $ lcm (a ^. daysIso . from days) (b ^. toDays . from days)
+-- | Calculate the least common timespan of two timespans.
+lcs :: (HasDaysPrism a, HasDaysPrism b) => a -> b -> a
+lcs a b = (^?! days . daysPrism) $ lcm (a ^. re daysPrism . from days) (b ^. toDays . from days)

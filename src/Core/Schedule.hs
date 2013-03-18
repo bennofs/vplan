@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE UndecidableInstances  #-}
+{-# LANGUAGE StandaloneDeriving    #-}
 -- |
 -- Module      : $Header$
 -- Description : The schedule data type.
@@ -12,30 +13,24 @@
 -- Stability   : experimental
 -- Portability : non-portable (uses various GHC extensions)
 module Core.Schedule (
-    Ignore(..)
-  , Void
-  , Schedule(..)
+    Schedule(..)
   , schedule
   , scheduleIndex
   ) where
 
 import Core.Modifier
 import Data.Monoid
-import Data.Void
 import Control.Lens
-
--- | Const at the type level. Ignores the second type parameter. Useful for Modifiers that don't
--- accept a type parameter.
-newtype Ignore a b = Ignore a
-
-instance (Monoid v) => Modifier (Ignore Void c) i v p where
-  modifierApply  (Ignore v) = absurd v
-  modifierPeriod (Ignore v) = absurd v
 
 -- | The type of a schedule. This type is just fix at the type level.
 newtype Schedule e = Schedule (e (Schedule e))
 makeIso ''Schedule
 
+instance (Modifier (e (Schedule e)) i v) => Modifier (Schedule e) i v where
+  modifierApply (Schedule s) = modifierApply s
+
+deriving instance (Show (e (Schedule e))) => Show (Schedule e)
+
 -- | Index into a 'Schedule'
-scheduleIndex :: (Modifier (e (Schedule e)) i v p) => Schedule e -> i -> v
+scheduleIndex :: (Modifier (e (Schedule e)) i v) => Schedule e -> i -> v
 scheduleIndex s = modifierApply (review schedule s) (const mempty)

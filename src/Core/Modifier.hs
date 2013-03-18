@@ -11,8 +11,8 @@
 module Core.Modifier (
     Modifier
   , modifierApply
-  , modifierPeriod
   , (|<>|)
+  , alternative2
   ) where
 
 import Data.Monoid
@@ -20,14 +20,15 @@ import Control.Applicative
 
 -- | A class for a modifier. A modifier can modify an index-function from index i to monoid values
 -- v. A modifier may have a period of type p, but this is optional.
-class (Monoid v) => Modifier a i v p | a -> i, a -> v, a -> p where
+class (Monoid v) => Modifier a i v | a -> i, a -> v where
 
   -- | Apply the modifier to an indexing function.
   modifierApply :: a -> (i -> v) -> i -> v
 
-  -- | Get the period of the modifier.
-  modifierPeriod :: a -> Maybe b
-
 -- | A lifted mappend.
 (|<>|) :: (Monoid a, Applicative m) => m a -> m a -> m a
 (|<>|) = liftA2 (<>)
+
+-- | Apply a function to two Alternatives, and if either one is empty, return the other one.
+alternative2 :: (Alternative f) => (a -> a -> a) -> f a -> f a -> f a
+alternative2 f a b = liftA2 f a b <|> a <|> b
