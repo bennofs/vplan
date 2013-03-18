@@ -1,4 +1,4 @@
-{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 -- |
 -- Module      : $Header$
 -- Description : The type class for modifiers and basic utilies for building modifiers.
@@ -20,7 +20,7 @@ import Control.Applicative
 
 -- | A class for a modifier. A modifier can modify an index-function from index i to monoid values
 -- v. A modifier may have a period of type p, but this is optional.
-class (Monoid v) => Modifier a i v | a -> i, a -> v where
+class (Monoid v) => Modifier a i v where
 
   -- | Apply the modifier to an indexing function.
   modifierApply :: a -> (i -> v) -> i -> v

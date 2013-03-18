@@ -4,7 +4,6 @@
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE OverlappingInstances   #-}
-{-# LANGUAGE UndecidableInstances   #-}
 -- |
 -- Module      : $Header$
 -- Description : A modifier that can contain exactly one out of multiple modifiers of possible
