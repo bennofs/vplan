@@ -11,7 +11,6 @@
 module Core.Modifier (
     Modifier
   , modifierApply
-  , (|<>|)
   , alternative2
   ) where
 
@@ -24,10 +23,6 @@ class (Monoid v) => Modifier a i v where
 
   -- | Apply the modifier to an indexing function.
   modifierApply :: a -> (i -> v) -> i -> v
-
--- | A lifted mappend.
-(|<>|) :: (Monoid a, Applicative m) => m a -> m a -> m a
-(|<>|) = liftA2 (<>)
 
 -- | Apply a function to two Alternatives, and if either one is empty, return the other one.
 alternative2 :: (Alternative f) => (a -> a -> a) -> f a -> f a -> f a

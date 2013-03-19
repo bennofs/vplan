@@ -37,4 +37,4 @@ value :: a -> Constant a b
 value = Constant
 
 instance (Monoid a) => Modifier (Constant a b) i a where
-  modifierApply (Constant a) f = f |<>| const a
+  modifierApply (Constant a) _ = const a
