@@ -19,7 +19,6 @@ import qualified Data.Sequence as S
 import Data.Foldable
 import Prelude hiding (concatMap, concat)
 import Core.Modifier
-import Core.Time
 import Control.Lens
 
 newtype Sequential e = Sequential (S.Seq e)

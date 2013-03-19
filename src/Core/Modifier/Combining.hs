@@ -17,6 +17,7 @@ module Core.Modifier.Combining (
   ) where
 
 import Core.Modifier
+import Data.Monoid
 import Control.Lens
 
 newtype Combining e = Combining e
