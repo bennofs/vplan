@@ -19,6 +19,7 @@ module Core.Modifier.Enum (
   , (>||)()
   , Close
   , enumValue
+  , enumSchedule
   , enumItem
   , scheduleItem
   ) where
@@ -26,11 +27,8 @@ module Core.Modifier.Enum (
 import Core.Schedule
 import Core.Modifier
 import Core.Builder
-import Core.Modifier.Constant
 import Data.Void
 import Data.Monoid
-import Control.Applicative
-import Data.HList.FakePrelude (TypeCast, typeCast)
 import Control.Lens
 
 -- | Either for types with one argument
@@ -62,10 +60,14 @@ instance (Modifier (l s) i v, Modifier (r s) i v) => Modifier ((l >||< r) s) i v
   modifierApply  (L a) = modifierApply a
   modifierApply  (R b) = modifierApply b
 
+-- | Build a value as a schedule containing an enum.
+enumSchedule :: (MakeTypeEnum a (e (Schedule e))) => a -> Schedule e
+enumSchedule = view schedule . enumValue
+
 -- | Build an enum value as a single item.
 enumItem :: (MakeTypeEnum a e) => a -> Builder e ()
 enumItem = item . enumValue
 
 -- | Build an enum value as a single schedule item.
 scheduleItem :: (MakeTypeEnum a (e (Schedule e))) => a -> Builder (Schedule e) ()
-scheduleItem = item . view schedule . enumValue
+scheduleItem = item . enumSchedule
