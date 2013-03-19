@@ -15,13 +15,15 @@
 -- Stability   : experimental
 -- Portability : non-portable (uses various GHC-specific extensions)
 module Core.Modifier.Enum (
-    (>||<)(L,R)
+    (>||<)()
   , (>||)()
+  , (||<)()
   , Close
   , enumValue
   , enumSchedule
   , enumItem
   , scheduleItem
+  , MakeTypeEnum
   ) where
 
 import Core.Schedule
@@ -39,7 +41,11 @@ newtype Close a = Close Void deriving (Show)
 
 -- | Use this to concat the last element onto a type enum.
 type a >|| b = a >||< b >||< Close
-infixr 7 >||, >||<
+
+-- | Use this to concat the first element onto a type enum.
+type a ||< b = a >||< b
+
+infixr 7 ||<, >||, >||<
 
 -- | Create a type enum with a given value.
 class MakeTypeEnum a b where
