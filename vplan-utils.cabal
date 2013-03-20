@@ -1,0 +1,79 @@
+name:                vplan-utils
+version:             0.1.0.0
+synopsis:            Ein Programm zum Abrufen und Auswerten des Vertretungsplans
+-- description:         
+homepage:            http://github.com/bennofs/vplan-utils
+license:             GPL-3
+license-file:        LICENSE
+author:              Benno Fünfstück
+maintainer:          benno.fuenfstueck@gmail.com
+copyright:           © 2013 Benno Fünfstück
+stability:	     experimental
+tested-with:         GHC ==7.6.1
+
+-- category:            
+build-type:          Simple
+cabal-version:       >=1.8
+
+library
+  build-depends: 
+         base
+       , mtl
+       , cmdargs
+       , ansi-terminal
+       , MissingH
+       , split
+       , text
+       , hxt
+       , hxt-tagsoup
+       , hxt-http
+       , has
+       , directory
+       , lens
+       , filepath
+       , network
+       , conduit
+       , http-conduit
+       , MonadCatchIO-transformers
+       , errors
+       , safe
+       , transformers
+       , polyparse
+       , time
+       , system-filepath
+       , containers
+       , dlist
+       , numeric-prelude
+       , bifunctors
+       , semigroupoids
+       , keys
+       , bytestring
+       , void
+       , HTTP
+  exposed-modules:
+          Core.Modifier
+        , Core.Schedule
+        , Core.Resource
+        , Core.Error
+        , Core.Modifier.Enum
+        , Core.Modifier.Copy
+        , Core.Modifier.Constant
+        , Core.Modifier.Parallel
+        , Core.Modifier.Sequential
+        , Core.Modifier.Limit
+        , Core.Modifier.Combining
+        
+  hs-source-dirs:    src
+  ghc-options: -Wall -Werror -fwarn-tabs
+
+test-suite vplan-tests
+  type: exitcode-stdio-1.0
+  main-is: Tests.hs
+  hs-source-dirs: tests
+  build-depends:
+          base
+        , test-framework
+        , test-framework-quickcheck2
+        , QuickCheck
+        , vplan-utils
+  ghc-options: -Wall

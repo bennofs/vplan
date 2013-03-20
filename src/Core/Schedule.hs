@@ -16,7 +16,7 @@
 module Core.Schedule (
     Schedule(..)
   , schedule
-  , scheduleIndex
+  , runSchedule
   ) where
 
 import Core.Modifier
@@ -33,5 +33,5 @@ instance (Modifier (e (Schedule e)) i v) => Modifier (Schedule e) i v where
 deriving instance (Show (e (Schedule e))) => Show (Schedule e)
 
 -- | Index into a 'Schedule'
-scheduleIndex :: (Modifier (e (Schedule e)) i v) => Schedule e -> i -> v
-scheduleIndex s = modifierApply (review schedule s) (const mempty)
+runSchedule :: (Modifier (e (Schedule e)) i v) => Schedule e -> i -> v
+runSchedule s = modifierApply (review schedule s) (const mempty)

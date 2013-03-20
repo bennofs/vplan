@@ -1,5 +1,6 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Core.Error (
-  GenError(..), IOErr(..), NetworkErr(..), FileErr(..), ResponseErr(..), GenErrorT, 
+  GenError(..), IOErr(..), NetworkErr(..), FileErr(..), ResponseErr(..), GenErrorT,
   withSource, tryMaybe, tryEither, fileE, networkE, responseE,
   check, checkM, (?->), (<-?), (=-?), (?-=),
   module Control.Error, module Control.Lens
@@ -8,15 +9,14 @@ module Core.Error (
 import Core.Resource
 import Network.Stream
 import Network.HTTP.Headers
-import Network.URI
 import Network.HTTP.Base
 import Control.Error
 import Control.Monad
-import Control.Proxy
 import Control.Applicative
 import Control.Lens
 import Control.Exception
 import Control.Exception.Lens
+import Data.Monoid
 import Control.Monad.CatchIO as E
 
 data GenError = IoE {source :: Resource, ioErr :: IOErr}
