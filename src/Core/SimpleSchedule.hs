@@ -37,7 +37,7 @@ import           Core.Modifier.Limit
 import           Core.Schedule
 
 -- | The modifiers of the simple schedule
-type SimpleModifiers = Limit ||< Combine >||< R.Reference >||< E.Empty >|| Constant
+type SimpleModifiers = Limit :><: Combine :><: R.Reference :><: E.Empty :><: Constant :><: Close
 
 -- | Our definition of a schedule.
 type SimpleSchedule i v = Schedule i v SimpleModifiers

@@ -17,9 +17,7 @@
 -- Stability   : experimental
 -- Portability : non-portable (uses various GHC-specific extensions)
 module Core.Modifier.Enum (
-    (>||<)(R, L)
-  , (>||)()
-  , (||<)()
+    (:><:)(R, L)
   , Close(..)
   , enumValue
   , enumSchedule
@@ -34,11 +32,11 @@ import Data.Void
 import Control.Applicative
 import Control.Lens
 
--- | Either for types with one argument
-data (>||<) a b s = L (a s) | R (b s) deriving (Eq)
+-- | Either for types with one argument at the type level
+data (:><:) a b s = L (a s) | R (b s) deriving (Eq)
 
 -- | Just an alias to make writing instances easier
-type C = (>||<)
+type C = (:><:)
 
 -- | Just a little helper to make the types match
 newtype Close a = Close Void deriving (Eq)
@@ -52,13 +50,7 @@ instance (Gettable f) => Contains f (Close a) where
 instance (Functor f) => Ixed f (Close a) where
   ix _ _ (Close _) = error "impossible"
 
--- | Use this to concat the last element onto a type enum.
-type a >|| b = a >||< b >||< Close
-
--- | Use this to concat the first element onto a type enum.
-type a ||< b = a >||< b
-
-infixr 7 ||<, >||, >||<
+infixr 7 :><:
 
 -- | Create a type enum with a given value.
 class MakeTypeEnum a b where
