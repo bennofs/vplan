@@ -57,7 +57,7 @@ library
         , Core.Error
         , Core.SimpleSchedule
         , Core.Modifier.Enum
-        , Core.Modifier.Copy
+        , Core.Modifier.Reference
         , Core.Modifier.Constant
         , Core.Modifier.Empty
         , Core.Modifier.Limit
@@ -80,7 +80,3 @@ test-suite vplan-tests
         , lens
         , checkers
   ghc-options: -Wall
-
-
-
-

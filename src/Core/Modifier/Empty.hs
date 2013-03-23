@@ -10,23 +10,19 @@
 -- Portability : non-portable
 
 module Core.Modifier.Empty (
-    Empty()
-  , empty
+    Empty(..)
   ) where
 
 import Control.Applicative hiding (empty)
 import Control.Lens
 
-data Empty s = Empty
-
-empty :: Empty s
-empty = Empty
+data Empty s = Empty deriving (Eq)
 
 type instance IxValue (Empty s) = IxValue s
 type instance Index (Empty s) = Index s
 
 instance (Gettable f) => Contains f (Empty s) where
-  contains i f _ = coerce $ indexed f i False
+  contains = containsTest $ const $ const False
 
 instance (Applicative f) => Ixed f (Empty s) where
-  ix _ _ _ = pure Empty
+  ix _ _ = pure

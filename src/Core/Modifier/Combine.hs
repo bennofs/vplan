@@ -24,7 +24,7 @@ import           Data.Monoid
 
 -- | Combine two modifiers into one. While traversal, results of the first modifier are traversed
 -- first. After that, the results of the second modifier are traversed.
-data Combine s = Combine s s
+data Combine s = Combine s s deriving (Eq)
 
 -- | Combine two modifiers. See 'Combine' for details.
 combine :: e -> e -> Combine e

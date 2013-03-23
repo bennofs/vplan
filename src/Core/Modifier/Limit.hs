@@ -1,8 +1,10 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE StandaloneDeriving    #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE UndecidableInstances  #-}
 -- |
 -- Module      : $Header$
 -- Description : Limit a modifier with some predicate on the index
@@ -24,6 +26,8 @@ import           Control.Lens
 
 data Limit s = Limit { _condition :: Ordering, _bound :: Index s, _underlying :: s }
 makeLenses ''Limit
+
+deriving instance (Eq (Index s), Eq s) => Eq (Limit s)
 
 type instance IxValue (Limit s) = IxValue s
 type instance Index (Limit s) = Index s

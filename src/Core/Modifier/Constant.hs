@@ -1,7 +1,10 @@
+{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE StandaloneDeriving    #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE UndecidableInstances  #-}
 -- |
 -- Module      : $Header$
 -- Description : A modifier that always returns a constant value.
@@ -23,6 +26,8 @@ import           Control.Lens
 newtype Constant s = Constant (IxValue s)
 makeIso ''Constant
 
+deriving instance (Eq (IxValue s)) => Eq (Constant s)
+
 type instance IxValue (Constant s) = IxValue s
 type instance Index (Constant s) = Index s
 
@@ -30,4 +35,4 @@ instance (Functor f) => Ixed f (Constant s) where
   ix i f = from constant $ indexed f i
 
 instance (Gettable f) => Contains f (Constant s) where
-  contains i f _ = coerce $ indexed f i True
+  contains = containsTest $ const $ const True

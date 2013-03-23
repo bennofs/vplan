@@ -5,6 +5,7 @@
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE OverlappingInstances   #-}
+
 -- |
 -- Module      : $Header$
 -- Description : A modifier that can contain exactly one out of multiple modifiers of possible
@@ -19,7 +20,7 @@ module Core.Modifier.Enum (
     (>||<)(R, L)
   , (>||)()
   , (||<)()
-  , Close
+  , Close(..)
   , enumValue
   , enumSchedule
   , enumItem
@@ -34,22 +35,22 @@ import Control.Applicative
 import Control.Lens
 
 -- | Either for types with one argument
-data (>||<) a b s = L (a s) | R (b s)
+data (>||<) a b s = L (a s) | R (b s) deriving (Eq)
 
 -- | Just an alias to make writing instances easier
 type C = (>||<)
 
 -- | Just a little helper to make the types match
-newtype Close a = Close Void
+newtype Close a = Close Void deriving (Eq)
 
 type instance IxValue (Close a) = IxValue a
 type instance Index (Close a) = Index a
 
 instance (Gettable f) => Contains f (Close a) where
-  contains = containsTest (const $ const True)
+  contains _ _ (Close _) = error "impossible"
 
 instance (Functor f) => Ixed f (Close a) where
-  ix _ _ (Close v) = absurd v
+  ix _ _ (Close _) = error "impossible"
 
 -- | Use this to concat the last element onto a type enum.
 type a >|| b = a >||< b >||< Close

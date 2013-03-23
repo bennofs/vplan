@@ -34,3 +34,4 @@ type instance IxValue (Schedule i v s) = v
 deriving instance (Contains f (s (Schedule i v s))) => Contains f (Schedule i v s)
 deriving instance (Ixed f (s (Schedule i v s)), IxValue (s (Schedule i v s)) ~ v,
                    Index (s (Schedule i v s)) ~ i) => Ixed f (Schedule i v s)
+deriving instance (Eq (s (Schedule i v s))) => Eq (Schedule i v s)
