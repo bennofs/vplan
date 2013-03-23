@@ -78,5 +78,4 @@ test-suite vplan-tests
         , QuickCheck
         , vplan-utils
         , lens
-        , checkers
   ghc-options: -Wall

@@ -12,7 +12,7 @@ import           Core.Schedule
 import           Core.SimpleSchedule
 import           Test.Framework
 import           Test.Framework.Providers.QuickCheck2
-import qualified Test.QuickCheck.Checkers             as QC
+-- import qualified Test.QuickCheck.Checkers             as QC
 
 main :: IO ()
 main = defaultMain tests
@@ -22,12 +22,12 @@ tests = [
   testGroup "Schedule and Modifiers" scheduleModifiers
   ]
 
-testBatch :: TestName -> QC.TestBatch -> Test
-testBatch n = testGroup n . map (uncurry testProperty) . QC.unbatch
+-- testBatch :: TestName -> QC.TestBatch -> Test
+-- testBatch n = testGroup n . map (uncurry testProperty) . QC.unbatch
 
 scheduleModifiers :: [Test]
 scheduleModifiers =
-  [ testProperty "Empty schedule contains" prop_empty_contains
+  [-- testProperty "Empty schedule contains" prop_empty_contains
 --  , testProperty "Empty schedule ix" prop_empty_ix
 --  , testProperty "Single schedule contains" prop_single_contains
 --  , testProperty "Single schedule ix" prop_single_ix
@@ -35,7 +35,7 @@ scheduleModifiers =
 --  , testProperty "at ix" prop_at_ix
 --  , testProperty "schedule iso" prop_schedule_iso
 --  , testProperty "schedule Eq" prop_eq_schedule
---  , testProperty "empty Eq" $ Empty == Empty
+   testProperty "empty Eq" $ Empty == Empty
   ]
 
 prop_empty_contains :: Int -> Bool
