@@ -1,0 +1,43 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving, StandaloneDeriving, FlexibleContexts, UndecidableInstances, TypeOperators #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+-- |
+-- Module      : $Header$
+-- Description : Instances of Show and other classes for debugging purposes.
+-- Copyright   : (c) Benno Fünfstück
+-- License     : GPL-3
+--
+-- Maintainer  : benno.fuenfstueck@gmail.com
+-- Stability   : experimental
+-- Portability : non-portable
+module Core.Debug where
+
+import Core.Schedule
+import Core.Modifier.Enum
+import Core.Modifier.Empty
+import Core.Modifier.Reference
+import Core.Modifier.Constant
+import Core.Modifier.Limit
+import Core.Modifier.Combine
+import Control.Lens
+
+instance Show (IxValue s) => Show (Constant s) where
+  show (Constant c) = show c
+
+deriving instance Show (Empty s)
+instance (Show s, Show (Index s)) => Show (Reference s) where
+  show (Reference i u) = "REF " ++ show i ++ " | " ++ show u
+
+instance (Show (Index s), Show s) => Show (Limit s) where
+  show (Limit y w s) = show y ++ " "++ show w ++ " | " ++ show s
+
+instance (Show (l s), Show (r s)) => Show ((l >||< r) s) where
+  showsPrec i (L x) = showsPrec i x
+  showsPrec i (R x) = showsPrec i x
+
+instance (Show s) => Show (Combine s) where
+  show (Combine a b) = "(" ++ show a ++ " -||- " ++ show b ++ ")"
+
+instance (Show (s (Schedule i v s))) => Show (Schedule i v s) where
+  showsPrec i (Schedule x) = showsPrec i x
+
+deriving instance Show (Close s)
