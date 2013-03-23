@@ -19,26 +19,26 @@ library
   build-depends: 
          base
        , mtl
-       , cmdargs
-       , ansi-terminal
-       , MissingH
-       , split
-       , text
-       , hxt
-       , hxt-tagsoup
-       , hxt-http
-       , has
+--       , cmdargs
+--       , ansi-terminal
+--       , MissingH
+--       , split
+--        , text
+--      , hxt
+--      , hxt-tagsoup
+--      , hxt-http
+--       , has
        , directory
        , lens
        , filepath
        , network
-       , conduit
-       , http-conduit
+--       , conduit
+--       , http-conduit
        , MonadCatchIO-transformers
        , errors
        , safe
        , transformers
-       , polyparse
+--       , polyparse
        , time
        , system-filepath
        , containers
