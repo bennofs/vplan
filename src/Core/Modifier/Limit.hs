@@ -1,5 +1,8 @@
+{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeFamilies          #-}
 -- |
 -- Module      : $Header$
 -- Description : Limit a modifier with some predicate on the index
@@ -10,26 +13,36 @@
 -- Stability   : experimental
 -- Portability : non-portable
 module Core.Modifier.Limit (
-    Limit()
+    Limit(..)
   , lower
   , equal
   , greater
   ) where
-import           Core.Modifier
-import           Data.Monoid
 
-data Limit i e = Limit Ordering i
+import           Control.Applicative
+import           Control.Lens
 
-instance (Ord i, Monoid v) => Modifier (Limit i e) i v where
-  modifierApply (Limit o l) f i
-    | compare i l == o = f i
-    | otherwise = mempty
+data Limit s = Limit { _condition :: Ordering, _bound :: Index s, _underlying :: s }
+makeLenses ''Limit
 
-lower :: i -> Limit i e
+type instance IxValue (Limit s) = IxValue s
+type instance Index (Limit s) = Index s
+
+instance (Contains f s, Ord (Index s), Gettable f) => Contains f (Limit s) where
+  contains i f l
+    | compare i (l ^. bound) == l ^. condition = underlying (contains i f) l
+    | otherwise = coerce $ indexed f i False
+
+instance (Ixed f s, Applicative f, Ord (Index s)) => Ixed f (Limit s) where
+  ix i f l
+    | compare i (l ^. bound) == l ^. condition = underlying (ix i f) l
+    | otherwise = pure l
+
+lower :: Index s -> s -> Limit s
 lower = Limit LT
 
-equal :: i -> Limit i e
+equal :: Index s -> s -> Limit s
 equal = Limit EQ
 
-greater :: i -> Limit i e
+greater :: Index s -> s -> Limit s
 greater = Limit GT

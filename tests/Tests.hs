@@ -1,25 +1,15 @@
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE RankNTypes                 #-}
 {-# LANGUAGE StandaloneDeriving         #-}
+{-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE UndecidableInstances       #-}
-import           Control.Lens
-import           Core.Modifier
-import           Core.Modifier.Constant
-import           Core.Schedule
-import           Data.Monoid
+import           Control.Lens                         hiding (at)
+import           Core.SimpleSchedule
 import           Test.Framework
 import           Test.Framework.Providers.QuickCheck2
-import           Test.QuickCheck
-import           Test.QuickCheck.Function
-import Test.QuickCheck.Classes
-import qualified Test.QuickCheck.Checkers as QC
-
-deriving instance (Arbitrary i) => Arbitrary (Constant i e)
-deriving instance (Arbitrary (e (Schedule e))) => Arbitrary (Schedule e)
-deriving instance (Arbitrary a) => Arbitrary (Last (Maybe a))
-deriving instance (Eq i) => Eq (Constant i e)
-deriving instance (QC.EqProp i) => QC.EqProp (Constant i e)
+import qualified Test.QuickCheck.Checkers             as QC
 
 main :: IO ()
 main = defaultMain tests
@@ -34,18 +24,17 @@ testBatch n = testGroup n . map (uncurry testProperty) . QC.unbatch
 
 scheduleModifiers :: [Test]
 scheduleModifiers = [
-  testProperty "alternative2" prop_alternative2,
-  testProperty "Constant modifier single" prop_constant,
-  testBatch "Constant functor" $ functor (undefined :: Constant Int (Int, Float, Bool)),
-  testBatch "Constant applicative" $ applicative (undefined :: Constant [Int] (Int, Float, Bool))
---  testProperty "Constant modifier sequential" prop_constant_seq
+    testProperty "Empty is empty" prop_empty_sched
+  , testProperty "Create schedule" prop_create
+  , testProperty "Insert schedule" prop_insert
   ]
 
-prop_alternative2 :: Fun Int (Fun Int Int) -> Int -> Int -> Bool
-prop_alternative2 (Fun _ f) a b = p1 && p2 && p3
-  where p1 = alternative2 (apply . f) (Just a) (Just b) == Just (apply (f a) b)
-        p2 = alternative2 (apply . f) Nothing (Just b) == Just b
-        p3 = alternative2 (apply . f) (Just a) Nothing == Just a
+prop_empty_sched :: Int -> Bool
+prop_empty_sched x = (delete :: SimpleSchedule Int Int) ^.. ix x == []
 
-prop_constant :: Last (Maybe Int) -> Int -> Bool
-prop_constant x i = runSchedule (x ^. constant . schedule) i == x
+prop_create :: Int -> Int -> Bool
+prop_create x y = (create x :: SimpleSchedule Int Int) ^.. ix y == [x]
+
+prop_insert :: Int -> Int -> Bool
+prop_insert x y = ins ^.. ix x == [y] && ins ^.. ix (pred x) == [] && ins ^.. ix (succ x) == []
+  where ins = at x (create y)

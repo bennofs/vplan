@@ -1,5 +1,6 @@
 {-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE TypeFamilies           #-} -- Required for (~)
+{-# LANGUAGE UndecidableInstances   #-}
+{-# LANGUAGE TypeFamilies           #-}
 {-# LANGUAGE TypeOperators          #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FlexibleContexts       #-}
@@ -15,7 +16,7 @@
 -- Stability   : experimental
 -- Portability : non-portable (uses various GHC-specific extensions)
 module Core.Modifier.Enum (
-    (>||<)()
+    (>||<)(R, L)
   , (>||)()
   , (||<)()
   , Close
@@ -27,17 +28,28 @@ module Core.Modifier.Enum (
   ) where
 
 import Core.Schedule
-import Core.Modifier
 import Core.Builder
 import Data.Void
-import Data.Monoid
+import Control.Applicative
 import Control.Lens
 
 -- | Either for types with one argument
-data (>||<) a b c = L (a c) | R (b c) deriving (Show)
+data (>||<) a b s = L (a s) | R (b s)
+
+-- | Just an alias to make writing instances easier
+type C = (>||<)
 
 -- | Just a little helper to make the types match
-newtype Close a = Close Void deriving (Show)
+newtype Close a = Close Void
+
+type instance IxValue (Close a) = IxValue a
+type instance Index (Close a) = Index a
+
+instance (Gettable f) => Contains f (Close a) where
+  contains = containsTest (const $ const True)
+
+instance (Functor f) => Ixed f (Close a) where
+  ix _ _ (Close v) = absurd v
 
 -- | Use this to concat the last element onto a type enum.
 type a >|| b = a >||< b >||< Close
@@ -53,21 +65,26 @@ class MakeTypeEnum a b where
   -- | Create an enum with the given value.
   enumValue :: a -> b
 
-instance (d ~ c) => MakeTypeEnum (a d) ((a >||< b) c) where
+instance (s ~ s') => MakeTypeEnum (a s') (C a b s) where
   enumValue = L
 
-instance (MakeTypeEnum a (r c)) => MakeTypeEnum a ((l >||< r) c) where
+instance (MakeTypeEnum c (b s)) => MakeTypeEnum c (C a b s) where
   enumValue = R . enumValue
 
-instance (Monoid v) => Modifier (Close c) i v where
-  modifierApply (Close x) = absurd x
+type instance Index (C a b s) = Index s
+type instance IxValue (C a b s) = IxValue s
+instance (Contains f (a s), Contains f (b s), Index (a s) ~ Index s, Index (b s) ~ Index s)
+         => Contains f (C a b s) where
+  contains i f (L x) = L <$> contains i f x
+  contains i f (R x) = R <$> contains i f x
 
-instance (Modifier (l s) i v, Modifier (r s) i v) => Modifier ((l >||< r) s) i v where
-  modifierApply  (L a) = modifierApply a
-  modifierApply  (R b) = modifierApply b
+instance (Ixed f (a s), Ixed f (b s), Index (a s) ~ Index s, Index (b s) ~ Index s,
+          IxValue (a s) ~ IxValue s, IxValue (b s) ~ IxValue s) => Ixed f (C a b s) where
+  ix i f (L x) = L <$> ix i f x
+  ix i f (R x) = R <$> ix i f x
 
 -- | Build a value as a schedule containing an enum.
-enumSchedule :: (MakeTypeEnum a (e (Schedule e))) => a -> Schedule e
+enumSchedule :: (MakeTypeEnum a (s (Schedule i v s))) => a -> Schedule i v s
 enumSchedule = view schedule . enumValue
 
 -- | Build an enum value as a single item.
@@ -75,5 +92,5 @@ enumItem :: (MakeTypeEnum a e) => a -> Builder e ()
 enumItem = item . enumValue
 
 -- | Build an enum value as a single schedule item.
-scheduleItem :: (MakeTypeEnum a (e (Schedule e))) => a -> Builder (Schedule e) ()
+scheduleItem :: (MakeTypeEnum a (s (Schedule i v s))) => a -> Builder (Schedule i v s) ()
 scheduleItem = item . enumSchedule

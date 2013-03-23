@@ -51,17 +51,17 @@ library
        , void
        , HTTP
   exposed-modules:
-          Core.Modifier
-        , Core.Schedule
+          Core.Schedule
+        , Core.Builder
         , Core.Resource
         , Core.Error
+        , Core.SimpleSchedule
         , Core.Modifier.Enum
         , Core.Modifier.Copy
         , Core.Modifier.Constant
-        , Core.Modifier.Parallel
-        , Core.Modifier.Sequential
+        , Core.Modifier.Empty
         , Core.Modifier.Limit
-        , Core.Modifier.Combining
+        , Core.Modifier.Combine
         
   hs-source-dirs:    src
   ghc-options: -Wall -Werror -fwarn-tabs
@@ -73,6 +73,7 @@ test-suite vplan-tests
   build-depends:
           base
         , test-framework
+        , transformers
         , test-framework-quickcheck2
         , QuickCheck
         , vplan-utils

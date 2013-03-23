@@ -1,9 +1,12 @@
-{-# LANGUAGE TemplateHaskell       #-}
-{-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE UndecidableInstances  #-}
-{-# LANGUAGE StandaloneDeriving    #-}
+{-# LANGUAGE EmptyDataDecls             #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE StandaloneDeriving         #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE UndecidableInstances       #-}
 -- |
 -- Module      : $Header$
 -- Description : The schedule data type.
@@ -16,22 +19,18 @@
 module Core.Schedule (
     Schedule(..)
   , schedule
-  , runSchedule
   ) where
 
-import Core.Modifier
-import Data.Monoid
-import Control.Lens
+import           Control.Lens
 
--- | The type of a schedule. This type is just fix at the type level.
-newtype Schedule e = Schedule (e (Schedule e))
+-- | The type of a schedule. This type is just fix at the type level, but with keeping the
+-- schedule info.
+newtype Schedule i v s = Schedule (s (Schedule i v s))
 makeIso ''Schedule
 
-instance (Modifier (e (Schedule e)) i v) => Modifier (Schedule e) i v where
-  modifierApply (Schedule s) = modifierApply s
+type instance Index (Schedule i v s) = i
+type instance IxValue (Schedule i v s) = v
 
-deriving instance (Show (e (Schedule e))) => Show (Schedule e)
-
--- | Index into a 'Schedule'
-runSchedule :: (Modifier (e (Schedule e)) i v) => Schedule e -> i -> v
-runSchedule s = modifierApply (review schedule s) (const mempty)
+deriving instance (Contains f (s (Schedule i v s))) => Contains f (Schedule i v s)
+deriving instance (Ixed f (s (Schedule i v s)), IxValue (s (Schedule i v s)) ~ v,
+                   Index (s (Schedule i v s)) ~ i) => Ixed f (Schedule i v s)

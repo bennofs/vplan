@@ -1,7 +1,7 @@
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TypeFamilies          #-}
 -- |
 -- Module      : $Header$
 -- Description : A modifier that always returns a constant value.
@@ -17,18 +17,17 @@ module Core.Modifier.Constant (
   , constant
   ) where
 
-import Core.Modifier
-import Data.Monoid
-import Control.Lens
-import Control.Applicative
+import           Control.Lens
 
 -- | A modifier that always returns the same value, no matter to what it is applied.
-newtype Constant a b = Constant a deriving (Functor, Show)
+newtype Constant s = Constant (IxValue s)
 makeIso ''Constant
 
-instance (Monoid m) => Applicative (Constant m) where
-  pure _ = Constant mempty
-  (Constant x) <*> (Constant y) = Constant $ x <> y
+type instance IxValue (Constant s) = IxValue s
+type instance Index (Constant s) = Index s
 
-instance (Monoid a) => Modifier (Constant a b) i a where
-  modifierApply (Constant a) _ = const a
+instance (Functor f) => Ixed f (Constant s) where
+  ix i f = from constant $ indexed f i
+
+instance (Gettable f) => Contains f (Constant s) where
+  contains i f _ = coerce $ indexed f i True
