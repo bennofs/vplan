@@ -1,4 +1,9 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, StandaloneDeriving, FlexibleContexts, UndecidableInstances, TypeOperators #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE StandaloneDeriving         #-}
+{-# LANGUAGE TypeOperators              #-}
+{-# LANGUAGE UndecidableInstances       #-}
+{-# LANGUAGE TypeFamilies               #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 -- |
 -- Module      : $Header$
@@ -11,14 +16,14 @@
 -- Portability : non-portable
 module Core.Debug where
 
-import Core.Schedule
-import Core.Modifier.Enum
-import Core.Modifier.Empty
-import Core.Modifier.Reference
-import Core.Modifier.Constant
-import Core.Modifier.Limit
-import Core.Modifier.Combine
-import Control.Lens
+import           Control.Lens
+import           Core.Modifier.Combine
+import           Core.Modifier.Constant
+import           Core.Modifier.Empty
+import           Core.Modifier.Enum
+import           Core.Modifier.Limit
+import           Core.Modifier.Reference
+import           Core.Schedule
 
 instance Show (IxValue s) => Show (Constant s) where
   show (Constant c) = show c
@@ -30,7 +35,7 @@ instance (Show s, Show (Index s)) => Show (Reference s) where
 instance (Show (Index s), Show s) => Show (Limit s) where
   show (Limit y w s) = show y ++ " "++ show w ++ " | " ++ show s
 
-instance (Show (l s), Show (r s)) => Show ((l >||< r) s) where
+instance (Show (l s), Show (r s)) => Show ((l :><: r) s) where
   showsPrec i (L x) = showsPrec i x
   showsPrec i (R x) = showsPrec i x
 
@@ -41,3 +46,7 @@ instance (Show (s (Schedule i v s))) => Show (Schedule i v s) where
   showsPrec i (Schedule x) = showsPrec i x
 
 deriving instance Show (Close s)
+
+data FakeIndexed i v
+type instance Index (FakeIndexed i v) = i
+type instance IxValue (FakeIndexed i v) = v
