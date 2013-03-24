@@ -75,7 +75,7 @@ test-suite vplan-tests
         , test-framework
         , transformers
         , test-framework-quickcheck2
-        , QuickCheck
+        , QuickCheck < 2.6
         , vplan-utils
         , lens
   ghc-options: -Wall
