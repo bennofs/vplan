@@ -27,15 +27,15 @@ tests = [
 
 scheduleModifiers :: [Test]
 scheduleModifiers =
-  [-- testProperty "Empty schedule contains" prop_empty_contains
---  , testProperty "Empty schedule ix" prop_empty_ix
---  , testProperty "Single schedule contains" prop_single_contains
---  , testProperty "Single schedule ix" prop_single_ix
---  , testProperty "at contains" prop_at_contains
---  , testProperty "at ix" prop_at_ix
---  , testProperty "schedule iso" prop_schedule_iso
---  , testProperty "schedule Eq" prop_eq_schedule
-   testProperty "empty Eq" $ Empty == Empty
+  [ testProperty "Empty schedule contains" prop_empty_contains
+  , testProperty "Empty schedule ix" prop_empty_ix
+  , testProperty "Single schedule contains" prop_single_contains
+  , testProperty "Single schedule ix" prop_single_ix
+  , testProperty "at contains" prop_at_contains
+  , testProperty "at ix" prop_at_ix
+  , testProperty "schedule iso" prop_schedule_iso
+  , testProperty "schedule Eq" prop_eq_schedule
+  , testProperty "empty Eq" $ Empty == Empty
   ]
 
 prop_empty_contains :: Int -> Bool
