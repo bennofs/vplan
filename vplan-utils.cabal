@@ -58,10 +58,10 @@ test-suite vplan-tests
   hs-source-dirs: tests
   build-depends:
       base
-    , test-framework
     , transformers
+    , QuickCheck                 < 2.6
+    , test-framework
     , test-framework-quickcheck2
-    , QuickCheck < 2.6
     , vplan-utils
     , lens
   ghc-options:   -Wall

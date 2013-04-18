@@ -38,10 +38,10 @@ fileE = FileE
 responseE :: ResponseErr -> NetworkErr
 responseE = ResponseE
 
-tryMaybe :: (MonadCatchIO m) => Getting (First a) SomeException t a b -> m r -> MaybeT m r
+tryMaybe :: (MonadCatchIO m) => Getting (First a) SomeException a -> m r -> MaybeT m r
 tryMaybe p = hushT . tryEither p
 
-tryEither :: (MonadCatchIO m) => Getting (First a) SomeException t a b -> m r -> EitherT a m r
+tryEither :: (MonadCatchIO m) => Getting (First a) SomeException a -> m r -> EitherT a m r
 tryEither p = EitherT . trying p
 
 check :: (Monad m, Functor m) => Bool -> MaybeT m ()

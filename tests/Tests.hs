@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts#-}
+{-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes                 #-}
@@ -7,7 +7,7 @@
 {-# LANGUAGE UndecidableInstances       #-}
 import           Control.Lens                         hiding (at)
 import           Core.Modifier.Constant
-import Core.Modifier.Empty
+import           Core.Modifier.Empty
 import           Core.Schedule
 import           Core.SimpleSchedule
 import           Test.Framework
@@ -18,8 +18,8 @@ main :: IO ()
 main = defaultMain tests
 
 tests :: [Test]
-tests = [
-  testGroup "Schedule and Modifiers" scheduleModifiers
+tests =
+  [ testGroup "Schedule and Modifiers" scheduleModifiers
   ]
 
 -- testBatch :: TestName -> QC.TestBatch -> Test
