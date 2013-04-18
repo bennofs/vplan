@@ -1,7 +1,8 @@
 language: haskell
 before_install:
   - cabal update
-  - cabal install cabal-install
+  - cabal install cabal-install-1.16.0.2
+  - cabal --version
   - travis/update_ghc
 install:
   - cabal install --only-dependencies -j
