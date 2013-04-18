@@ -1,8 +1,9 @@
 language: haskell
+env: PATH = "~/.cabal/bin:$PATH"
 before_install:
   - cabal update
   - cabal install cabal-install-1.16.0.2
   - cabal --version
   - travis/update_ghc
 install:
-  - cabal install --only-dependencies -j
+  - ~/.cabal/bin/cabal install --only-dependencies -j
