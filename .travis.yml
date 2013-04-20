@@ -4,6 +4,5 @@ before_install:
   - cabal update
   - cabal install cabal-install-1.16.0.2
   - cabal --version
-  - travis/update_ghc
 install:
   - ~/.cabal/bin/cabal install --only-dependencies --enable-tests -j

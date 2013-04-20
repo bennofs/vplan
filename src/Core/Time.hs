@@ -64,7 +64,6 @@ module Core.Time (
   )
        where
 
-import Data.List (foldl')
 import Control.Applicative hiding ((*>))
 import Control.Monad
 import Control.Arrow

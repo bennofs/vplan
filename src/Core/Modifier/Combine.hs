@@ -20,7 +20,7 @@ module Core.Modifier.Combine (
 
 import           Control.Applicative
 import           Control.Lens
-import           Data.Monoid
+import qualified Core.AtSansFunctor  as A
 
 -- | Combine two modifiers into one. While traversal, results of the first modifier are traversed
 -- first. After that, the results of the second modifier are traversed.
@@ -33,8 +33,14 @@ combine = Combine
 type instance IxValue (Combine e) = IxValue e
 type instance Index (Combine e) = Index e
 
-instance (Gettable f, Ixed (Accessor Any) s) => Contains f (Combine s) where
-  contains = containsIx
+instance (Gettable f, A.Contains (Accessor Bool) s) => A.Contains f (Combine s) where
+  contains = containsTest $ \i (Combine a b) -> a ^. A.contains i || b ^. A.contains i
 
-instance (Ixed (Accessor Any) e, Ixed f e, Applicative f, Functor f) => Ixed f (Combine e) where
-  ix i f (Combine a b) = liftA2 combine (ix i f a) (ix i f b)
+instance (A.Ixed f e, Applicative f) => A.Ixed f (Combine e) where
+  ix i f (Combine a b) = liftA2 combine (A.ix i f a) (A.ix i f b)
+
+instance (A.Ixed f (Combine e), Functor f) => Ixed f (Combine e) where
+  ix = A.ix
+
+instance (A.Contains f (Combine e), Functor f) => Contains f (Combine e) where
+  contains = A.contains

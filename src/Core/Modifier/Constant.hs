@@ -21,6 +21,7 @@ module Core.Modifier.Constant (
   ) where
 
 import           Control.Lens
+import qualified Core.AtSansFunctor as A
 
 -- | A modifier that always returns the same value, no matter to what it is applied.
 newtype Constant s = Constant (IxValue s)
@@ -31,8 +32,14 @@ deriving instance (Eq (IxValue s)) => Eq (Constant s)
 type instance IxValue (Constant s) = IxValue s
 type instance Index (Constant s) = Index s
 
-instance (Functor f) => Ixed f (Constant s) where
+instance (Gettable f) => A.Contains f (Constant s) where
+  contains = containsTest $ const $ const True
+
+instance (Functor f) => A.Ixed f (Constant s) where
   ix i f = from constant $ indexed f i
 
-instance (Gettable f) => Contains f (Constant s) where
-  contains = containsTest $ const $ const True
+instance (A.Contains f (Constant s), Functor f) => Contains f (Constant s) where
+  contains = A.contains
+
+instance (A.Ixed f (Constant s), Functor f) => Ixed f (Constant s) where
+  ix = A.ix

@@ -1,10 +1,10 @@
-{-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE UndecidableInstances   #-}
-{-# LANGUAGE TypeFamilies           #-}
-{-# LANGUAGE TypeOperators          #-}
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FlexibleContexts       #-}
-{-# LANGUAGE OverlappingInstances   #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverlappingInstances  #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE UndecidableInstances  #-}
 
 -- |
 -- Module      : $Header$
@@ -26,29 +26,36 @@ module Core.Modifier.Enum (
   , MakeTypeEnum
   ) where
 
-import Core.Schedule
-import Core.Builder
-import Data.Void
-import Control.Applicative
-import Control.Lens
+import           Control.Applicative
+import           Control.Lens
+import qualified Core.AtSansFunctor  as A
+import           Core.Builder
+import           Core.Schedule
+import           Data.Void
 
--- | Either for types with one argument at the type level
+-- | An Either for types with one type argument (which is passed to both sides)
 data (:><:) a b s = L (a s) | R (b s) deriving (Eq)
 
--- | Just an alias to make writing instances easier
+-- | Sometimes, this reads better than the infix version
 type C = (:><:)
 
--- | Just a little helper to make the types match
-newtype Close a = Close Void deriving (Eq)
+-- | This type signalizes the end of a chain of (:><:)'s.
+data Close a = Close Void deriving (Eq)
 
-type instance IxValue (Close a) = IxValue a
 type instance Index (Close a) = Index a
+type instance IxValue (Close a) = IxValue a
 
-instance (Gettable f) => Contains f (Close a) where
-  contains _ _ (Close _) = error "impossible"
+instance A.Contains f (Close a) where
+  contains _ _ (Close v) = absurd v
 
-instance (Functor f) => Ixed f (Close a) where
-  ix _ _ (Close _) = error "impossible"
+instance A.Ixed f (Close a) where
+  ix _ _ (Close v) = absurd v
+
+instance (A.Contains f (Close a), Functor f) => Contains f (Close a) where
+  contains = A.contains
+
+instance (A.Ixed f (Close a), Functor f) => Ixed f (Close a) where
+  ix = A.ix
 
 infixr 7 :><:
 
@@ -66,15 +73,22 @@ instance (MakeTypeEnum c (b s)) => MakeTypeEnum c (C a b s) where
 
 type instance Index (C a b s) = Index s
 type instance IxValue (C a b s) = IxValue s
-instance (Contains f (a s), Contains f (b s), Index (a s) ~ Index s, Index (b s) ~ Index s)
-         => Contains f (C a b s) where
-  contains i f (L x) = L <$> contains i f x
-  contains i f (R x) = R <$> contains i f x
+instance (A.Contains f (a s), A.Contains f (b s), Index (a s) ~ Index s, Index (b s) ~ Index s,
+          Functor f) => A.Contains f (C a b s) where
+  contains i f (L x) = L <$> A.contains i f x
+  contains i f (R x) = R <$> A.contains i f x
 
-instance (Ixed f (a s), Ixed f (b s), Index (a s) ~ Index s, Index (b s) ~ Index s,
-          IxValue (a s) ~ IxValue s, IxValue (b s) ~ IxValue s) => Ixed f (C a b s) where
-  ix i f (L x) = L <$> ix i f x
-  ix i f (R x) = R <$> ix i f x
+instance (A.Ixed f (a s), Functor f, A.Ixed f (b s), Index (a s) ~ Index s, Index (b s) ~ Index s,
+          IxValue (a s) ~ IxValue s, IxValue (b s) ~ IxValue s) => A.Ixed f (C a b s) where
+  ix i f (L x) = L <$> A.ix i f x
+  ix i f (R x) = R <$> A.ix i f x
+
+instance (A.Contains f (C a b s), Functor f) => Contains f (C a b s) where
+  contains = A.contains
+
+instance (A.Ixed f (C a b s), Functor f) => Ixed f (C a b s) where
+  ix = A.ix
+
 
 -- | Build a value as a schedule containing an enum.
 enumSchedule :: (MakeTypeEnum a (s (Schedule i v s))) => a -> Schedule i v s

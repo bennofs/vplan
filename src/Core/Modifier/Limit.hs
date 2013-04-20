@@ -23,6 +23,7 @@ module Core.Modifier.Limit (
 
 import           Control.Applicative
 import           Control.Lens
+import qualified Core.AtSansFunctor as A
 
 data Limit s = Limit { _condition :: Ordering, _bound :: Index s, _underlying :: s }
 makeLenses ''Limit
@@ -32,15 +33,21 @@ deriving instance (Eq (Index s), Eq s) => Eq (Limit s)
 type instance IxValue (Limit s) = IxValue s
 type instance Index (Limit s) = Index s
 
-instance (Contains f s, Ord (Index s), Gettable f) => Contains f (Limit s) where
+instance (A.Contains f s, Ord (Index s), Gettable f) => A.Contains f (Limit s) where
   contains i f l
-    | compare i (l ^. bound) == l ^. condition = underlying (contains i f) l
+    | compare i (l ^. bound) == l ^. condition = underlying (A.contains i f) l
     | otherwise = coerce $ indexed f i False
 
-instance (Ixed f s, Applicative f, Ord (Index s)) => Ixed f (Limit s) where
+instance (A.Ixed f s, Applicative f, Ord (Index s)) => A.Ixed f (Limit s) where
   ix i f l
-    | compare i (l ^. bound) == l ^. condition = underlying (ix i f) l
+    | compare i (l ^. bound) == l ^. condition = underlying (A.ix i f) l
     | otherwise = pure l
+
+instance (A.Contains f (Limit s), Functor f) => Contains f (Limit s) where
+  contains = A.contains
+
+instance (A.Ixed f (Limit s), Functor f) => Ixed f (Limit s) where
+  ix = A.ix
 
 lower :: Index s -> s -> Limit s
 lower = Limit LT

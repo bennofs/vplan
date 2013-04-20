@@ -48,6 +48,7 @@ library
     , Core.Modifier.Empty
     , Core.Modifier.Limit
     , Core.Modifier.Combine
+    , Core.AtSansFunctor
 
   hs-source-dirs:    src
   ghc-options: -Wall -Werror -fwarn-tabs
@@ -59,7 +60,7 @@ test-suite vplan-tests
   build-depends:
       base
     , transformers
-    , QuickCheck                 < 2.6
+    , QuickCheck
     , test-framework
     , test-framework-quickcheck2
     , vplan-utils

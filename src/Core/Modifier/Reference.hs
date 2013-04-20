@@ -1,8 +1,10 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
-{-# LANGUAGE MultiParamTypeClasses, UndecidableInstances, StandaloneDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE StandaloneDeriving    #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE UndecidableInstances  #-}
 -- |
 -- Module      : $Header$
 -- Description : A modifier that references a value in a schedule
@@ -19,6 +21,7 @@ module Core.Modifier.Reference (
   ) where
 
 import           Control.Lens
+import qualified Core.AtSansFunctor as A
 
 -- | Reference the value at index '_source' in the schedule '_underlying'.
 data Reference s = Reference {_source :: Index s, _underlying :: s}
@@ -33,8 +36,14 @@ reference = Reference
 type instance IxValue (Reference s) = IxValue s
 type instance Index (Reference s) = Index s
 
-instance (Eq (Index s), Gettable f, Contains f s) => Contains f (Reference s) where
-  contains _ f r = underlying ?? r $ contains (r ^. source) f
+instance (Eq (Index s), Gettable f, A.Contains f s) => A.Contains f (Reference s) where
+  contains _ f r = underlying ?? r $ A.contains (r ^. source) f
 
-instance (Eq (Index s), Ixed f s) => Ixed f (Reference s) where
-  ix _ f r = underlying ?? r $ ix (r ^. source) f
+instance (Eq (Index s), A.Ixed f s, Functor f) => A.Ixed f (Reference s) where
+  ix _ f r = underlying ?? r $ A.ix (r ^. source) f
+
+instance (A.Contains f (Reference s), Functor f) => Contains f (Reference s) where
+  contains = A.contains
+
+instance (A.Ixed f (Reference s), Functor f) => Ixed f (Reference s) where
+  ix = A.ix
