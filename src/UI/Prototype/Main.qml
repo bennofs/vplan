@@ -1,67 +1,54 @@
 import QtQuick 2.0
 
 
-Rectangle {
-  
-  width: 400; height: 400;
-  
-  Row {
-    
-    id: table
-    
-    property int cellWidth: 100
-    property int cellHeight: 100
-    
-    Column {
-      Rectangle {
-        color: "lightgreen";
-        height: 20
-        width: 20
-      }
-      Repeater {
-        model: 3
-        delegate: Rectangle {
-          height: table.cellHeight;
-          width: 20
-          color: "green";
-          Text {text: index + 1; anchors.centerIn: parent}
-        }
-      }
-    }
-    
-    Repeater {
-      model: ScheduleModel {}
-      delegate: Column {
-        Rectangle {
-          height: 20
-          width: table.cellWidth
-          color: "yellow";
-          Text {text: day; anchors.centerIn: parent}
-        }
-        
-        Repeater {
-          model: lessons
-          delegate: Rectangle {
-            width: table.cellWidth
-            height: table.cellHeight
-            border.color: "grey";
-            border.width: 1
-            color: "lightgray"
-            Column {
-              
-              visible: used
-              anchors.leftMargin: 4
-              anchors.left: parent.left
-              Text { text: subject == undefined ? "" : subject  }
-              Text { text: room == undefined ? "" : room }
-              Text { text: teacher == undefined ? "" : "bei " + teacher}
-              
-            }
-          }
-        }
-      }
-    }
-    
+Table {
+  id: main
+  width: 200
+  height: 200
+  model: ScheduleModel {}
+  columnHeaders: ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag"]
+  rowHeaders: 6
+  cellsX: 5
+  cellsY: 6
+  cellHeight: height / cellsY
+  cellWidth: width / cellsX
+  columnHeaderHeight: 20
+  rowHeaderWidth: 20
+
+  cornerDelegate: Rectangle {
+    width: 20
+    height: 20
+    color: "blue";
   }
-  
+
+  rowHeaderDelegate: Rectangle {
+    color: "lightblue"
+    Text { anchors.centerIn: parent; text: modelData ? modelData.modelData + 1 : "" }
+  }
+
+  columnHeaderDelegate: Rectangle {
+    color: "lightblue"
+    Text { anchors.centerIn: parent; text: modelData ? modelData.modelData : "" }
+  }
+
+  delegate: Rectangle {
+    id: cell
+    property bool selected: false;
+    color: "#DDDDDD";
+    border.width: 1
+    border.color: "lightgray"
+    Column {
+      anchors.centerIn: parent
+      Text { text: !modelData ? "" : modelData.subject || "" }
+      Text { text: !modelData ? "" : modelData.room == -1 ? "" : modelData.room }
+      Text { text: !modelData ? "" : modelData.teacher ? "bei " + modelData.teacher : "" }
+    }
+   states: [
+      State {
+        name: "selected"
+        when: selected
+        PropertyChanges { target: cell; color: "darkgray"}
+      }
+    ]
+  }
 }
