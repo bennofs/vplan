@@ -73,9 +73,13 @@ prop_eq_schedule w x y z = s == s where
   s = move w y $ at w (single x) -||- at y (single z) -||- at z empty
 
 prop_move :: Int -> Int -> Int -> Bool
-prop_move i f t = s ^? ix t == Just i && s ^? ix f == Nothing
+prop_move i f t
+  | f /= t -> s ^? ix t == Just i && s ^? ix f == Nothing
+  | otherwise = s ^? ix t = Just i
   where s = (move f t $ at f (single i))
 
 prop_swap :: Int -> Int -> Int -> Int -> Bool
-prop_swap x y a b = s ^? ix a == Just y && s ^? ix b == Just x
+prop_swap x y a b
+  | a /= b -> s ^? ix a == Just y && s ^? ix b == Just x
+  | a == b -> s ^? ix a = Just x
   where s = swap a b $ at a (single x) -||- at b (single y)
