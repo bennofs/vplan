@@ -81,5 +81,5 @@ prop_move i f t
 prop_swap :: Int -> Int -> Int -> Int -> Bool
 prop_swap x y a b
   | a /= b = s ^? ix a == Just y && s ^? ix b == Just x
-  | a == b = s ^? ix a == Just x
+  | otherwise = s ^? ix a == Just x
   where s = swap a b $ at a (single x) -||- at b (single y)
