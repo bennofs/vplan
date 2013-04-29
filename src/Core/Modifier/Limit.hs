@@ -15,7 +15,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 module Core.Modifier.Limit (
-    Limit(..)
+    Limit()
   , lower
   , equal
   , greater

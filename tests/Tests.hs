@@ -36,6 +36,8 @@ scheduleModifiers =
   , testProperty "schedule iso" prop_schedule_iso
   , testProperty "schedule Eq" prop_eq_schedule
   , testProperty "empty Eq" $ Empty == Empty
+  , testProperty "move removes old sets new" prop_move
+  , testProperty "swap swaps two items" prop_swap
   ]
 
 prop_empty_contains :: Int -> Bool
@@ -69,3 +71,11 @@ prop_at_ix x y = s ^.. ix x == [y] && s ^.. ix (pred x) == [] && s ^.. ix (succ 
 prop_eq_schedule :: Int -> Int -> Int -> Int -> Bool
 prop_eq_schedule w x y z = s == s where
   s = move w y $ at w (single x) -||- at y (single z) -||- at z empty
+
+prop_move :: Int -> Int -> Int -> Bool
+prop_move i f t = s ^? ix t == Just i && s ^? ix f == Nothing
+  where s = (move f t $ at f (single i))
+
+prop_swap :: Int -> Int -> Int -> Int -> Bool
+prop_swap x y a b = s ^? ix a == Just y && s ^? ix b == Just x
+  where s = swap a b $ at a (single x) -||- at b (single y)

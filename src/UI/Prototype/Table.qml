@@ -72,17 +72,17 @@ Rectangle {
 
   GridView {
     id: content
-    z: 5
+    z: 1
     interactive: false
     anchors.right: parent.right
     anchors.left: leftHeader.right
-    anchors.bottom: parent.bottom
+    anchors.bottom: scrollBottom.top
     anchors.top: topHeader.bottom
     flow: GridView.TopToBottom
     cellHeight: table.cellHeight
     cellWidth: table.cellWidth
-    width: cellHeight * table.cellsY
-    height: cellWidth * table.cellsX
+    contentHeight: table.cellHeight * cellsY
+    contentWidth: table.cellWidth * cellsX
     model: table.model
     delegate: Loader {
       property variant modelData: model
@@ -90,15 +90,53 @@ Rectangle {
       width: table.cellWidth
       height: table.cellHeight
       onLoaded: {
-        table.selected.added.connect(update)
-        table.selected.removed.connect(update)
+        table.selected.added.connect(update(true))
+        table.selected.removed.connect(update(false))
       }
 
-      function update(updatedIndex) {
-        if(updatedIndex == index) {
-          if(item.selected != undefined) item.selected = !item.selected;
+      function update(value) {
+        return (function(updatedIndex) {
+          if(updatedIndex == index) item.selected = value;
+        });
+      }
+    }
+  }
+
+  Rectangle {
+    z: 11
+    id: scrollBottom
+    height: columnHeaderHeight
+    anchors.bottom: parent.bottom
+    anchors.left: leftHeader.right
+    anchors.right: parent.right
+    color: "#BAC4CC"
+
+    Rectangle {
+      z: 11
+      anchors.top: parent.top
+      anchors.bottom: parent.bottom
+      x: 0
+      color: "#69747D"
+      width: content.visibleArea.widthRatio * parent.width
+      radius: 10
+      opacity: 0.40;
+
+      MouseArea {
+        anchors.fill: parent
+        property int lastX;
+        onPressed: {
+          lastX = mouse.x;
         }
-        return false;
+        onPositionChanged: {
+          console.log(content.visibleArea.widthRatio);
+          parent.x += (mouse.x - lastX);
+          if(parent.x < 0) parent.x = 0;
+          if(parent.x > scrollBottom.width - parent.width) {
+            parent.x = scrollBottom.width - parent.width;
+          }
+          if(scrollBottom.width - parent.width == 0) return;
+          content.contentX = parent.x / (scrollBottom.width - parent.width) * (content.contentWidth - content.width);
+        }
       }
     }
   }
@@ -123,17 +161,22 @@ Rectangle {
     property int startX;
     property int startY;
 
+    Component.onCompleted: {
+      P.create(mouseArea, {});
+    }
+
     onPressed: {
       startX = mouse.x
       startY = mouse.y
       P.priv(mouseArea).action = selected.add;
       if(mouse.modifiers & Qt.ShiftModifier) P.priv(mouseArea).action = selected.remove;
-      else if(!(mouse.modifiers & Qt.ControlModifier)) selected.clear();
+      else if(!(mouse.modifiers & Qt.ControlModifier)) selected.clear(true);
       P.priv(mouseArea).oldMembers = selected.members();
     }
 
     onPositionChanged: {
-      selected.clear();
+      var lastMembers = selected.members();
+      selected.clear(false);
       selected.add(P.priv(mouseArea).oldMembers);
       var rect = Qt.rect( min(mouseArea.startX, mouseArea.mouseX)
                         , min(mouseArea.startY, mouseArea.mouseY)
@@ -143,6 +186,11 @@ Rectangle {
       selectedLeftHeader(cloneRect(rect));
       selectedTopHeader(cloneRect(rect));
       selectedItems(cloneRect(rect));
+      for(var i = 0; i < lastMembers.length; ++i) {
+        if(!selected.contains(lastMembers[i])) {
+          selected.removed(lastMembers[i]);
+        }
+      }
     }
 
     onReleased: {

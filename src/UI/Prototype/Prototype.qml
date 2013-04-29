@@ -11,7 +11,7 @@ Table {
   cellsX: 5
   cellsY: 6
   cellHeight: height / cellsY
-  cellWidth: width / cellsX
+  cellWidth: 500
   columnHeaderHeight: 20
   rowHeaderWidth: 20
 

@@ -2,12 +2,10 @@
 
 var _privs = {}
 
+function create(key, value) {
+    _privs[key.toString()] = value;
+}
+
 function priv(key) {
-    var h = key.toString()
-    var o = _privs[key]
-    if (!o) {
-        o = {}
-        _privs[key] = o
-    }
-    return o
+    return _privs[key.toString()];
 }
