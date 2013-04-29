@@ -51,7 +51,8 @@ a !<- b = enumSchedule $ a $ enumSchedule b
 (!<|) :: MakeTypeEnum a (s (Schedule i v s)) => (t -> a) -> t -> Schedule i v s
 a !<| b = enumSchedule $ a b
 
--- | Combine two simple schedules using the 'Combine' modifier.
+-- | Combine two simple schedules using the 'Combine' modifier. This ensures that
+-- on traversal, the values of the first given schedule are traversed first.
 (-||-) :: SimpleSchedule i v -> SimpleSchedule i v -> SimpleSchedule i v
 s -||- t = enumSchedule $ combine s t
 
