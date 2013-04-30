@@ -52,6 +52,21 @@ Table {
     ]
   }
 
+  MouseArea {
+    anchors.fill: parent
+    acceptedButtons: Qt.NoButton
+    onWheel: {
+      var fac = 1.02
+      if(wheel.angleDelta.y < 0) {
+        cellWidth /= fac
+        cellHeight /= fac
+      } else {
+        cellWidth *= fac
+        cellHeight *= fac
+      }
+    }
+  }
+
   ScrollBar {
     id: vertiscroll
     color: "orange"

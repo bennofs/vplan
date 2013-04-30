@@ -31,15 +31,35 @@ Rectangle {
 
         onPositionChanged: {
           value += (mouse.x - offset)
-          if(ratio < 0) value = 0
-          if(ratio > 1) value = root.width - slider.width
-          if(!target) return;
-          var valuex = target.contentWidth - target.width;
-          var valuey = target.contentHeight - target.height;
-           target.contentX = ratio * valuex * slider.dirX
-          target.contentY = ratio * valuey * slider.dirY
         }
       }
+    }
+  }
+  MouseArea {
+    acceptedButtons: Qt.NoButton
+    anchors.fill: parent
+    onWheel: {
+      console.log(wheel.angleDelta)
+      if(wheel.angleDelta.y > 0) value -= 50;
+      else value += 50;
+    }
+  }
+
+  onValueChanged: {
+    if(root.width <= slider.width) {
+      value = 0;
+      return
+    }
+    if(value < 0) { value = 0 }
+    if(value > root.width - slider.width) { value = root.width - slider.width}
+    if(!target) return;
+    if(target.contentWidth > target.width) {
+      var valuex = target.contentWidth - target.width;
+      target.contentX = ratio * valuex * slider.dirX
+    }
+    if(target.contentHeight > target.height) {
+      var valuey = target.contentHeight - target.height;
+      target.contentY = ratio * valuey * slider.dirY
     }
   }
 }

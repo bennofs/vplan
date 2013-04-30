@@ -73,6 +73,7 @@ Rectangle {
 
   Flickable {
     id: content
+    boundsBehavior: Flickable.StopAtBounds
     contentHeight: table.cellHeight * cellsY
     contentWidth: table.cellWidth * cellsX
     anchors.right: parent.right
@@ -153,6 +154,8 @@ Rectangle {
                         , min(mouseArea.startY, mouseArea.mouseY)
                         , abs(mouseArea.mouseX - mouseArea.startX)
                         , abs(mouseArea.mouseY - mouseArea.startY));
+      rect.x += content.contentX
+      rect.y += content.contentY
       selectedTopLeftCorner(cloneRect(rect));
       selectedLeftHeader(cloneRect(rect));
       selectedTopHeader(cloneRect(rect));
@@ -162,6 +165,13 @@ Rectangle {
           selected.removed(lastMembers[i]);
         }
       }
+      if(mouse.x >= table.width - 20) content.contentX += 50
+      if(mouse.y >= table.height - 20) content.contentY += 50
+      if(content.contentX > content.contentWidth - content.width) content.contentX = content.contentWidth - content.width
+      if(content.contentY > content.contentHeight - content.height) content.contentY = content.contentHeight - content.height
+      if(mouse.x <= 20 && content.contentX >= 50) content.contentX -= 50
+      if(mouse.y <= 20 && content.contentY >= 50) content.contentY -= 50
+
     }
 
     onReleased: {
