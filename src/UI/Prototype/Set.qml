@@ -3,60 +3,41 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 import QtQuick 2.0
-import "qmlprivate.js" as P
 
 QtObject {
   id: container
 
+  property var membersData;
+
   Component.onCompleted: {
-    P.create(container, {});
-    P.priv(container).members = {};
-    P.priv(container).toElements = (function(a) {
-      if(a instanceof Array) return a;
-      var na = new Array();
-      na.push(a);
-      return na;
-    });
+    membersData = {}
   }
 
   // Add an element to the set and emit the added signal.
-  function add(elems) {
-    var priv = P.priv(container);
-    var keys = priv.toElements(elems);
-    for(var i = 0; i < keys.length; ++i) {
-      added(keys[i]);
-      priv.members[keys[i].toString()] = keys[i];
-    }
+  function add(elem) {
+      added(elem);
+      membersData[elem.toString()] = elem;
   }
 
   // test whether some key is contained in the set.
-  function contains(elems) {
-    var priv = P.priv(container);
-    if(!priv.members) return false;
-    var keys = priv.toElements(elems);
-    for(var i = 0; i < keys.length; ++i) {
-      if(!priv.members.hasOwnProperty(keys[i].toString())) return false;
-    }
-    return true;
+  function contains(elem) {
+    if(!membersData) return false;
+    return membersData.hasOwnProperty(elem);
   }
 
   // Remove an element from the set and raise the removed signal.
-  function remove(elems) {
-    var priv = P.priv(container);
-    var keys = priv.toElements(elems);
-    for(var i = 0; i < keys.length; ++i) {
-      removed(keys[i]);
-      delete priv.members[keys[i].toString()];
-    }
+  function remove(elem) {
+    if(!contains(elem)) return;
+    removed(elem);
+    delete membersData[elem.toString()];
   }
 
   // return a list of the members of the set. Do not depend on the order of the elements, it may be
   // arbitrary
   function members() {
     var result = new Array();
-    var mems = P.priv(container).members
-    for(var key in mems) {
-      if(mems.hasOwnProperty(key)) result.push(mems[key]);
+    for(var key in membersData) {
+      if(membersData.hasOwnProperty(key)) result.push(membersData[key]);
     }
     return result;
   }
@@ -67,7 +48,7 @@ QtObject {
       var allMembers = members();
       for(var i = 0; i < allMembers.length; ++i) removed(allMembers[i]);
     }
-    P.priv(container).members = {};
+    membersData = {};
 
   }
 

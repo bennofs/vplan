@@ -10,8 +10,8 @@ Table {
   rowHeaders: 6
   cellsX: 5
   cellsY: 6
-  cellHeight: height / cellsY
-  cellWidth: 500
+  cellHeight: height / cellsY + 20
+  cellWidth: 500 // width / cellsX
   columnHeaderHeight: 20
   rowHeaderWidth: 20
 
@@ -49,6 +49,69 @@ Table {
         when: selected
         PropertyChanges { target: cell; color: "darkgray"}
       }
+    ]
+  }
+
+  ScrollBar {
+    id: vertiscroll
+    color: "orange"
+    z: 4
+    rotation: 90
+    opacity: 0.4
+    anchors.left: main.right
+    y: 0
+    height: 10
+    width: main.height
+    transformOrigin: Item.TopLeft
+    target: content
+    delegate: Component { Rectangle {
+      z: 4
+      width: content.visibleArea.heightRatio * main.height
+      height: 10
+      color: "#FF0000";
+    }}
+    MouseArea {
+      id: mouseAreaVerti
+      anchors.fill: parent
+      hoverEnabled: true
+      acceptedButtons: Qt.NoButton
+    }
+
+    states: [
+    State {
+      when: mouseAreaVerti.containsMouse
+      PropertyChanges { target: vertiscroll; opacity: 0.9 }
+    }
+    ]
+  }
+
+  ScrollBar {
+    id: horiscroll
+    color: "orange"
+    z: 4;
+    opacity: 0.4
+    anchors.bottom: main.bottom
+    height: 10
+    width: main.width
+    target: content
+    delegate: Component { Rectangle {
+      z: 4
+      width: content.visibleArea.widthRatio * main.width
+      height: 10
+      color: "#FF0000";
+    }}
+    MouseArea {
+      id: mouseAreaHori
+      anchors.fill: parent
+      hoverEnabled: true
+      acceptedButtons: Qt.NoButton
+    }
+
+    states: [
+    State {
+      when: mouseAreaHori.containsMouse
+      PropertyChanges { target: horiscroll; opacity: 0.9 }
+    }
     ]
   }
 }

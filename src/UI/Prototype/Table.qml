@@ -1,5 +1,4 @@
 import QtQuick 2.0
-import "qmlprivate.js" as P
 
 Rectangle {
 
@@ -14,6 +13,7 @@ Rectangle {
   property int rowHeaderWidth
   property double cellsX
   property double cellsY
+  property alias content: content
   property Set selected: Set {}
   property Component rowHeaderDelegate
   property Component columnHeaderDelegate
@@ -23,7 +23,7 @@ Rectangle {
 
   Loader {
     id: topLeftCorner
-    z: 3
+    z: 2
     sourceComponent: table.cornerDelegate
     anchors.left: table.left
     anchors.top: table.top
@@ -35,7 +35,7 @@ Rectangle {
   ListView {
     id: topHeader
     interactive: false
-    z: 2
+    z: 1
     contentX: content.contentX
     orientation: ListView.Horizontal
     anchors.top: table.top
@@ -55,7 +55,8 @@ Rectangle {
   ListView {
     id: leftHeader
     interactive: false
-    z: 2
+    z: 1
+    contentY: content.contentY
     anchors.top: topLeftCorner.bottom
     anchors.bottom: table.bottom
     anchors.left: table.left
@@ -70,72 +71,38 @@ Rectangle {
     }
   }
 
-  GridView {
+  Flickable {
     id: content
-    z: 1
-    interactive: false
-    anchors.right: parent.right
-    anchors.left: leftHeader.right
-    anchors.bottom: scrollBottom.top
-    anchors.top: topHeader.bottom
-    flow: GridView.TopToBottom
-    cellHeight: table.cellHeight
-    cellWidth: table.cellWidth
     contentHeight: table.cellHeight * cellsY
     contentWidth: table.cellWidth * cellsX
-    model: table.model
-    delegate: Loader {
-      property variant modelData: model
-      sourceComponent: table.delegate
-      width: table.cellWidth
-      height: table.cellHeight
-      onLoaded: {
-        table.selected.added.connect(update(true))
-        table.selected.removed.connect(update(false))
-      }
-
-      function update(value) {
-        return (function(updatedIndex) {
-          if(updatedIndex == index) item.selected = value;
-        });
-      }
-    }
-  }
-
-  Rectangle {
-    z: 11
-    id: scrollBottom
-    height: columnHeaderHeight
-    anchors.bottom: parent.bottom
-    anchors.left: leftHeader.right
     anchors.right: parent.right
-    color: "#BAC4CC"
-
-    Rectangle {
-      z: 11
-      anchors.top: parent.top
-      anchors.bottom: parent.bottom
-      x: 0
-      color: "#69747D"
-      width: content.visibleArea.widthRatio * parent.width
-      radius: 10
-      opacity: 0.40;
-
-      MouseArea {
-        anchors.fill: parent
-        property int lastX;
-        onPressed: {
-          lastX = mouse.x;
+    anchors.left: leftHeader.right
+    anchors.bottom: table.bottom
+    anchors.top: topHeader.bottom
+    interactive: false
+    GridView {
+      id: inner
+      z: 0
+      interactive: false
+      flow: GridView.TopToBottom
+      cellHeight: table.cellHeight
+      cellWidth: table.cellWidth
+      anchors.fill: parent
+      model: table.model
+      delegate: Loader {
+        property variant modelData: model
+        sourceComponent: table.delegate
+        width: table.cellWidth
+        height: table.cellHeight
+        onLoaded: {
+          table.selected.added.connect(update(true))
+          table.selected.removed.connect(update(false))
         }
-        onPositionChanged: {
-          console.log(content.visibleArea.widthRatio);
-          parent.x += (mouse.x - lastX);
-          if(parent.x < 0) parent.x = 0;
-          if(parent.x > scrollBottom.width - parent.width) {
-            parent.x = scrollBottom.width - parent.width;
-          }
-          if(scrollBottom.width - parent.width == 0) return;
-          content.contentX = parent.x / (scrollBottom.width - parent.width) * (content.contentWidth - content.width);
+
+        function update(value) {
+          return (function(updatedIndex) {
+            if(updatedIndex == index) item.selected = value;
+          });
         }
       }
     }
@@ -160,24 +127,28 @@ Rectangle {
     anchors.fill: parent
     property int startX;
     property int startY;
+    property var oldMembers;
+    property var action;
 
     Component.onCompleted: {
-      P.create(mouseArea, {});
+      oldMembers = new Array();
     }
 
     onPressed: {
       startX = mouse.x
       startY = mouse.y
-      P.priv(mouseArea).action = selected.add;
-      if(mouse.modifiers & Qt.ShiftModifier) P.priv(mouseArea).action = selected.remove;
+      action = selected.add;
+      if(mouse.modifiers & Qt.ShiftModifier) action = selected.remove;
       else if(!(mouse.modifiers & Qt.ControlModifier)) selected.clear(true);
-      P.priv(mouseArea).oldMembers = selected.members();
+      oldMembers = selected.members();
     }
 
     onPositionChanged: {
       var lastMembers = selected.members();
       selected.clear(false);
-      selected.add(P.priv(mouseArea).oldMembers);
+      for(var i = 0; i < oldMembers.length; ++i) {
+        selected.add(oldMembers[i]);
+      }
       var rect = Qt.rect( min(mouseArea.startX, mouseArea.mouseX)
                         , min(mouseArea.startY, mouseArea.mouseY)
                         , abs(mouseArea.mouseX - mouseArea.startX)
@@ -200,7 +171,7 @@ Rectangle {
 
     function selectedTopLeftCorner(rect){
       if(topLeftCorner.childAt(rect.x, rect.y)) {
-        for(var i = 0; i < cellsX * cellsY; ++i) P.priv(mouseArea).action(i);
+        for(var i = 0; i < cellsX * cellsY; ++i) action(i);
       }
     }
 
@@ -212,7 +183,7 @@ Rectangle {
       if(indexStart < 0) indexStart = 0;
       if(indexEnd < 0) indexEnd = cellsX - 1;
       for(var c = indexStart; c <= indexEnd; ++c)
-        for(var i = 0; i < cellsY; ++i) P.priv(mouseArea).action(c * cellsY + i);
+        for(var i = 0; i < cellsY; ++i) action(c * cellsY + i);
     }
 
     function selectedLeftHeader(rect) {
@@ -223,7 +194,7 @@ Rectangle {
       if(indexStart < 0) indexStart = 0;
       if(indexEnd < 0) indexEnd = cellsY - 1;
       for(var l = indexStart; l <= indexEnd; ++l)
-        for(var i = 0; i < cellsX; ++i) P.priv(mouseArea).action(i * cellsY + l);
+        for(var i = 0; i < cellsX; ++i) action(i * cellsY + l);
     }
 
     function selectedItems(rect) {
@@ -231,19 +202,19 @@ Rectangle {
       rect.y -= columnHeaderHeight;
       if(rect.x < 0 && rect.x + rect.width > 0) { rect.width += rect.x; rect.x = 0; }
       if(rect.y < 0 && rect.y + rect.height > 0) { rect.height += rect.y; rect.y = 0; }
-      if(rect.x + rect.width > content.width && rect.x < content.width)
-        rect.width = content.width - rect.x;
-      if(rect.y + rect.height > content.height && rect.y < content.height)
-        rect.height = content.height - rect.y;
-      var indexStart = content.indexAt(rect.x, rect.y);
-      var indexEnd = content.indexAt(rect.x + rect.width, rect.y + rect.height);
+      if(rect.x + rect.width > inner.width && rect.x < inner.width)
+        rect.width = inner.width - rect.x;
+      if(rect.y + rect.height > inner.height && rect.y < inner.height)
+        rect.height = inner.height - rect.y;
+      var indexStart = inner.indexAt(rect.x, rect.y);
+      var indexEnd = inner.indexAt(rect.x + rect.width, rect.y + rect.height);
       var ystart = indexStart % cellsY;
       var xstart = (indexStart - ystart) / cellsY;
       var yend = indexEnd % cellsY;
       var xend = (indexEnd - yend) / cellsY;
       for(var x = xstart; x <= xend; ++x) {
         for(var y = ystart; y <= yend; ++y) {
-          P.priv(mouseArea).action(x * cellsY + y);
+          action(x * cellsY + y);
         }
       }
     }
