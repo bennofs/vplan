@@ -74,14 +74,15 @@ Rectangle {
   function updatePosition() {
     if(inUpdate) return;
     inUpdate = true;
-    var dx = target.contentX - ratio * (target.contentWidth - target.width) * slider.dirX - diffX
-      , dy = target.contentY - ratio * (target.contentHeight - target.height) * slider.dirY - diffY
-      , diffValue = dx * slider.dirX + dy * slider.dirY
-    value += diffValue
-    var xn = ratio * (target.contentWidth - target.width) * slider.dirX
-      , yn = ratio * (target.contentHeight - target.height) * slider.dirY
-    diffX = target.contentX - xn
-    diffY = target.contentY - yn
+    var dx = target.contentX
+      , dy = target.contentY
+    var dot = dx * slider.dirX + dy * slider.dirY
+    var xInDir = dot * slider.dirX
+    var yInDir = dot * slider.dirY
+    var ratiox = xInDir / (target.contentWidth - target.width)
+    var ratioy = yInDir / (target.contentHeight - target.height)
+    var ratioMean = ratiox * slider.dirX + ratioy * slider.dirY
+    value = ratioMean * (root.width - slider.width);
     inUpdate = false;
   }
 
