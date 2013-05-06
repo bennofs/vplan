@@ -17,6 +17,8 @@ Rectangle {
   property int cellWidth
   property int cellHeight
   property int flow
+  property int topHeaderHeight: corner.height
+  property int leftHeaderWidth: corner.width
 
   property alias content: mainContent
 
@@ -164,11 +166,10 @@ Rectangle {
     property int startY;
     property var action;
     property var keep: [];
-    property var selectionRect;
 
     onPressed: {
-      startX = mouse.x
-      startY = mouse.y
+      startX = mouse.x + content.contentX
+      startY = mouse.y + content.contentY
       action = selected.insert
       if(mouse.modifiers & Qt.ShiftModifier) action = selected.remove
       else if(!(mouse.modifiers & Qt.ControlModifier)) selected.clear();
@@ -178,19 +179,23 @@ Rectangle {
     onPositionChanged: {
       selected.clear();
       for(var i = 0; i < keep.length; ++i) selected.insert(keep[i]);
-      selectionRect = Qt.rect( Math.min(startX, mouse.x)
-                             , Math.min(startY, mouse.y)
-                             , Math.abs(mouse.x - startX)
-                             , Math.abs(mouse.y - startY))
-      var rect = copyRect(selectionRect);
-      var rect2 = copyRect(selectionRect);
-      testCorner(copyRect(rect));
-      rect2.height += content.contentY
-      testLeftHeader(copyRect(rect2));
-      rect.width += content.contentX
-      testTopHeader(rect);
-      rect.height += content.contentY
-      testItems(copyRect(rect));
+      var rect  = Qt.rect( Math.min(startX, mouse.x)
+                         , Math.min(startY, mouse.y)
+                         , Math.abs(mouse.x - startX)
+                         , Math.abs(mouse.y - startY))
+      var rect2 = Qt.rect( Math.min(startX, mouse.x + content.contentX)
+                         , rect.y
+                         , Math.abs(mouse.x - startX + content.contentX)
+                         , rect.height)
+      var rect3 = Qt.rect( rect.x
+                         , Math.min(startY, mouse.y + content.contentY)
+                         , rect.width
+                         , Math.abs(mouse.y - startY + content.contentY))
+      var rect4 = Qt.rect(rect2.x, rect3.y, rect2.width, rect3.height)
+      testCorner(rect);
+      testLeftHeader(rect3);
+      testTopHeader(rect2);
+      testItems(rect4);
       autoScroll(mouse);
       selectionFinished();
     }

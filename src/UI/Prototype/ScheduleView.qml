@@ -1,84 +1,102 @@
 import QtQuick 2.0
 
-TableView {
-  id: main
-  cellWidth: 100
-  cellHeight: 60
-  flow: GridView.TopToBottom
+Rectangle {
 
-  corner: Rectangle {
-    width: 20
-    height: 20
-    color: "darkblue"
-  }
+  property alias rows: main.rows
+  property alias columns: main.columns
+  property alias flow: main.flow
+  property alias content: main.content
+  property alias table: main
+  property alias model: main.model
+  property alias cellHeight: main.cellHeight
+  property alias cellWidth: main.cellWidth
+  property int scrollbarWidth: 10
 
-  row: Rectangle {
-    color: "lightsteelblue"
-    Text { text: model.index + 1 }
-  }
+  TableView {
+    id: main
+    cellWidth: 100
+    cellHeight: 60
+    flow: GridView.TopToBottom
+    width: parent.width - scrollbarWidth
+    height: parent.height - scrollbarWidth
+    anchors.left: parent.left
+    anchors.top: parent.top
 
-  column: Rectangle {
-    color: "lightsteelblue"
-    Text { text: model.modelData }
-  }
+    corner: Rectangle {
+      width: 20
+      height: 20
+      color: "darkblue"
+    }
 
-  cell: Rectangle {
-    id: cellDelegate
-    anchors.margins: 1
-    anchors.fill: parent
-    border.color: "#777777"
-    border.width: 1
-    Column {
-      anchors.margins: 5
+    row: Rectangle {
+      color: "lightsteelblue"
+      Text { text: model.index + 1 }
+    }
+
+    column: Rectangle {
+      color: "lightsteelblue"
+      Text { text: model.modelData }
+    }
+
+    cell: Rectangle {
+      id: cellDelegate
+      anchors.margins: 1
       anchors.fill: parent
-      Text { text: model.subject || "" }
-      Text { text: model.room < 0 || !model.room ? "" : model.room }
-      Text { text: model.teacher ? "bei " + model.teacher : "" }
+      border.color: "#777777"
+      border.width: 1
+      Column {
+        anchors.margins: 5
+        anchors.fill: parent
+        Text { text: model.subject || "" }
+        Text { text: model.room < 0 || !model.room ? "" : model.room }
+        Text { text: model.teacher ? "bei " + model.teacher : "" }
+      }
+      states: [
+      State {
+        when: isSelected
+        PropertyChanges { target: cellDelegate; color: "#AAAAAA" }
+      }
+      ]
     }
-    states: [
-    State {
-      when: isSelected
-      PropertyChanges { target: cellDelegate; color: "#AAAAAA" }
+
+    MouseArea {
+      anchors.fill: parent
+      acceptedButtons: Qt.NoButton
+      onWheel: {
+        var fac = 1.02;
+        if(wheel.angleDelta.y < 0) fac = 1 / fac;
+        cellWidth *= fac
+        cellHeight *= fac
+      }
     }
-    ]
   }
 
   ScrollBar {
-    target: content
-    visible: content.width < content.contentWidth
+    id: scrollBottom
+    target: main.content
+    height: main.content.width < main.content.contentWidth ? scrollbarWidth : 0
     color: "lightgray"
-    anchors.top: parent.bottom
-    height: 20
+    y: Math.min(main.content.contentHeight + main.topHeaderHeight, main.height)
     x: 0
-    width: parent.width
+    width: main.width
     delegate: Rectangle {
       color: "gray"
     }
   }
 
   ScrollBar {
-    target: content
-    visible: content.height < content.contentHeight
+    id: scrollRight
+    target: main.content
     rotation: 90
-    transformOrigin: Item.BottomLeft
+    transformOrigin: Item.TopLeft
     color: "lightgray"
-    width: main.height - 40
-    height: 20
-    anchors.left: parent.right
-    y: 20
+    width: main.height
+    visible: main.content.height < main.content.contentHeight
+    height: main.content.height < main.content.contentHeight ? scrollbarWidth : 0
+    x: Math.min(main.content.contentWidth + main.leftHeaderWidth, main.width)
+    y: 0
     delegate: Rectangle {
       color: "gray"
-    }
-  }
-
-  MouseArea {
-    anchors.fill: parent
-    acceptedButtons: Qt.NoButton
-    onWheel: {
-      var fac = 1.02;
-      if(wheel.angleDelta.y < 0) fac = 1 / fac;
-      cellWidth *= fac
-      cellHeight *= fac
     }
   }
 

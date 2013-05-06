@@ -19,13 +19,13 @@ Rectangle {
     rotation: -parent.rotation
     color: "transparent"
     Loader {
-      z: 100
       id: slider
       property double dirY: Math.sin(root.rotation * Math.PI / 180);
       property double dirX: Math.cos(root.rotation * Math.PI / 180);
       rotation: -parent.rotation
       transformOrigin: parent.transformOrigin
       sourceComponent: delegate;
+      height: root.height
       x: value * dirX
       y: value * dirY
       MouseArea {
@@ -43,8 +43,8 @@ Rectangle {
 
       function updateSliderWidth () {
         item.width = Math.max(
-          content.visibleArea.widthRatio * content.width * dirX,
-          content.visibleArea.heightRatio * content.height * dirY
+          content.visibleArea.widthRatio * root.width * dirX,
+          content.visibleArea.heightRatio * root.width * dirY
         );
       }
 
