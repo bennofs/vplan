@@ -34,7 +34,7 @@ Rectangle {
     id: topHeader
     interactive: false
     anchors.left: corner.right
-    anchors.right: parent.right
+    width: Math.min(cellWidth * numColumns, parent.width - corner.width)
     height: corner.height
     contentX: content.contentX
     maximumFlickVelocity: 0
@@ -96,13 +96,15 @@ Rectangle {
     anchors.top: topHeader.bottom
     anchors.right: parent.right
     anchors.bottom: parent.bottom
-    contentWidth: grid.width
-    contentHeight: grid.height
+    contentWidth: numColumns * cellWidth
+    contentHeight: numRows * cellHeight
     interactive: false
     Grid {
       id: grid
       rows: table.numRows
       columns: table.numColumns
+      height: parent.contentHeight
+      width: parent.contentWidth
       flow: table.flow
       Repeater {
         model: table.model
@@ -144,7 +146,7 @@ Rectangle {
   }
 
   function allAction(action) {
-    for(var i = 0; i < numColumns * numColumns; ++i) action(i);
+    for(var i = 0; i < numColumns * numRows; ++i) action(i);
   }
 
   function copyRect(rect) {
@@ -192,19 +194,16 @@ Rectangle {
 
     onReleased: {
       onPositionChanged(mouse);
-      console.log(selected.values());
       selection();
     }
 
     function autoScroll(mouse) {
       if(mouse.x >= table.width - 20) content.contentX += 50
       if(mouse.y >= table.height - 20) content.contentY += 50
-      if(content.contentX > content.contentWidth - content.width)
-        content.contentX = content.contentWidth - content.width
-      if(content.contentY > content.contentHeight - content.height)
-        content.contentY = content.contentHeight - content.height
-      if(mouse.x <= 20 && content.contentX >= 50) content.contentX -= 50
-      if(mouse.y <= 20 && content.contentY >= 50) content.contentY -= 50
+      if(mouse.x <= 20) content.contentX -= 50
+      if(mouse.y <= 20) content.contentY -= 50
+      content.contentY = Math.max(0, Math.min(content.contentHeight - content.height, content.contentY))
+      content.contentX = Math.max(0, Math.min(content.contentWidth - content.width, content.contentX))
     }
 
     function testCorner(rect) {
@@ -238,12 +237,12 @@ Rectangle {
     function testItems(rect) {
       rect.x -= corner.width
       rect.y -= corner.height
-      if(rect.x < 0 && rect.x + rect.width > 0) { rect.width += rect.x; rect.x = 0 }
-      if(rect.y < 0 && rect.y + rect.height > 0) { rect.height += rect.y; rect.y = 0 }
-      if(rect.x + rect.width > grid.width && rect.x < grid.width)
-        rect.width = grid.width - rect.x;
-      if(rect.y + rect.height > grid.height && rect.y < grid.height)
-        rect.height = grid.height - rect.y;
+      if(rect.x + rect.width < 0 || rect.x > grid.width) return
+      if(rect.y + rect.height < 0 || rect.y > grid.height) return
+      if(rect.x < 0) { rect.width += rect.x; rect.x = 0 }
+      if(rect.y < 0) { rect.height += rect.y; rect.y = 0 }
+      if(rect.x + rect.width > grid.width) rect.width = grid.width - rect.x;
+      if(rect.y + rect.height > grid.height) rect.height = grid.height - rect.y;
       var xstart = Math.floor(rect.x / cellWidth)
       var xend = Math.floor((rect.x + rect.width) / cellWidth)
       var ystart = Math.floor(rect.y / cellHeight)
