@@ -14,8 +14,12 @@ Rectangle {
   // First clear rotation, the apply again, so that it is also applied to our movement changes.
   Rectangle {
     transformOrigin: parent.transformOrigin
+    width: childrenRect.width
+    height: childrenRect.height
     rotation: -parent.rotation
+    color: "transparent"
     Loader {
+      z: 100
       id: slider
       property double dirY: Math.sin(root.rotation * Math.PI / 180);
       property double dirX: Math.cos(root.rotation * Math.PI / 180);
