@@ -47,10 +47,10 @@ TableView {
     target: content
     visible: content.width < content.contentWidth
     color: "lightgray"
-    anchors.bottom: parent.bottom
+    anchors.top: parent.bottom
     height: 20
-    x: 20
-    width: parent.width - 40
+    x: 0
+    width: parent.width
     delegate: Rectangle {
       color: "gray"
     }
@@ -60,7 +60,7 @@ TableView {
     target: content
     visible: content.height < content.contentHeight
     rotation: 90
-    transformOrigin: Item.TopLeft
+    transformOrigin: Item.BottomLeft
     color: "lightgray"
     width: main.height - 40
     height: 20

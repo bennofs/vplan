@@ -30,6 +30,7 @@ Rectangle {
   }
 
   Flickable {
+    clip: true
     z: 2
     id: topHeader
     interactive: false
@@ -61,6 +62,7 @@ Rectangle {
   }
 
   Flickable {
+    clip: true
     z: 2
     id: leftHeader
     interactive: false
@@ -91,6 +93,7 @@ Rectangle {
   }
 
   Flickable {
+    clip: true
     id: mainContent
     anchors.left: leftHeader.right
     anchors.top: topHeader.bottom
