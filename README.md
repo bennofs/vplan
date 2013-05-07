@@ -7,4 +7,4 @@ This is work-in-progress. The API may still change, especially Core.Schedule.
 
 Status:
   - Implementation of Schedule nearly finished
-  - Fetching the cover table from http://manos-dresden.org/ works
+  - Fetching the cover table from http://www.manos-dresden.de/aktuelles/vplan.php works
