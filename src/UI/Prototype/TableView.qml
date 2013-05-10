@@ -249,8 +249,8 @@ Rectangle {
       if(rect.y + rect.height < 0 || rect.y > grid.height) return
       if(rect.x < 0) { rect.width += rect.x; rect.x = 0 }
       if(rect.y < 0) { rect.height += rect.y; rect.y = 0 }
-      if(rect.x + rect.width > grid.width) rect.width = grid.width - rect.x;
-      if(rect.y + rect.height > grid.height) rect.height = grid.height - rect.y;
+      if(rect.x + rect.width > grid.width) rect.width = grid.width - rect.x - 1;
+      if(rect.y + rect.height > grid.height) rect.height = grid.height - rect.y - 1;
       var xstart = Math.floor(rect.x / cellWidth)
       var xend = Math.floor((rect.x + rect.width) / cellWidth)
       var ystart = Math.floor(rect.y / cellHeight)
