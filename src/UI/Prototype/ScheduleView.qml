@@ -47,9 +47,9 @@ Rectangle {
       Column {
         anchors.margins: 5
         anchors.fill: parent
-        Text { text: model.subject || "" }
-        Text { text: model.room < 0 || !model.room ? "" : model.room }
-        Text { text: model.teacher ? "bei " + model.teacher : "" }
+        TextEdit { text: model.subject || "" }
+        TextEdit { text: model.room < 0 || !model.room ? "" : model.room }
+        TextEdit { text: model.teacher ? "bei " + model.teacher : "" }
       }
       states: [
       State {

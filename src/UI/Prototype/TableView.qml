@@ -162,22 +162,26 @@ Rectangle {
     id: selectionArea
     anchors.fill: parent
     signal selectionFinished;
+    propagateComposedEvents: true
     property int startX;
     property int startY;
     property var action;
     property var keep: [];
 
-    onPressed: {
+    onPressAndHold: {
       startX = mouse.x + content.contentX
       startY = mouse.y + content.contentY
       action = selected.insert
       if(mouse.modifiers & Qt.ShiftModifier) action = selected.remove
       else if(!(mouse.modifiers & Qt.ControlModifier)) selected.clear();
       keep = selected.values();
+
+      mouse.accepted = false
     }
 
     onPositionChanged: {
-      selected.clear();
+      console.log("pos changed")
+  /*    selected.clear();
       for(var i = 0; i < keep.length; ++i) selected.insert(keep[i]);
       var rect  = Qt.rect( Math.min(startX, mouse.x)
                          , Math.min(startY, mouse.y)
@@ -198,6 +202,7 @@ Rectangle {
       testItems(rect4);
       autoScroll(mouse);
       selectionFinished();
+      mouse.accepted = false */
     }
 
     onReleased: {
