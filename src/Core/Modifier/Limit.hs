@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable    #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -15,7 +16,7 @@
 -- Stability   : experimental
 -- Portability : non-portable
 module Core.Modifier.Limit (
-    Limit()
+    Limit(..)
   , lower
   , equal
   , greater
@@ -23,11 +24,16 @@ module Core.Modifier.Limit (
 
 import           Control.Applicative
 import           Control.Lens
-import qualified Core.AtSansFunctor as A
+import qualified Core.AtSansFunctor  as A
+import           Data.Data
 
 data Limit s = Limit { _condition :: Ordering, _bound :: Index s, _underlying :: s }
 makeLenses ''Limit
 
+instance Typeable1 Limit where
+  typeOf1 _ = mkTyCon3 "vplan-utils" "Core.Modifier.Limit" "Limit" `mkTyConApp` []
+
+deriving instance (Data (Index s), Data s) => Data (Limit s)
 deriving instance (Eq (Index s), Eq s) => Eq (Limit s)
 
 type instance IxValue (Limit s) = IxValue s

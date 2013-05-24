@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable    #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -17,16 +18,19 @@
 
 module Core.Modifier.Constant (
     Constant(..)
-  , constant
-  ) where
+  , constant  ) where
 
 import           Control.Lens
 import qualified Core.AtSansFunctor as A
+import           Data.Data
 
 -- | A modifier that always returns the same value, no matter to what it is applied.
 newtype Constant s = Constant (IxValue s)
+instance Typeable1 Constant where
+  typeOf1 _ = mkTyCon3 "vplan-utils" "Core.Modifier.Constant" "Constant" `mkTyConApp` []
 makeIso ''Constant
 
+deriving instance (Data (IxValue s), Data s) => Data (Constant s)
 deriving instance (Eq (IxValue s)) => Eq (Constant s)
 
 type instance IxValue (Constant s) = IxValue s

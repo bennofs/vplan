@@ -22,9 +22,12 @@ module Core.Modifier.Reference (
 
 import           Control.Lens
 import qualified Core.AtSansFunctor as A
+import           Data.Data
 
 -- | Reference the value at index '_source' in the schedule '_underlying'.
 data Reference s = Reference {_source :: Index s, _underlying :: s}
+instance Typeable1 Reference where
+  typeOf1 _ = mkTyCon3 "vplan-utils" "Core.Modifier.Reference" "Reference" `mkTyConApp` []
 makeLenses ''Reference
 
 deriving instance (Eq (Index s), Eq s) => Eq (Reference s)

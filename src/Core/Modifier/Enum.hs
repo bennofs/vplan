@@ -1,7 +1,10 @@
+{-# LANGUAGE DeriveDataTypeable    #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverlappingInstances  #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE StandaloneDeriving    #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
@@ -31,16 +34,23 @@ import           Control.Lens
 import qualified Core.AtSansFunctor  as A
 import           Core.Builder
 import           Core.Schedule
+import           Data.Data
 import           Data.Void
 
 -- | An Either for types with one type argument (which is passed to both sides)
 data (:><:) a b s = L (a s) | R (b s) deriving (Eq)
+deriving instance (Typeable s, Typeable1 a, Typeable1 b, Data (b s), Data (a s)) => Data ((:><:) a b s)
+instance (Typeable1 a, Typeable1 b) => Typeable1 (a :><: b) where
+  typeOf1 _ = mkTyCon3 "vlan-utils" "Core.Modifier.Enum" ":><:" `mkTyConApp`
+              [ typeOf1 (undefined :: a ()), typeOf1 (undefined :: b ()) ]
 
 -- | Sometimes, this reads better than the infix version
 type C = (:><:)
 
 -- | This type signalizes the end of a chain of (:><:)'s.
-data Close a = Close Void deriving (Eq)
+data Close a = Close Void deriving (Eq, Data)
+instance Typeable1 Close where
+  typeOf1 _ = mkTyCon3 "vplan-utils" "Core.Modifier.Enum" "Close" `mkTyConApp` []
 
 type instance Index (Close a) = Index a
 type instance IxValue (Close a) = IxValue a

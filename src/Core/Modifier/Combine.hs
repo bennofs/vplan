@@ -1,7 +1,7 @@
+{-# LANGUAGE DeriveDataTypeable    #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
 -- |
@@ -21,10 +21,13 @@ module Core.Modifier.Combine (
 import           Control.Applicative
 import           Control.Lens
 import qualified Core.AtSansFunctor  as A
+import           Data.Data
 
 -- | Combine two modifiers into one. While traversal, results of the first modifier are traversed
 -- first. After that, the results of the second modifier are traversed.
-data Combine s = Combine s s deriving (Eq)
+data Combine s = Combine s s deriving (Eq, Data)
+instance Typeable1 Combine where
+  typeOf1 _ = mkTyConApp (mkTyCon3 "vplan-utils" "Core.Modifier.Combine" "Combine") []
 
 -- | Combine two modifiers. See 'Combine' for details.
 combine :: e -> e -> Combine e

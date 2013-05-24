@@ -26,14 +26,14 @@ module Core.SimpleSchedule (
   , buildCombine
   ) where
 
-import           Control.Lens           hiding (at)
+import           Control.Lens            hiding (at)
 import           Core.Builder
 import           Core.Modifier.Combine
 import           Core.Modifier.Constant
-import qualified Core.Modifier.Reference as R
-import qualified Core.Modifier.Empty    as E
+import qualified Core.Modifier.Empty     as E
 import           Core.Modifier.Enum
 import           Core.Modifier.Limit
+import qualified Core.Modifier.Reference as R
 import           Core.Schedule
 
 -- | The modifiers of the simple schedule
@@ -72,12 +72,12 @@ reference x = enumSchedule . R.reference x
 at :: i -> SimpleSchedule i v -> SimpleSchedule i v
 at w a = equal w !<| a
 
--- | Build a list of schedules to combine with (-||-).
+-- | Build a list of schedules to sequence with (-||-).
 buildCombine :: Builder (SimpleSchedule i v) () -> SimpleSchedule i v
 buildCombine = foldr (-||-) empty . runBuilder
 
--- | Move an item to another place. @move source target@ moves an item at index source to
--- index target.
+-- | Move an item to another place. @move source target@ moves an item at index @source@ to
+-- index @target@.
 move :: i -> i -> SimpleSchedule i v -> SimpleSchedule i v
 move f t s = at f empty -||- at t (reference f s)
 

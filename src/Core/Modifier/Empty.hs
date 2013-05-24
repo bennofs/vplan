@@ -1,4 +1,9 @@
-{-# LANGUAGE TypeFamilies, FlexibleInstances, MultiParamTypeClasses, FlexibleContexts, UndecidableInstances #-}
+{-# LANGUAGE DeriveDataTypeable    #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE UndecidableInstances  #-}
 -- |
 -- Module      : $Header$
 -- Description : A modifier that contains no value.
@@ -13,11 +18,14 @@ module Core.Modifier.Empty (
     Empty(..)
   ) where
 
-import Control.Applicative hiding (empty)
-import Control.Lens
-import qualified Core.AtSansFunctor as A
+import           Control.Applicative hiding (empty)
+import           Control.Lens
+import qualified Core.AtSansFunctor  as A
+import           Data.Data
 
-data Empty s = Empty deriving (Eq)
+data Empty s = Empty deriving (Eq, Data)
+instance Typeable1 Empty where
+  typeOf1 _ = mkTyCon3 "vplan-utils" "Core.Modifier.Empty" "Empty" `mkTyConApp` []
 
 type instance IxValue (Empty s) = IxValue s
 type instance Index (Empty s) = Index s
