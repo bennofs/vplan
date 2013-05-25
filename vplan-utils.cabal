@@ -20,7 +20,7 @@ library
     , dlist
     , numeric-prelude
 --    , semigroupoids
-    , template-haskell
+    , template-haskell >= 2.8.0.0
     , bytestring
     , void
 
