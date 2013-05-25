@@ -38,8 +38,8 @@ instance (Show (Index s), Show s) => Show (Limit s) where
   show (Limit y w s) = show y ++ " "++ show w ++ " | " ++ show s
 
 instance (Show (l s), Show (r s)) => Show ((l :><: r) s) where
-  showsPrec i (L x) = showsPrec i x
-  showsPrec i (R x) = showsPrec i x
+  showsPrec i (L x) = ("L " ++) . showsPrec i x
+  showsPrec i (R x) = ("R " ++) . showsPrec i x
 
 instance (Show s) => Show (Combine s) where
   show (Combine a b) = "(" ++ show a ++ " -||- " ++ show b ++ ")"

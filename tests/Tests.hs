@@ -62,11 +62,11 @@ prop_at_contains :: Int -> Int -> Bool
 prop_at_contains x y = s ^. contains x == True
                        && s ^. contains (succ x) == False
                        && s ^. contains (pred x) == False
-  where s = at x (single y)
+  where s = eq x (single y)
 
 prop_at_ix :: Int -> Int -> Bool
 prop_at_ix x y = s ^.. ix x == [y] && s ^.. ix (pred x) == [] && s ^.. ix (succ x) == []
-  where s = at x (single y)
+  where s = eq x (single y)
 
 prop_eq_schedule :: Int -> Int -> Int -> Int -> Bool
 prop_eq_schedule w x y z = s == s where
@@ -76,10 +76,10 @@ prop_move :: Int -> Int -> Int -> Bool
 prop_move i f t
   | f /= t = s ^? ix t == Just i && s ^? ix f == Nothing
   | otherwise = s ^? ix t == Just i
-  where s = (move f t $ at f (single i))
+  where s = (move f t $ eq f (single i))
 
 prop_swap :: Int -> Int -> Int -> Int -> Bool
 prop_swap x y a b
   | a /= b = s ^? ix a == Just y && s ^? ix b == Just x
   | otherwise = s ^? ix a == Just x
-  where s = swap a b $ at a (single x) -||- at b (single y)
+  where s = swap a b $ eq a (single x) -||- eq b (single y)

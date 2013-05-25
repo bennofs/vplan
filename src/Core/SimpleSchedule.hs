@@ -19,7 +19,7 @@ module Core.SimpleSchedule (
   , (-||-)
   , empty
   , single
-  , at
+  , eq
   , reference
   , move
   , swap
@@ -68,9 +68,10 @@ single = enumSchedule . view constant
 reference :: i -> SimpleSchedule i v -> SimpleSchedule i v
 reference x = enumSchedule . R.reference x
 
--- | Apply a modifier only at a given item in the schedule.
-at :: i -> SimpleSchedule i v -> SimpleSchedule i v
-at w a = equal w !<| a
+-- Don't use at as the name, because it's already taken by lens
+-- | Apply a modifier only at a given index in the schedule.
+eq :: i -> SimpleSchedule i v -> SimpleSchedule i v
+eq w a = equal w !<| a
 
 -- | Build a list of schedules to sequence with (-||-).
 buildCombine :: Builder (SimpleSchedule i v) () -> SimpleSchedule i v
@@ -79,8 +80,8 @@ buildCombine = foldr (-||-) empty . runBuilder
 -- | Move an item to another place. @move source target@ moves an item at index @source@ to
 -- index @target@.
 move :: i -> i -> SimpleSchedule i v -> SimpleSchedule i v
-move f t s = at f empty -||- at t (reference f s)
+move f t s = eq f empty -||- eq t (reference f s)
 
 -- | Swap two items at given indices.
 swap :: i -> i -> SimpleSchedule i v -> SimpleSchedule i v
-swap a b s = at b (reference a s) -||- at a (reference b s)
+swap a b s = eq b (reference a s) -||- eq a (reference b s)

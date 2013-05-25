@@ -37,18 +37,17 @@ import           Core.Builder
 import           Core.Schedule
 import           Core.TH
 import           Data.Data
+import           Data.Data.Lens
 import           Data.Void
 
 -- | An Either for types with one type argument (which is passed to both sides)
 data (:><:) a b s = L (a s) | R (b s) deriving (Eq)
 infixr 7 :><:
+makeModifier ''(:><:)
+deriving instance (Typeable s, Typeable1 a, Typeable1 b, Data (b s), Data (a s)) => Data ((:><:) a b s)
 
 -- | Shorter alias
 type C = (:><:)
-
-makeModifier ''(:><:)
-
-deriving instance (Typeable s, Typeable1 a, Typeable1 b, Data (b s), Data (a s)) => Data ((:><:) a b s)
 
 -- | This type signalizes the end of a chain of (:><:)'s.
 data Close a = Close Void deriving (Eq)
@@ -57,7 +56,7 @@ makeModifier ''Close
 deriving instance (Data a) => Data (Close a)
 
 instance A.Contains f (Close a) where contains _ _ (Close v) = absurd v
-instance A.Ixed f (Close a) where ix _ _ (Close v) = absurd v
+instance A.Ixed f (Close a) where ix _ _ (Close v)           = absurd v
 
 -- | Create a type enum with a given value.
 class MakeTypeEnum a b where
