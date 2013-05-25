@@ -70,7 +70,7 @@ prop_at_ix x y = s ^.. ix x == [y] && s ^.. ix (pred x) == [] && s ^.. ix (succ 
 
 prop_eq_schedule :: Int -> Int -> Int -> Int -> Bool
 prop_eq_schedule w x y z = s == s where
-  s = move w y $ at w (single x) -||- at y (single z) -||- at z empty
+  s = move w y $ eq w (single x) -||- eq y (single z) -||- eq z empty
 
 prop_move :: Int -> Int -> Int -> Bool
 prop_move i f t

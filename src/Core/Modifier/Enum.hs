@@ -37,7 +37,6 @@ import           Core.Builder
 import           Core.Schedule
 import           Core.TH
 import           Data.Data
-import           Data.Data.Lens
 import           Data.Void
 
 -- | An Either for types with one type argument (which is passed to both sides)

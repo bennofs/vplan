@@ -27,9 +27,6 @@ import           Control.Lens
 import qualified Core.AtSansFunctor as A
 import           Core.TH
 import           Data.Data
-import           Data.Data.Lens
-import           Data.Void
-import           Debug.Trace
 
 -- | The type of a schedule. This type is just fix at the type level, but keeping the
 -- schedule info.
