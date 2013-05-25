@@ -62,18 +62,20 @@ parseKind :: Kind -> Q KindC
 #if MIN_VERSION_template_haskell(2,8,0)
 parseKind (AppT ArrowT x) = Partial <$> parseKind x
 parseKind StarT = return Single
-parseKind (AppT x y) =
+parseKind (AppT x y) =  parseKind x >>= \x' -> case x' of
+  (Partial k) -> parseKind y >>= \y' -> case y' of
+    (Partial _) -> fail "Invalid kind"
+    Single -> return $ Chained [k,Single]
+    Chained ks -> return $ Chained (k:ks)
+  _ -> fail "Invalid kind"
 #else
-parseKind (AppK ArrowK x) = Partial <$> parseKind x
 parseKind StarK = return Single
-parseKind (AppK x y) =
+parseKind (ArrowK k1 k2) = case parseKind k2 >>= \x -> case x of
+  (Chained ks) -> (:ks) <$> parseKind k1
+  Single -> (:[Single]) <$> parseKind k1
+  _ -> fail "Invalid kind"
 #endif
-  parseKind x >>= \x' -> case x' of
-    (Partial k) -> parseKind y >>= \y' -> case y' of
-      (Partial _) -> fail "Invalid kind"
-      Single -> return $ Chained [k,Single]
-      Chained ks -> return $ Chained (k:ks)
-    _ -> fail "Invalid kind"
+
 parseKind _ = fail "Invalid kind"
 
 parseKind' :: TyVarBndr -> Q KindC
