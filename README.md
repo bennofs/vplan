@@ -1,8 +1,7 @@
-
 VPlan
 =====
 
-[![Build Status](https://travis-ci.org/bennofs/vplan-utils.png?branch=master)](https://travis-ci.org/bennofs/vplan-utils)
+[![Build Status](https://travis-ci.org/bennofs/vplan.png)](https://travis-ci.org/bennofs/vplan)
 
 A generic library for building schedules (timetables).
 
