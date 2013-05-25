@@ -68,15 +68,14 @@ parseKind (AppT x y) =  parseKind x >>= \x' -> case x' of
     Single -> return $ Chained [k,Single]
     Chained ks -> return $ Chained (k:ks)
   _ -> fail "Invalid kind"
+parseKind _ = fail "Invalid kind"
 #else
 parseKind StarK = return Single
-parseKind (ArrowK k1 k2) = case parseKind k2 >>= \x -> case x of
-  (Chained ks) -> (:ks) <$> parseKind k1
-  Single -> (:[Single]) <$> parseKind k1
+parseKind (ArrowK k1 k2) = parseKind k2 >>= \x -> case x of
+  (Chained ks) -> Chained . (:ks) <$> parseKind k1
+  Single -> Chained . (:[Single]) <$> parseKind k1
   _ -> fail "Invalid kind"
 #endif
-
-parseKind _ = fail "Invalid kind"
 
 parseKind' :: TyVarBndr -> Q KindC
 parseKind' (KindedTV _ k) = parseKind k
