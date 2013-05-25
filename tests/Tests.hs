@@ -71,6 +71,7 @@ prop_eq_schedule w x y z = s == s where
 prop_move :: Int -> Int -> Int -> Bool
 prop_move i f t
   | f /= t && f /= i && i /= t = s ^? ix t == Just i && s ^? ix f == Nothing && s ^? ix i == Just (i + 3)
+  | f == t = s ^? ix t == Nothing
   | otherwise = s ^? ix t == Just i
   where s = (move f t $ except t $ eq f (single i) -||- eq i (single $ i+3)) :: SimpleSchedule Int Int
 

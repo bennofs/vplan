@@ -161,9 +161,9 @@ These steps may sound complicated, but they aren't as complicted as you might th
 
 TODO
 ----
- - [ ] Implement Repeat modifier and combinators
- - [ ] Maybe some pretty prining for schedules?
- - [ ] Serialization of schedules?
+ -  Implement Repeat modifier and combinators
+ -  Maybe some pretty prining for schedules?
+ -  Serialization of schedules?
 
 Known shortcomings / Bugs
 -------------------------
