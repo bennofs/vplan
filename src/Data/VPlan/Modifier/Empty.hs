@@ -16,16 +16,17 @@
 -- Stability   : experimental
 -- Portability : non-portable
 
-module Core.Modifier.Empty (
+module Data.VPlan.Modifier.Empty (
     Empty(..)
   ) where
 
 import           Control.Applicative hiding (empty)
 import           Control.Lens
-import qualified Core.AtSansFunctor  as A
-import           Core.TH
 import           Data.Data
+import qualified Data.VPlan.At       as A
+import           Data.VPlan.TH
 
+-- | This doesn't contain any value, it just ignores the s parameter (except for the IxValue/Ixed families)
 data Empty s = Empty deriving (Eq)
 makeModifier ''Empty
 

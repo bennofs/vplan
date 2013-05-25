@@ -15,16 +15,16 @@
 -- Maintainer  : benno.fuenfstueck@gmail.com
 -- Stability   : experimental
 -- Portability : non-portable (Uses various GHC extensions)
-module Core.Modifier.Reference (
+module Data.VPlan.Modifier.Reference (
     Reference(..)
   , source
   , reference
   ) where
 
 import           Control.Lens
-import qualified Core.AtSansFunctor as A
-import           Core.TH
 import           Data.Data
+import qualified Data.VPlan.At as A
+import           Data.VPlan.TH
 
 -- | Reference the value at index '_source' in the schedule '_underlying'.
 data Reference s = Reference {_source :: Index s, _underlying :: s}

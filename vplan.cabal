@@ -1,4 +1,4 @@
-name:                vplan-utils
+name:                vplan
 version:             0.1.0.0
 synopsis:            Ein Programm zum Abrufen und Auswerten des Vertretungsplans
 homepage:            http://github.com/bennofs/vplan-utils
@@ -18,22 +18,23 @@ library
     , lens
     , mtl
     , dlist
-    , numeric-prelude
     , template-haskell
-    , bytestring
     , void
 
   exposed-modules:
-      Core.Schedule
-    , Core.Builder
-    , Core.SimpleSchedule
-    , Core.Modifier.Enum
-    , Core.Modifier.Reference
-    , Core.Modifier.Constant
-    , Core.Modifier.Empty
-    , Core.Modifier.Limit
-    , Core.Modifier.Combine
-    , Core.AtSansFunctor
+      Data.VPlan
+    , Data.VPlan.Schedule
+    , Data.VPlan.Builder
+    , Data.VPlan.Combinators
+    , Data.VPlan.Modifier.Enum
+    , Data.VPlan.Modifier.Reference
+    , Data.VPlan.Modifier.Constant
+    , Data.VPlan.Modifier.Empty
+    , Data.VPlan.Modifier.Limit
+    , Data.VPlan.Modifier.Combine
+    , Data.VPlan.Modifier.Annotate
+    , Data.VPlan.At
+    , Data.VPlan.TH
 
   hs-source-dirs:    src
   ghc-options: -Wall -Werror -fwarn-tabs
@@ -48,6 +49,6 @@ test-suite vplan-tests
     , QuickCheck
     , test-framework
     , test-framework-quickcheck2
-    , vplan-utils
+    , vplan
     , lens
   ghc-options:   -Wall

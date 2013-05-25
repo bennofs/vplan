@@ -8,21 +8,21 @@
 -- Stability   : experimental
 -- Portability : portable
 
-module Core.Builder (
-  -- * Data type definition
-    Builder
-  , runBuilder
-  -- * Building items
-  , item
-  , list
-  , dlist
-  -- * Operations on Builders
-  , mapBuilder
+module Data.VPlan.Builder
+ ( -- * Data type definition
+   Builder
+ , runBuilder
+   -- * Building items
+ , item
+ , list
+ , dlist
+   -- * Operations on Builders
+ , mapBuilder
  ) where
 
-import Control.Monad.Writer
-import qualified Data.DList as DL
-import Data.DList (DList)
+import           Control.Monad.Writer
+import           Data.DList           (DList)
+import qualified Data.DList           as DL
 
 -- | A Builder is just a writer with a difference list as accumulator for the built items.
 -- The ordering of the items will be preserved, i.e. items build first will appear first

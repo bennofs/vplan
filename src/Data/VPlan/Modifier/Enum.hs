@@ -9,6 +9,7 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
+{-# OPTIONS_GHC -fno-warn-orphans  #-}
 
 -- |
 -- Module      : $Header$
@@ -20,28 +21,29 @@
 -- Maintainer  : benno.fuenfstueck@gmail.com
 -- Stability   : experimental
 -- Portability : non-portable (uses various GHC-specific extensions)
-module Core.Modifier.Enum (
+module Data.VPlan.Modifier.Enum (
     (:><:)(R,L)
   , Close(..)
   , enumValue
   , enumSchedule
   , enumItem
   , scheduleItem
-  , MakeTypeEnum
+  , EnumContains
   ) where
 
 import           Control.Applicative
 import           Control.Lens
-import qualified Core.AtSansFunctor  as A
-import           Core.Builder
-import           Core.Schedule
-import           Core.TH
 import           Data.Data
 import           Data.Void
+import qualified Data.VPlan.At       as A
+import           Data.VPlan.Builder
+import           Data.VPlan.Schedule
+import           Data.VPlan.TH
 
 -- | An Either for types with one type argument (which is passed to both sides)
 data (:><:) a b s = L (a s) | R (b s) deriving (Eq)
 infixr 7 :><:
+
 makeModifier ''(:><:)
 deriving instance (Typeable s, Typeable1 a, Typeable1 b, Data (b s), Data (a s)) => Data ((:><:) a b s)
 
@@ -57,14 +59,15 @@ deriving instance (Data a) => Data (Close a)
 instance A.Contains f (Close a) where contains _ _ (Close v) = absurd v
 instance A.Ixed f (Close a) where ix _ _ (Close v)           = absurd v
 
--- | Create a type enum with a given value.
-class MakeTypeEnum a b where
+-- | Require that a type enum can contain the given value
+class EnumContains a b where
 
   -- | Create an enum with the given value.
-  enumValue :: a -> b
+  enumValue :: a s -> b s
 
-instance (s ~ s')               => MakeTypeEnum (a s') (C a b s) where enumValue = L
-instance (MakeTypeEnum c (b s)) => MakeTypeEnum c      (C a b s) where enumValue = R . enumValue
+instance                       EnumContains a a       where enumValue = id
+instance                       EnumContains a (C a b) where enumValue = L
+instance (EnumContains c  b) => EnumContains c (C a b) where enumValue = R . enumValue
 
 instance (A.Contains f (a s), A.Contains f (b s), Index (a s) ~ Index s, Index (b s) ~ Index s,
           Functor f) => A.Contains f (C a b s) where
@@ -76,15 +79,16 @@ instance (A.Ixed f (a s), Functor f, A.Ixed f (b s), Index (a s) ~ Index s, Inde
   ix i f (L x) = L <$> A.ix i f x
   ix i f (R x) = R <$> A.ix i f x
 
-
 -- | Build a value as a schedule containing an enum.
-enumSchedule :: (MakeTypeEnum a (s (Schedule i v s))) => a -> Schedule i v s
+enumSchedule :: (EnumContains a s) => a (Schedule i v s) -> Schedule i v s
 enumSchedule = view schedule . enumValue
 
 -- | Build an enum value as a single item.
-enumItem :: (MakeTypeEnum a e) => a -> Builder e ()
+enumItem :: (EnumContains a e) => a (Schedule i v s) -> Builder (e (Schedule i v s)) ()
 enumItem = item . enumValue
 
 -- | Build an enum value as a single schedule item.
-scheduleItem :: (MakeTypeEnum a (s (Schedule i v s))) => a -> Builder (Schedule i v s) ()
+scheduleItem :: (EnumContains a s) => a (Schedule i v s) -> Builder (Schedule i v s) ()
 scheduleItem = item . enumSchedule
+
+instance (EnumContains m s) => Supported m (Schedule i v s) where new = enumSchedule

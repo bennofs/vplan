@@ -16,14 +16,14 @@
 -- Stability   : experimental
 -- Portability : non-portable
 
-module Core.Modifier.Constant (
+module Data.VPlan.Modifier.Constant (
     Constant(..)
   , constant  ) where
 
 import           Control.Lens
-import qualified Core.AtSansFunctor as A
-import           Core.TH
 import           Data.Data
+import qualified Data.VPlan.At as A
+import           Data.VPlan.TH
 
 -- | A modifier that always returns the same value, no matter to what it is applied.
 newtype Constant s = Constant (IxValue s)

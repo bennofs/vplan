@@ -15,18 +15,18 @@
 -- Maintainer  : benno.fuenfstueck@gmail.com
 -- Stability   : experimental
 -- Portability : non-portable (Uses various GHC extensions)
-module Core.Modifier.Combine (
+module Data.VPlan.Modifier.Combine (
     Combine (..)
   , combine
   ) where
 
 import           Control.Applicative
 import           Control.Lens
-import qualified Core.AtSansFunctor  as A
-import           Core.TH
 import           Data.Data
+import qualified Data.VPlan.At       as A
+import           Data.VPlan.TH
 
--- | Combine two modifiers into one. While traversal, results of the first modifier are traversed
+-- | Combine two modifiers into one. On traversal, results of the first modifier are traversed
 -- first. After that, the results of the second modifier are traversed.
 data Combine s = Combine s s deriving (Eq)
 makeModifier ''Combine

@@ -2,7 +2,16 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE UndecidableInstances, CPP  #-}
-module Core.TH
+-- |
+-- Module      : $Header$
+-- Description : Some template-haskell functions for generating boilerplate instances and defintions.
+-- Copyright   : (c) Benno Fünfstück
+-- License     : GPL-3
+--
+-- Maintainer  : benno.fuenfstueck@gmail.com
+-- Stability   : experimental
+-- Portability : portable
+module Data.VPlan.TH
   ( genIxedFamilies
   , genIxedInstances
   , genTypeable
@@ -12,7 +21,7 @@ module Core.TH
 import           Control.Applicative
 import           Control.Lens
 import           Control.Monad
-import qualified Core.AtSansFunctor  as A
+import qualified Data.VPlan.At  as A
 import           Data.Traversable    (for)
 import           Language.Haskell.TH
 import Data.Typeable

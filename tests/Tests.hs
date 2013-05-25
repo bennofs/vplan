@@ -4,15 +4,12 @@
 {-# LANGUAGE RankNTypes                 #-}
 {-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE TypeOperators              #-}
 {-# LANGUAGE UndecidableInstances       #-}
 import           Control.Lens                         hiding (at)
-import           Core.Modifier.Constant
-import           Core.Modifier.Empty
-import           Core.Schedule
-import           Core.SimpleSchedule
+import           Data.VPlan
 import           Test.Framework
 import           Test.Framework.Providers.QuickCheck2
--- import qualified Test.QuickCheck.Checkers             as QC
 
 main :: IO ()
 main = defaultMain tests
@@ -21,9 +18,6 @@ tests :: [Test]
 tests =
   [ testGroup "Schedule and Modifiers" scheduleModifiers
   ]
-
--- testBatch :: TestName -> QC.TestBatch -> Test
--- testBatch n = testGroup n . map (uncurry testProperty) . QC.unbatch
 
 scheduleModifiers :: [Test]
 scheduleModifiers =
@@ -39,6 +33,8 @@ scheduleModifiers =
   , testProperty "move removes old sets new" prop_move
   , testProperty "swap swaps two items" prop_swap
   ]
+
+type SimpleSchedule a b = Schedule a b (Constant :><: Limit :><: Empty :><: Combine :><: Reference :><: Close)
 
 prop_empty_contains :: Int -> Bool
 prop_empty_contains x = (empty :: SimpleSchedule Int Int) ^. contains x == False
@@ -62,24 +58,24 @@ prop_at_contains :: Int -> Int -> Bool
 prop_at_contains x y = s ^. contains x == True
                        && s ^. contains (succ x) == False
                        && s ^. contains (pred x) == False
-  where s = eq x (single y)
+  where s = eq x (single y) :: SimpleSchedule Int Int
 
 prop_at_ix :: Int -> Int -> Bool
 prop_at_ix x y = s ^.. ix x == [y] && s ^.. ix (pred x) == [] && s ^.. ix (succ x) == []
-  where s = eq x (single y)
+  where s = eq x (single y) :: SimpleSchedule Int Int
 
 prop_eq_schedule :: Int -> Int -> Int -> Int -> Bool
 prop_eq_schedule w x y z = s == s where
-  s = move w y $ eq w (single x) -||- eq y (single z) -||- eq z empty
+  s = move w y $ eq w (single x) -||- eq y (single z) -||- eq z empty :: SimpleSchedule Int Int
 
 prop_move :: Int -> Int -> Int -> Bool
 prop_move i f t
   | f /= t = s ^? ix t == Just i && s ^? ix f == Nothing
   | otherwise = s ^? ix t == Just i
-  where s = (move f t $ eq f (single i))
+  where s = (move f t $ eq f (single i)) :: SimpleSchedule Int Int
 
 prop_swap :: Int -> Int -> Int -> Int -> Bool
 prop_swap x y a b
   | a /= b = s ^? ix a == Just y && s ^? ix b == Just x
   | otherwise = s ^? ix a == Just x
-  where s = swap a b $ eq a (single x) -||- eq b (single y)
+  where s = swap a b $ eq a (single x) -||- eq b (single y) :: SimpleSchedule Int Int
