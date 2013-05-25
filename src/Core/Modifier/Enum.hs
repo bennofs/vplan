@@ -5,6 +5,7 @@
 {-# LANGUAGE OverlappingInstances  #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE StandaloneDeriving    #-}
+{-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
 {-# LANGUAGE UndecidableInstances  #-}
@@ -20,7 +21,7 @@
 -- Stability   : experimental
 -- Portability : non-portable (uses various GHC-specific extensions)
 module Core.Modifier.Enum (
-    (:><:)(R, L)
+    (:><:)(R,L)
   , Close(..)
   , enumValue
   , enumSchedule
@@ -34,40 +35,29 @@ import           Control.Lens
 import qualified Core.AtSansFunctor  as A
 import           Core.Builder
 import           Core.Schedule
+import           Core.TH
 import           Data.Data
 import           Data.Void
 
 -- | An Either for types with one type argument (which is passed to both sides)
 data (:><:) a b s = L (a s) | R (b s) deriving (Eq)
-deriving instance (Typeable s, Typeable1 a, Typeable1 b, Data (b s), Data (a s)) => Data ((:><:) a b s)
-instance (Typeable1 a, Typeable1 b) => Typeable1 (a :><: b) where
-  typeOf1 _ = mkTyCon3 "vlan-utils" "Core.Modifier.Enum" ":><:" `mkTyConApp`
-              [ typeOf1 (undefined :: a ()), typeOf1 (undefined :: b ()) ]
+infixr 7 :><:
 
--- | Sometimes, this reads better than the infix version
+-- | Shorter alias
 type C = (:><:)
 
+makeModifier ''(:><:)
+
+deriving instance (Typeable s, Typeable1 a, Typeable1 b, Data (b s), Data (a s)) => Data ((:><:) a b s)
+
 -- | This type signalizes the end of a chain of (:><:)'s.
-data Close a = Close Void deriving (Eq, Data)
-instance Typeable1 Close where
-  typeOf1 _ = mkTyCon3 "vplan-utils" "Core.Modifier.Enum" "Close" `mkTyConApp` []
+data Close a = Close Void deriving (Eq)
+makeModifier ''Close
 
-type instance Index (Close a) = Index a
-type instance IxValue (Close a) = IxValue a
+deriving instance (Data a) => Data (Close a)
 
-instance A.Contains f (Close a) where
-  contains _ _ (Close v) = absurd v
-
-instance A.Ixed f (Close a) where
-  ix _ _ (Close v) = absurd v
-
-instance (A.Contains f (Close a), Functor f) => Contains f (Close a) where
-  contains = A.contains
-
-instance (A.Ixed f (Close a), Functor f) => Ixed f (Close a) where
-  ix = A.ix
-
-infixr 7 :><:
+instance A.Contains f (Close a) where contains _ _ (Close v) = absurd v
+instance A.Ixed f (Close a) where ix _ _ (Close v) = absurd v
 
 -- | Create a type enum with a given value.
 class MakeTypeEnum a b where
@@ -75,14 +65,9 @@ class MakeTypeEnum a b where
   -- | Create an enum with the given value.
   enumValue :: a -> b
 
-instance (s ~ s') => MakeTypeEnum (a s') (C a b s) where
-  enumValue = L
+instance (s ~ s')               => MakeTypeEnum (a s') (C a b s) where enumValue = L
+instance (MakeTypeEnum c (b s)) => MakeTypeEnum c      (C a b s) where enumValue = R . enumValue
 
-instance (MakeTypeEnum c (b s)) => MakeTypeEnum c (C a b s) where
-  enumValue = R . enumValue
-
-type instance Index (C a b s) = Index s
-type instance IxValue (C a b s) = IxValue s
 instance (A.Contains f (a s), A.Contains f (b s), Index (a s) ~ Index s, Index (b s) ~ Index s,
           Functor f) => A.Contains f (C a b s) where
   contains i f (L x) = L <$> A.contains i f x
@@ -92,12 +77,6 @@ instance (A.Ixed f (a s), Functor f, A.Ixed f (b s), Index (a s) ~ Index s, Inde
           IxValue (a s) ~ IxValue s, IxValue (b s) ~ IxValue s) => A.Ixed f (C a b s) where
   ix i f (L x) = L <$> A.ix i f x
   ix i f (R x) = R <$> A.ix i f x
-
-instance (A.Contains f (C a b s), Functor f) => Contains f (C a b s) where
-  contains = A.contains
-
-instance (A.Ixed f (C a b s), Functor f) => Ixed f (C a b s) where
-  ix = A.ix
 
 
 -- | Build a value as a schedule containing an enum.

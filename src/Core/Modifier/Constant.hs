@@ -22,28 +22,16 @@ module Core.Modifier.Constant (
 
 import           Control.Lens
 import qualified Core.AtSansFunctor as A
+import           Core.TH
 import           Data.Data
 
 -- | A modifier that always returns the same value, no matter to what it is applied.
 newtype Constant s = Constant (IxValue s)
-instance Typeable1 Constant where
-  typeOf1 _ = mkTyCon3 "vplan-utils" "Core.Modifier.Constant" "Constant" `mkTyConApp` []
+makeModifier ''Constant
 makeIso ''Constant
 
 deriving instance (Data (IxValue s), Data s) => Data (Constant s)
 deriving instance (Eq (IxValue s)) => Eq (Constant s)
 
-type instance IxValue (Constant s) = IxValue s
-type instance Index (Constant s) = Index s
-
-instance (Gettable f) => A.Contains f (Constant s) where
-  contains = containsTest $ const $ const True
-
-instance (Functor f) => A.Ixed f (Constant s) where
-  ix i f = from constant $ indexed f i
-
-instance (A.Contains f (Constant s), Functor f) => Contains f (Constant s) where
-  contains = A.contains
-
-instance (A.Ixed f (Constant s), Functor f) => Ixed f (Constant s) where
-  ix = A.ix
+instance (Gettable f) => A.Contains f (Constant s) where contains = containsTest  $ const $ const True
+instance (Functor f) => A.Ixed f (Constant s)      where ix i f   = from constant $ indexed f i

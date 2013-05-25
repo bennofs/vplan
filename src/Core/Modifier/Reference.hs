@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable    #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -22,31 +23,23 @@ module Core.Modifier.Reference (
 
 import           Control.Lens
 import qualified Core.AtSansFunctor as A
+import           Core.TH
 import           Data.Data
 
 -- | Reference the value at index '_source' in the schedule '_underlying'.
 data Reference s = Reference {_source :: Index s, _underlying :: s}
-instance Typeable1 Reference where
-  typeOf1 _ = mkTyCon3 "vplan-utils" "Core.Modifier.Reference" "Reference" `mkTyConApp` []
 makeLenses ''Reference
+makeModifier ''Reference
 
 deriving instance (Eq (Index s), Eq s) => Eq (Reference s)
+deriving instance (Data (Index s), Data s) => Data (Reference s)
 
 -- | Construct a new reference.
 reference :: Index s -> s -> Reference s
 reference = Reference
-
-type instance IxValue (Reference s) = IxValue s
-type instance Index (Reference s) = Index s
 
 instance (Eq (Index s), Gettable f, A.Contains f s) => A.Contains f (Reference s) where
   contains _ f r = underlying ?? r $ A.contains (r ^. source) f
 
 instance (Eq (Index s), A.Ixed f s, Functor f) => A.Ixed f (Reference s) where
   ix _ f r = underlying ?? r $ A.ix (r ^. source) f
-
-instance (A.Contains f (Reference s), Functor f) => Contains f (Reference s) where
-  contains = A.contains
-
-instance (A.Ixed f (Reference s), Functor f) => Ixed f (Reference s) where
-  ix = A.ix

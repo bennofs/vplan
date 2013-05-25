@@ -8,39 +8,25 @@ author:              Benno Fünfstück
 maintainer:          benno.fuenfstueck@gmail.com
 copyright:           © 2013 Benno Fünfstück
 stability:           experimental
-tested-with:         GHC ==7.6.1
+tested-with:         GHC ==7.6.3
 build-type:          Simple
 cabal-version:       >=1.8
 
 library
   build-depends:
       base
-    , mtl
-    , directory
     , lens
-    , filepath
-    , network
-    , MonadCatchIO-transformers
-    , errors
-    , safe
-    , transformers
-    , time
-    , system-filepath
-    , containers
+    , mtl
     , dlist
     , numeric-prelude
-    , bifunctors
-    , semigroupoids
-    , keys
+--    , semigroupoids
+    , template-haskell
     , bytestring
     , void
-    , HTTP
 
   exposed-modules:
       Core.Schedule
     , Core.Builder
-    , Core.Resource
-    , Core.Error
     , Core.SimpleSchedule
     , Core.Modifier.Enum
     , Core.Modifier.Reference

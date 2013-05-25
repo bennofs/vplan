@@ -2,6 +2,8 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE StandaloneDeriving    #-}
+{-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
 -- |
@@ -21,23 +23,12 @@ module Core.Modifier.Empty (
 import           Control.Applicative hiding (empty)
 import           Control.Lens
 import qualified Core.AtSansFunctor  as A
+import           Core.TH
 import           Data.Data
 
-data Empty s = Empty deriving (Eq, Data)
-instance Typeable1 Empty where
-  typeOf1 _ = mkTyCon3 "vplan-utils" "Core.Modifier.Empty" "Empty" `mkTyConApp` []
+data Empty s = Empty deriving (Eq)
+makeModifier ''Empty
 
-type instance IxValue (Empty s) = IxValue s
-type instance Index (Empty s) = Index s
-
-instance (Gettable f) => A.Contains f (Empty s) where
-  contains = containsTest $ const $ const False
-
-instance (Applicative f) => A.Ixed f (Empty s) where
-  ix _ _ = pure
-
-instance (A.Contains f (Empty s), Functor f) => Contains f (Empty s) where
-  contains = A.contains
-
-instance (A.Ixed f (Empty s), Functor f) => Ixed f (Empty s) where
-  ix = A.ix
+deriving instance (Data s) => Data (Empty s)
+instance (Gettable f) => A.Contains f (Empty s) where contains = containsTest $ const $ const False
+instance (Applicative f) => A.Ixed f (Empty s) where ix _ _ = pure
