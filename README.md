@@ -1,3 +1,4 @@
+
 VPlan
 =====
 
@@ -41,7 +42,7 @@ ed by Data.VPlan. The simplest combinator is empty, which just creates an empty 
 
 This tells us that our Schedule type has to support the Empty modifier, and if it does, we can get a schedule with it.
 In this example, we're just going to use the Empty modifier as the only modifier in our Schedule type. To index into an
-Schedule, you can use the Traversal 'ix' from the lens package:
+Schedule, you can use the Traversal `ix` from the lens package:
 
     >>> (empty :: Schedule Int Int Empty) ^? ix 10
     Nothing
@@ -56,7 +57,6 @@ called contains:
     False
 
 As we expected, we got False, because there is no value at index 10.
-
 Let's look at another combinator, with the name 'single'. It's type is:
 
     >>> :t single
@@ -82,15 +82,15 @@ There is a type alias which chains all modifiers available in this package, call
 that supports all those modifiers with the name USchedule. We're using this from now on,
 so we don't have to write out all of the Modifiers.
 
-With that knowledge, we can look at further combinators. First, there is eq, which takes an index i and limits a given
-schedule, so that it acts like Empty for all indices that are not equal to i. Example:
+With that knowledge, we can look at further combinators. First, there is eq, which takes an index `i` and limits a given
+schedule, so that it acts like Empty for all indices that are not equal to `i`. Example:
 
     >>> (eq 3 (single 4) :: USchedule Int Int) ^? ix 3
     Just 4
     >>> (eq 3 (single 4) :: USchedule Int Int) ^? ix 5
     Nothing
 
-To chain multiple schedules together, with the first one taking higher precendence than the last one, you can use (-||-):
+To chain multiple schedules together, with the first one taking higher precendence than the last one, you can use `-||-`:
 
     >>> let s = eq 3 (single 4) -||- eq 5 (single 1) -||- eq 3 (single 2) -||- eq 6 (single 10) :: USchedule Int Int
     >>> s ^. contains 2
@@ -100,8 +100,7 @@ To chain multiple schedules together, with the first one taking higher precenden
     >>> s ^.. ix 3
     [4,2]
 
-In the last example, we used ^.. to get all the values at a given index, with earlier values before later values.
-
+In the last example, we used `^..` to get all the values at a given index, with earlier values before later values.
 You can also move or swap values in a schedule:
 
     >>> let s1 = move 6 1 s
@@ -144,19 +143,27 @@ Here are the steps you need to do to define your own modifiers:
  -  enable TemplateHaskell, StandaloneDeriving and any extensions GHC wants you to enable
  -  import Data.VPlan.At qualified (in the following steps, we assume the alias A for the import)
  -  make a datatype for your modifier that takes the Schedule type as last argument
- -  call the TH-macro makeModifier like this: makeModifier ''YourDataType
- -  derive the instances you want using standalone deriving. Recommended: Eq and Data. Example:
-    deriving instance (Eq (Index s), Eq a) => Eq (YourDataType a s)
+ -  call the TH-macro `makeModifier` like this:
+
+        makeModifier ''YourDataType
+
+ -  derive the instances you want using standalone deriving. Recommended: `Eq` and `Data` at least. Example:
+
+        deriving instance (Eq (Index s), Eq a) => Eq (YourDataType a s)
+
+ -  make instances for A.Contains and A.Ixed. Look at the implementations of the included modifiers for example
+    definitions.
  -  Use your data type as modifier for the schedule, for example by chaining it onto AllModifiers:
-    type YourModifiers = YourModifiers :><: AllModifiers
+
+        type YourModifiers = YourModifiers :><: AllModifiers
 
 These steps may sound complicated, but they aren't as complicted as you might think.
 
 TODO
 ----
- -  Implement Repeat modifier and combinators
- -  Maybe some pretty prining for schedules?
- -  Serialization of schedules?
+ - [ ] Implement Repeat modifier and combinators
+ - [ ] Maybe some pretty prining for schedules?
+ - [ ] Serialization of schedules?
 
 Known shortcomings / Bugs
 -------------------------
