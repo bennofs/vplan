@@ -18,6 +18,7 @@ module Data.VPlan.Combinators
   , empty
   , single
   , eq
+  , except
   , ref
   , move
   , swap
@@ -61,8 +62,12 @@ ref x = new . R.reference x
 
 -- Don't use at as the name, because it's already taken by lens
 -- | Apply a modifier only at a given index in the schedule.
-eq :: (Supported Limit s) => Index s -> s -> s
+eq :: (Supported Limit s, Ord (Index s)) => Index s -> s -> s
 eq w a = equal w !<| a
+
+-- | A schedule with all elements from another schedule, except those at index x.
+except :: (Supported Limit s, Supported Combine s, Ord (Index s)) => Index s -> s -> s
+except x s = new (lower x s) -||- new (greater x s)
 
 -- | Build a list of schedules to sequence with (-||-). Later items take precendence over earlier items.
 buildCombine :: (Supported Combine s, Supported E.Empty s) => Builder s () -> s
@@ -70,11 +75,11 @@ buildCombine = foldr (-||-) empty . runBuilder
 
 -- | Move an item to another place. @move source target@ moves an item at index @source@ to
 -- index @target@.
-move :: (Supported Combine s, Supported Limit s, Supported E.Empty s, Supported R.Reference s)
+move :: (Supported Combine s, Supported Limit s, Supported E.Empty s, Supported R.Reference s, Ord (Index s))
      => Index s -> Index s -> s -> s
-move f t s = eq f empty -||- eq t (ref f s)
+move f t s = except f (except t s) -||- eq t (ref f s)
 
 -- | Swap two items at given indices.
-swap :: (Supported Combine s, Supported Limit s, Supported R.Reference s)
+swap :: (Supported Combine s, Supported Limit s, Supported R.Reference s, Ord (Index s))
      => Index s -> Index s -> s -> s
-swap a b s = eq b (ref a s) -||- eq a (ref b s)
+swap a b s = except b (except a s) -||- eq b (ref a s) -||- eq a (ref b s)

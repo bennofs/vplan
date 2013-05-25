@@ -51,13 +51,13 @@ instance (A.Ixed f s, Applicative f, Ord (Index s)) => A.Ixed f (Limit s) where
     | otherwise = pure l
 
 -- | Limit another schedule to all indices lower than the given one
-lower :: Index s -> s -> Limit s
+lower :: (Ord (Index s)) => Index s -> s -> Limit s
 lower = Limit LT
 
 -- | Pick only the value at the given index from anther schedule
-equal :: Index s -> s -> Limit s
+equal :: (Ord (Index s)) => Index s -> s -> Limit s
 equal = Limit EQ
 
 -- | Limit another schedule to all the indices hight than the given one
-greater :: Index s -> s -> Limit s
+greater :: (Ord (Index s)) => Index s -> s -> Limit s
 greater = Limit GT
