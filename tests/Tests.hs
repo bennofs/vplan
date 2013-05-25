@@ -72,7 +72,7 @@ prop_move :: Int -> Int -> Int -> Bool
 prop_move i f t
   | f /= t && f /= i && i /= t = s ^? ix t == Just i && s ^? ix f == Nothing && s ^? ix i == Just (i + 3)
   | otherwise = s ^? ix t == Just i
-  where s = (move f t $ eq f (single i) -||- eq i (single $ i+3)) :: SimpleSchedule Int Int
+  where s = (move f t $ except t $ eq f (single i) -||- eq i (single $ i+3)) :: SimpleSchedule Int Int
 
 prop_swap :: Int -> Int -> Int -> Int -> Bool
 prop_swap x y a b

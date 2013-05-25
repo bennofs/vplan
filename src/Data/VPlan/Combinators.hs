@@ -74,10 +74,11 @@ buildCombine :: (Supported Combine s, Supported E.Empty s) => Builder s () -> s
 buildCombine = foldr (-||-) empty . runBuilder
 
 -- | Move an item to another place. @move source target@ moves an item at index @source@ to
--- index @target@.
+-- index @target@. When there is already an item at the target position, the moved item is placed behind
+-- the already-existing item. The source index is set to empty.
 move :: (Supported Combine s, Supported Limit s, Supported E.Empty s, Supported R.Reference s, Ord (Index s))
      => Index s -> Index s -> s -> s
-move f t s = except f (except t s) -||- eq t (ref f s)
+move f t s = except f s -||- eq t (ref f s)
 
 -- | Swap two items at given indices.
 swap :: (Supported Combine s, Supported Limit s, Supported R.Reference s, Ord (Index s))

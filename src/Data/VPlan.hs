@@ -28,6 +28,9 @@ module Data.VPlan
  , module Combine
  , module Enum
 
+   -- * Template haskell for defining new modifiers
+ , module TH
+
    -- * Convenience definitions
  , AllModifiers
  , USchedule
@@ -44,6 +47,7 @@ import           Data.VPlan.Modifier.Enum      as Enum
 import           Data.VPlan.Modifier.Limit     as Limit
 import           Data.VPlan.Modifier.Reference as Reference
 import           Data.VPlan.Schedule           as Schedule
+import           Data.VPlan.TH                 as TH
 
 -- | A type alias for all the available modifiers, to avoid having to write out those everytime.
 type AllModifiers = Constant :><: Combine :><: Empty :><: Limit :><: Reference :><: Close
