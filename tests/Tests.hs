@@ -70,12 +70,13 @@ prop_eq_schedule w x y z = s == s where
 
 prop_move :: Int -> Int -> Int -> Bool
 prop_move i f t
-  | f /= t = s ^? ix t == Just i && s ^? ix f == Nothing
+  | f /= t && f /= i && i /= t = s ^? ix t == Just i && s ^? ix f == Nothing && s ^? ix i == Just (i + 3)
   | otherwise = s ^? ix t == Just i
-  where s = (move f t $ eq f (single i)) :: SimpleSchedule Int Int
+  where s = (move f t $ eq f (single i) -||- eq i (single $ i+3)) :: SimpleSchedule Int Int
 
 prop_swap :: Int -> Int -> Int -> Int -> Bool
 prop_swap x y a b
-  | a /= b = s ^? ix a == Just y && s ^? ix b == Just x
-  | otherwise = s ^? ix a == Just x
-  where s = swap a b $ eq a (single x) -||- eq b (single y) :: SimpleSchedule Int Int
+  | a /= b && a /= x && b /= x = s ^? ix a == Just y && s ^? ix b == Just x && s ^? ix x == Just (a + 3)
+  | a == b = s ^? ix a == Just x
+  | otherwise = s ^? ix a == Just y && s ^? ix b == Just x
+  where s = swap a b $ eq a (single x) -||- eq b (single y) -||- eq x (single $ a+3)  :: SimpleSchedule Int Int

@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeOperators #-}
 -- |
 -- Module      : $Header$
 -- Description : Main module that reexports the simpler schedule combinators.
@@ -27,6 +28,10 @@ module Data.VPlan
  , module Combine
  , module Enum
 
+   -- * Convenience definitions
+ , AllModifiers
+ , USchedule
+
  ) where
 
 import           Control.Lens                  as Lens
@@ -39,3 +44,9 @@ import           Data.VPlan.Modifier.Enum      as Enum
 import           Data.VPlan.Modifier.Limit     as Limit
 import           Data.VPlan.Modifier.Reference as Reference
 import           Data.VPlan.Schedule           as Schedule
+
+-- | A type alias for all the available modifiers, to avoid having to write out those everytime.
+type AllModifiers = Constant :><: Combine :><: Empty :><: Limit :><: Reference :><: Close
+
+-- | An universal schedule, that can supports all the modifier provided in this package.
+type USchedule i v = Schedule i v AllModifiers
