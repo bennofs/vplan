@@ -22,6 +22,7 @@ module Data.VPlan.Combinators
   , ref
   , move
   , swap
+  , every
   , buildCombine
   ) where
 
@@ -32,6 +33,7 @@ import           Data.VPlan.Modifier.Constant
 import qualified Data.VPlan.Modifier.Empty     as E
 import           Data.VPlan.Modifier.Limit
 import qualified Data.VPlan.Modifier.Reference as R
+import           Data.VPlan.Modifier.Repeat
 import           Data.VPlan.Schedule
 
 -- | @a !<- b@ applies the modifier a to the modifier b by first putting modifier a in a 'Schedule', then applying
@@ -84,3 +86,7 @@ move f t s = except f s -||- eq t (ref f s)
 swap :: (Supported Combine s, Supported Limit s, Supported R.Reference s, Ord (Index s))
      => Index s -> Index s -> s -> s
 swap a b s = except b (except a s) -||- eq b (ref a s) -||- eq a (ref b s)
+
+-- | Repeat a given schedule every n time units.
+every :: (Supported Repeat s, Integral (Index s)) => Index s -> s -> s
+every n = new . Repeat n

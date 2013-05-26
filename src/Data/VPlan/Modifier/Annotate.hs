@@ -24,7 +24,8 @@ module Data.VPlan.Modifier.Annotate
 
 import           Control.Lens
 import           Data.Data
-import qualified Data.VPlan.At as A
+import qualified Data.VPlan.At    as A
+import           Data.VPlan.Class
 import           Data.VPlan.TH
 
 -- | @Annotate a@ is a modifier that can attach data of type @a@ to some other modifier.
@@ -35,6 +36,7 @@ data Annotate a s = Annotate
 
 makeLenses ''Annotate
 makeModifier ''Annotate
+deriveClass ''Annotate
 
 -- | Annotate another modifier with a value of type @a@.
 annotate :: a -> s -> Annotate a s

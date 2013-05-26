@@ -139,24 +139,26 @@ Modifiers defined in this package have Typeable and Data instances, so that shou
 Defining custom modifiers
 -------------------------
 Here are the steps you need to do to define your own modifiers:
- -  enable TemplateHaskell, StandaloneDeriving and any extensions GHC wants you to enable
+ -  enable TemplateHaskell, StandaloneDeriving, FlexibleContexts and any extensions GHC wants you to enable
  -  import Data.VPlan.At qualified (in the following steps, we assume the alias A for the import)
  -  make a datatype for your modifier that takes the Schedule type as last argument
+ -  Define the classes defined in Data.VPlan.Class. For a simple modifier, you can derive those classes using:
+
+        deriveClasses ''YourDataType
  -  call the TH-macro `makeModifier` like this:
 
         makeModifier ''YourDataType
-
  -  derive the instances you want using standalone deriving. Recommended: `Eq` and `Data` at least. Example:
 
         deriving instance (Eq (Index s), Eq a) => Eq (YourDataType a s)
-
  -  make instances for A.Contains and A.Ixed. Look at the implementations of the included modifiers for example
     definitions.
  -  Use your data type as modifier for the schedule, for example by chaining it onto AllModifiers:
 
-        type YourModifiers = YourModifiers :><: AllModifiers
-
+        type YourModifiers = YourModifier :><: AllModifiers
 These steps may sound complicated, but they aren't as complicted as you might think.
+Most of the instances are not strictly required, but they provide basic functionality you will probably need.
+You could also define a modifier without those instances, but it's usage will be limited.
 
 TODO
 ----

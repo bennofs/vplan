@@ -12,10 +12,17 @@
 -- Stability   : experimental
 -- Portability : portable
 module Data.VPlan.TH
-  ( genIxedFamilies
+  ( -- * Interface
+    genIxedFamilies
   , genIxedInstances
   , genTypeable
   , makeModifier
+    -- * Implementation
+  , appsT
+  , getTVName
+  , getTCInfo
+  , parseKind
+  , parseKind'
   ) where
 
 import           Control.Applicative
@@ -24,7 +31,7 @@ import           Control.Monad
 import qualified Data.VPlan.At  as A
 import           Data.Traversable    (for)
 import           Language.Haskell.TH
-import Data.Typeable
+import           Data.Typeable
 
 -- | Generate the type families IxValue and Index for lens.
 genIxedFamilies :: Name -> Q [Dec]

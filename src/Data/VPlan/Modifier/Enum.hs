@@ -37,6 +37,7 @@ import           Data.Data
 import           Data.Void
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Builder
+import           Data.VPlan.Class
 import           Data.VPlan.Schedule
 import           Data.VPlan.TH
 
@@ -45,6 +46,8 @@ data (:><:) a b s = L (a s) | R (b s) deriving (Eq)
 infixr 7 :><:
 
 makeModifier ''(:><:)
+deriveClass ''(:><:)
+
 deriving instance (Typeable s, Typeable1 a, Typeable1 b, Data (b s), Data (a s)) => Data ((:><:) a b s)
 
 -- | Shorter alias
@@ -53,6 +56,7 @@ type C = (:><:)
 -- | This type signalizes the end of a chain of (:><:)'s.
 data Close a = Close Void deriving (Eq)
 makeModifier ''Close
+deriveClass ''Close
 
 deriving instance (Data a) => Data (Close a)
 

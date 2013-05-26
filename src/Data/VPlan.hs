@@ -22,8 +22,9 @@ module Data.VPlan
    -- * Some modifiers that you might need (sorted after complexity, so you can look at these as examples)
  , module Empty
  , module Constant
- , module Reference
  , module Annotate
+ , module Reference
+ , module Repeat
  , module Limit
  , module Combine
  , module Enum
@@ -46,11 +47,12 @@ import           Data.VPlan.Modifier.Empty     as Empty
 import           Data.VPlan.Modifier.Enum      as Enum
 import           Data.VPlan.Modifier.Limit     as Limit
 import           Data.VPlan.Modifier.Reference as Reference
+import           Data.VPlan.Modifier.Repeat    as Repeat
 import           Data.VPlan.Schedule           as Schedule
 import           Data.VPlan.TH                 as TH
 
 -- | A type alias for all the available modifiers, to avoid having to write out those everytime.
-type AllModifiers = Constant :><: Combine :><: Empty :><: Limit :><: Reference :><: Close
+type AllModifiers = Constant :><: Combine :><: Empty :><: Limit :><: Reference :><: Repeat :><: Close
 
 -- | An universal schedule, that can supports all the modifier provided in this package.
 type USchedule i v = Schedule i v AllModifiers

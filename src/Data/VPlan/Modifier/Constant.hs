@@ -22,13 +22,15 @@ module Data.VPlan.Modifier.Constant (
 
 import           Control.Lens
 import           Data.Data
-import qualified Data.VPlan.At as A
+import qualified Data.VPlan.At    as A
+import           Data.VPlan.Class
 import           Data.VPlan.TH
 
 -- | A modifier that always returns the same value, no matter to what it is applied.
 newtype Constant s = Constant (IxValue s)
 makeModifier ''Constant
 makeIso ''Constant
+deriveClass ''Constant
 
 deriving instance (Data (IxValue s), Data s) => Data (Constant s)
 deriving instance (Eq (IxValue s)) => Eq (Constant s)

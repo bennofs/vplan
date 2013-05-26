@@ -23,6 +23,8 @@ module Data.VPlan.Schedule (
   , schedule
   , Supported
   , new
+  , ScheduleType
+  , Modifiers
   ) where
 
 import           Control.Lens
@@ -45,6 +47,10 @@ type instance IxValue (Schedule i v s) = v
 -- | Get the modifiers of a schedule.
 type family Modifiers s :: * -> *
 type instance Modifiers (Schedule i v s) = s
+
+-- | Get the schedule type corresponding to a given modifier type.
+type family ScheduleType m :: *
+type instance ScheduleType a = Schedule (Index a) (IxValue a) (Modifiers a)
 
 deriving instance (A.Contains f (s (Schedule i v s))) => A.Contains f (Schedule i v s)
 deriving instance (A.Ixed f (s (Schedule i v s)), IxValue (s (Schedule i v s)) ~ v,

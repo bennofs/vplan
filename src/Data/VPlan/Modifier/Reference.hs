@@ -23,13 +23,15 @@ module Data.VPlan.Modifier.Reference (
 
 import           Control.Lens
 import           Data.Data
-import qualified Data.VPlan.At as A
+import qualified Data.VPlan.At    as A
+import           Data.VPlan.Class
 import           Data.VPlan.TH
 
 -- | Reference the value at index '_source' in the schedule '_underlying'.
 data Reference s = Reference {_source :: Index s, _underlying :: s}
 makeLenses ''Reference
 makeModifier ''Reference
+deriveClass ''Reference
 
 deriving instance (Eq (Index s), Eq s) => Eq (Reference s)
 deriving instance (Data (Index s), Data s) => Data (Reference s)

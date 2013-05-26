@@ -33,6 +33,8 @@ library
     , Data.VPlan.Modifier.Limit
     , Data.VPlan.Modifier.Combine
     , Data.VPlan.Modifier.Annotate
+    , Data.VPlan.Modifier.Repeat
+    , Data.VPlan.Class
     , Data.VPlan.At
     , Data.VPlan.TH
 

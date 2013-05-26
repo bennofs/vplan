@@ -24,11 +24,13 @@ import           Control.Applicative hiding (empty)
 import           Control.Lens
 import           Data.Data
 import qualified Data.VPlan.At       as A
+import           Data.VPlan.Class
 import           Data.VPlan.TH
 
 -- | This doesn't contain any value, it just ignores the s parameter (except for the IxValue/Ixed families)
 data Empty s = Empty deriving (Eq)
 makeModifier ''Empty
+deriveClass ''Empty
 
 deriving instance (Data s) => Data (Empty s)
 instance (Gettable f) => A.Contains f (Empty s) where contains = containsTest $ const $ const False

@@ -24,12 +24,14 @@ import           Control.Applicative
 import           Control.Lens
 import           Data.Data
 import qualified Data.VPlan.At       as A
+import           Data.VPlan.Class
 import           Data.VPlan.TH
 
 -- | Combine two modifiers into one. On traversal, results of the first modifier are traversed
 -- first. After that, the results of the second modifier are traversed.
 data Combine s = Combine s s deriving (Eq)
 makeModifier ''Combine
+deriveClass ''Combine
 
 deriving instance (Data s) => Data (Combine s)
 
