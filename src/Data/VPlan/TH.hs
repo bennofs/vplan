@@ -1,7 +1,9 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell       #-}
-{-# LANGUAGE UndecidableInstances, CPP  #-}
+{-# LANGUAGE UndecidableInstances  #-}
+{-# LANGUAGE CPP                   #-}
+{-# LANGUAGE TypeFamilies          #-}
 -- |
 -- Module      : $Header$
 -- Description : Some template-haskell functions for generating boilerplate instances and defintions.
@@ -17,12 +19,14 @@ module Data.VPlan.TH
   , genIxedInstances
   , genTypeable
   , makeModifier
+  , Modifiers
     -- * Implementation
   , appsT
   , getTVName
   , getTCInfo
   , parseKind
   , parseKind'
+  , resolveType
   ) where
 
 import           Control.Applicative
@@ -32,6 +36,9 @@ import qualified Data.VPlan.At  as A
 import           Data.Traversable    (for)
 import           Language.Haskell.TH
 import           Data.Typeable
+
+-- | Get the modifiers of a schedule.
+type family Modifiers s :: * -> *
 
 -- | Generate the type families IxValue and Index for lens.
 genIxedFamilies :: Name -> Q [Dec]
@@ -143,6 +150,18 @@ makeTypeableTI (n,tv) = do
 genTypeable :: Name -> Q [Dec]
 genTypeable = reify >=> getTCInfo >=> fmap pure . makeTypeableTI
 
+-- | Get the type to a given name
+resolveType :: Name -> Q Type
+resolveType = reify >=> getTCInfo >=> \(n, tv) -> foldl appT (conT n) $ map (varT . getTVName) tv
+
+-- | Make a modifiers type instance
+genModifier :: Name -> Q [Dec]
+genModifier n = let t = resolveType n in
+  [d|
+    type instance Modifiers $t = $kind2type
+  |]
+  where kind2type = reify n >>= getTCInfo >>= \(_,tv) -> appsT (conT n) $ map (varT . getTVName) $ init tv
+
 -- | Make all boilerplate instances required for a modifier
 makeModifier :: Name -> Q [Dec]
-makeModifier n = concat <$> traverse ($ n) [genTypeable, genIxedFamilies, genIxedInstances]
+makeModifier n = concat <$> traverse ($ n) [genTypeable, genIxedFamilies, genIxedInstances, genModifier]

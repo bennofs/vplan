@@ -46,7 +46,6 @@ data (:><:) a b s = L (a s) | R (b s) deriving (Eq)
 infixr 7 :><:
 
 makeModifier ''(:><:)
-deriveClass ''(:><:)
 
 deriving instance (Typeable s, Typeable1 a, Typeable1 b, Data (b s), Data (a s)) => Data ((:><:) a b s)
 
@@ -82,6 +81,16 @@ instance (A.Ixed f (a s), Functor f, A.Ixed f (b s), Index (a s) ~ Index s, Inde
           IxValue (a s) ~ IxValue s, IxValue (b s) ~ IxValue s) => A.Ixed f (C a b s) where
   ix i f (L x) = L <$> A.ix i f x
   ix i f (R x) = R <$> A.ix i f x
+
+instance (Periodic (a s), Periodic (b s), Index (a s) ~ Index s, Index (b s) ~ Index s) => Periodic (C a b s) where
+  interval (L a) = interval a
+  interval (R a) = interval a
+
+instance (Limited (a s), Limited (b s), Index (a s) ~ Index s, Index (b s) ~ Index s) => Limited (C a b s) where
+  imin (L a) = imin a
+  imin (R a) = imin a
+  imax (L a) = imax a
+  imax (R a) = imax a
 
 -- | Build a value as a schedule containing an enum.
 enumSchedule :: (EnumContains a s) => a (Schedule i v s) -> Schedule i v s

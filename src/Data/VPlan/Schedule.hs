@@ -24,7 +24,6 @@ module Data.VPlan.Schedule (
   , Supported
   , new
   , ScheduleType
-  , Modifiers
   ) where
 
 import           Control.Lens
@@ -44,8 +43,6 @@ instance (Data (s (Schedule i v s)), Typeable1 s, Typeable v, Typeable i) => Pla
 type instance Index (Schedule i v s) = i
 type instance IxValue (Schedule i v s) = v
 
--- | Get the modifiers of a schedule.
-type family Modifiers s :: * -> *
 type instance Modifiers (Schedule i v s) = s
 
 -- | Get the schedule type corresponding to a given modifier type.

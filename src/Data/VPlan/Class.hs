@@ -38,7 +38,6 @@ import           Data.Foldable       (foldl')
 import           Data.VPlan.Schedule
 import           Language.Haskell.TH
 import           Data.VPlan.TH
-import           Control.Monad
 
 -- | A class for types that have spans. (Like dates, ...)
 class HasSpan a where
@@ -79,8 +78,7 @@ class Limited a where
     where childs = v ^.. template :: [ScheduleType a]
 
 
--- | A modifier that repeats in a specific interval. Note that a non-periodic modifier can still be made an instance of
--- this class by using the interval 0.
+-- | A modifier that repeats in a specific interval.
 class Periodic a where
 
   -- | The interval after which the modifier repeats. The interval may only be valid within the index range
@@ -94,10 +92,6 @@ class Periodic a where
     | (h:t) <- ms = foldl' (flip $ lcm . interval) (interval h) t
     | otherwise = 1
     where ms = a ^.. template :: [ScheduleType a]
-
--- | Get the type to a given name
-resolveType :: Name -> Q Type
-resolveType = reify >=> getTCInfo >=> \(n, tv) -> foldl appT (conT n) $ map (varT . getTVName) tv
 
 -- | Generate Limited instances
 deriveLimited :: Name -> Q [Dec]
@@ -117,5 +111,8 @@ derivePeriodic n = let t = resolveType n in
 deriveClass :: Name -> Q [Dec]
 deriveClass n = concat <$> traverse ($ n) [derivePeriodic, deriveLimited]
 
-instance (Integral (Span i), Data (Schedule i v s)) => Periodic (Schedule i v s)
-instance (Ord i, Typeable (Schedule i v s), Data (s (Schedule i v s))) => Limited (Schedule i v s)
+instance (Periodic (s (Schedule i v s)), i ~ Index (s (Schedule i v s))) => Periodic (Schedule i v s) where
+  interval = interval . review schedule
+instance (Limited (s (Schedule i v s)), i ~ Index (s (Schedule i v s))) => Limited (Schedule i v s) where
+  imax = imax . review schedule
+  imin = imin . review schedule
