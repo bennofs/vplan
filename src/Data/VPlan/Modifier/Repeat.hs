@@ -32,11 +32,14 @@ data Repeat s = Repeat
     }
 makeLenses ''Repeat
 makeModifier ''Repeat
-deriveLimited ''Repeat
 
 deriving instance (Data (Span (Index s)), Data s) => Data (Repeat s)
 deriving instance (Eq (Span (Index s)), Eq s) => Eq (Repeat s)
 instance Periodic (Repeat s) where interval r = r ^. rinterval
+instance Limited (Repeat s) where
+  imin _ = Nothing
+  imax _ = Nothing
+
 instance (Functor f, A.Contains f s, HasSpan (Index s)) => A.Contains f (Repeat s) where
   contains i f r = repeated ?? r $ A.contains (i `tmod` (r ^. rinterval)) f
 
