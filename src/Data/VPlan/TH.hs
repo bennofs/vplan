@@ -158,9 +158,9 @@ resolveType = reify >=> getTCInfo >=> \(n, tv) -> foldl appT (conT n) $ map (var
 genModifier :: Name -> Q [Dec]
 genModifier n = let t = resolveType n in
   [d|
-    type instance Modifiers $t = $kind2type
+    type instance Modifiers $t = Modifiers $kind2type
   |]
-  where kind2type = reify n >>= getTCInfo >>= \(_,tv) -> appsT (conT n) $ map (varT . getTVName) $ init tv
+  where kind2type = reify n >>= getTCInfo >>= \(_,tv) -> varT $ getTVName $ last tv
 
 -- | Make all boilerplate instances required for a modifier
 makeModifier :: Name -> Q [Dec]
