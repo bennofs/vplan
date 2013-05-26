@@ -162,7 +162,6 @@ You could also define a modifier without those instances, but it's usage will be
 
 TODO
 ----
- -  Implement Repeat modifier and combinators
  -  Maybe some pretty prining for schedules?
  -  Serialization of schedules?
 
