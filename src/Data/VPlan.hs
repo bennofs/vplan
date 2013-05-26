@@ -15,6 +15,7 @@ module Data.VPlan
 
    -- * This module contains some simple functions for creating schedules.
  , module Combinators
+ , module Class
 
    -- * Much of the functionality in this package is implemented in terms of lens, so export it here.
  , module Lens
@@ -39,6 +40,7 @@ module Data.VPlan
  ) where
 
 import           Control.Lens                  as Lens
+import           Data.VPlan.Class              as Class
 import           Data.VPlan.Combinators        as Combinators
 import           Data.VPlan.Modifier.Annotate  as Annotate
 import           Data.VPlan.Modifier.Combine   as Combine
