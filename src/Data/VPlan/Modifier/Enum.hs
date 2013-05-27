@@ -8,7 +8,8 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
-{-# LANGUAGE UndecidableInstances  #-}
+{-# LANGUAGE UndecidableInstances, RankNTypes, ConstraintKinds  #-}
+{-# LANGUAGE ScopedTypeVariables, KindSignatures #-}
 {-# OPTIONS_GHC -fno-warn-orphans  #-}
 
 -- |
@@ -29,6 +30,7 @@ module Data.VPlan.Modifier.Enum (
   , enumItem
   , scheduleItem
   , EnumContains
+  , CFunc(..)
   ) where
 
 import           Control.Applicative
@@ -40,6 +42,7 @@ import           Data.VPlan.Builder
 import           Data.VPlan.Class
 import           Data.VPlan.Schedule
 import           Data.VPlan.TH
+import GHC.Exts
 
 -- | An Either for types with one type argument (which is passed to both sides)
 data (:><:) a b s = L (a s) | R (b s) deriving (Eq)
@@ -91,6 +94,23 @@ instance (Limited (a s), Limited (b s), Index (a s) ~ Index s, Index (b s) ~ Ind
   imin (R a) = imin a
   imax (L a) = imax a
   imax (R a) = imax a
+
+
+-- | A polymorphic, constrained function returning some type r.
+data CFunc ctx r = CFunc
+  { cfunc :: (forall a. ctx a => a -> r)
+  }
+
+-- | Class to which allows to apply functions to the values in an Enum
+class EnumApply ctx e where
+  enumApply :: CFunc ctx b -> e -> b
+
+instance EnumApply ctx (Close a) where
+  enumApply _ (Close v) = absurd v
+
+instance (ctx (l a), EnumApply ctx (r a)) => EnumApply ctx (C l r a) where
+  enumApply f (L a) = cfunc f a
+  enumApply f (R a) = enumApply f a
 
 -- | Build a value as a schedule containing an enum.
 enumSchedule :: (EnumContains a s) => a (Schedule i v s) -> Schedule i v s
