@@ -1,15 +1,17 @@
+{-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE DeriveDataTypeable    #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE KindSignatures        #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverlappingInstances  #-}
+{-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE StandaloneDeriving    #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
-{-# LANGUAGE UndecidableInstances, RankNTypes, ConstraintKinds  #-}
-{-# LANGUAGE ScopedTypeVariables, KindSignatures #-}
+{-# LANGUAGE UndecidableInstances  #-}
 {-# OPTIONS_GHC -fno-warn-orphans  #-}
 
 -- |
@@ -42,7 +44,7 @@ import           Data.VPlan.Builder
 import           Data.VPlan.Class
 import           Data.VPlan.Schedule
 import           Data.VPlan.TH
-import GHC.Exts
+import           GHC.Exts
 
 -- | An Either for types with one type argument (which is passed to both sides)
 data (:><:) a b s = L (a s) | R (b s) deriving (Eq)
