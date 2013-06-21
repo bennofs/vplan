@@ -20,6 +20,8 @@ library
     , dlist
     , template-haskell
     , void
+    , boxes
+    , syb
 
   exposed-modules:
       Data.VPlan
