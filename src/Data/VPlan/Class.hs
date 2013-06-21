@@ -47,10 +47,15 @@ class HasSpan a where
   tmod :: a -> Span a -> a
 
   default tmod :: (Span a ~ a, Integral a) => a -> a -> a
-  tmod = mod
+  tmod x y
+    | y == 0 = x
+    | otherwise = mod x y
 
--- | Overlapping instance
-instance (Integral a) => HasSpan a
+instance HasSpan Integer
+instance HasSpan Int
+instance (HasSpan a, HasSpan b) => HasSpan (a,b) where
+  type Span (a,b) = (Span a, Span b)
+  tmod (a,b) = bimap (tmod a) (tmod b)
 
 -- | A class for modifiers that have a max and min index bound.
 class Limited a where

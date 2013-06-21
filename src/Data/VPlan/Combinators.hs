@@ -28,6 +28,7 @@ module Data.VPlan.Combinators
 
 import           Control.Lens                  hiding (at)
 import           Data.VPlan.Builder
+import           Data.VPlan.Class
 import           Data.VPlan.Modifier.Combine
 import           Data.VPlan.Modifier.Constant
 import qualified Data.VPlan.Modifier.Empty     as E
@@ -88,5 +89,5 @@ swap :: (Supported Combine s, Supported Limit s, Supported R.Reference s, Ord (I
 swap a b s = except b (except a s) -||- eq b (ref a s) -||- eq a (ref b s)
 
 -- | Repeat a given schedule every n time units.
-every :: (Supported Repeat s, Integral (Index s)) => Index s -> s -> s
+every :: (Supported Repeat s) => Span (Index s) -> s -> s
 every n = new . Repeat n
