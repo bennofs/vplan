@@ -15,7 +15,7 @@ cabal-version:       >=1.8
 library
   build-depends:
       base
-    , lens
+    , lens > 3.8
     , mtl
     , dlist
     , template-haskell
