@@ -44,6 +44,8 @@ class HasSpan a where
   type Span a
   type Span a = a
 
+  -- | Return the time `mod` a given span. This should return the time unchanged when the span is zero. 
+  -- It should behave like the haskell `mod` function on negative times/spans (if they exist for the type).
   tmod :: a -> Span a -> a
 
   default tmod :: (Span a ~ a, Integral a) => a -> a -> a
@@ -116,6 +118,7 @@ derivePeriodic n = let t = resolveType n in
 deriveClass :: Name -> Q [Dec]
 deriveClass n = concat <$> traverse ($ n) [derivePeriodic, deriveLimited]
 
+-- define these instances here to break import cycle
 instance (Periodic (s (Schedule i v s)), i ~ Index (s (Schedule i v s))) => Periodic (Schedule i v s) where
   interval = interval . review schedule
 instance (Limited (s (Schedule i v s)), i ~ Index (s (Schedule i v s))) => Limited (Schedule i v s) where
