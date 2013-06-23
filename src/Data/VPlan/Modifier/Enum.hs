@@ -30,7 +30,9 @@ module Data.VPlan.Modifier.Enum (
   , enumSchedule
   , enumItem
   , scheduleItem
+  , enumApply
   , EnumContains
+  , EnumApply
   , CFunc(..)
   ) where
 

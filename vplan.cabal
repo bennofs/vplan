@@ -22,6 +22,8 @@ library
     , void
     , boxes
     , syb
+    , tagged
+    , containers
 
   exposed-modules:
       Data.VPlan

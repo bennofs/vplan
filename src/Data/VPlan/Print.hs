@@ -1,15 +1,30 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE RankNTypes       #-}
+{-# LANGUAGE ConstraintKinds       #-}
+{-# LANGUAGE DeriveDataTypeable    #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE PatternGuards         #-}
+{-# LANGUAGE RankNTypes            #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeOperators         #-}
+
 -- | Functions to pretty-print schedules
 module Data.VPlan.Print where
 
+import           Control.Applicative
 import           Control.Lens
+import           Control.Monad.Identity
+import           Control.Monad.Writer     hiding ((<>))
 import           Data.Data
-import           Data.Data.Lens
-import           Data.Generics          hiding (gshow)
+import           Data.Generics            hiding (gshow)
+import           Data.Proxy
+import           Data.Traversable         (sequenceA)
+import           Data.Tree
+import           Data.VPlan.Modifier.Enum
 import           Data.VPlan.Schedule
-import           Debug.Trace
 import           Text.PrettyPrint.Boxes
+
+-- | Type of a function that can extend a given pretty printing function that returns a type b.
+type Extender b = (forall a. (Typeable a) => (a -> b) -> (a -> b))
 
 -- | Enclose a box in the given characters.
 enclose :: Char -> Char -> Box -> Box
@@ -26,31 +41,55 @@ hpad n c a b
   | n > cols b = b <> rep (n - cols b) a (char c)
   | otherwise = b
 
--- | A generic show, just printing the data constructor and it's arguments
-gshow :: (Data a) => a -> Box
+-- | @gshow p a@ returns a string representation of a. If p is True, the result is enclosed in round parentheses.
+gshow :: (Data a) => Bool -> a -> Box
 gshow = gshowQ id
 
--- | Generalized gshow, which also takes a function that extends the recursive call.
-gshowQ :: (Data a) => (forall a. Typeable a => (a -> Box) -> a -> Box) -> a -> Box
-gshowQ f = showG `extQ` text `ext1Q` slist
-  where showG o
-          | null cs = c
-          | otherwise = enclose '(' ')' $ c <+> hsep 1 top cs
+-- | Like @gshow@, but allows to specify a function that modifies the recursive caller function. This allows you
+-- to provide custom special-case functions.
+gshowQ :: (Data a) => Extender Box -> Bool -> a -> Box
+gshowQ f p = runIdentity . tshow f' p
+  where f' g = Identity . f (runIdentity . g)
+
+-- | Like @gshowQ@, but allows to traverse with an applicative.
+tshow :: (Data a, Applicative m) => (forall t. Typeable t => (t -> m Box) -> t -> m Box) -> Bool -> a -> m Box
+tshow f p = showG `extQ` (pure . text) `ext1Q` slist
+  where showG o = fmap ?? cs $ \cs' -> case cs' of
+          [] -> c
+          _ -> enc $ c <+> hsep 1 top cs'
           where c = text $ showConstr $ toConstr o
-                cs = gmapQ (f $ gshowQ f) o
-        slist :: (Data a) => [a] -> Box
-        slist l = enclose '[' ']' $ punctuateH top (char ',') $ map (f $ gshowQ f) l
+                cs = sequenceA $ gmapQ (f $ tshow f True) o
+                enc = if p then enclose '(' ')' else id
+        slist l = enclose '[' ']' . punctuateH top (char ',') <$> traverse (f $ tshow f True) (l `asTypeOf` [])
 
--- | Just const with a restricted type, to aid the type inference
-asAppliedTo :: (a -> b) -> a -> (a -> b)
-asAppliedTo = const
+-- | Shows a value marking holes of a given type with "_" and returning an ordered list with the values of the holes.
+showHoles :: forall p. forall a. (Data a, Typeable p) => Proxy p -> a -> (Box,[p])
+showHoles _ a = runWriter $ (tshow (`extQ` f) False a :: Writer [p] Box)
+  where f :: p -> Writer [p] Box
+        f x = text "_" <$ tell [x]
 
--- | Render a plated as a tree-like structure, rendering everything that is not recursed into as a node.
-treeSchedule :: (Plated a, Data a) => a -> Box
-treeSchedule a = text "  " <> this // header // content
-  where showHole = const $ text "_"
-        cs = map treeSchedule $ a ^.. plate
-        this = gshowQ (extQ ?? showHole `asAppliedTo` a) a
-        intervals = map ((+2) . cols) cs & _head %~ max (cols this)
-        header = hcat top $ map (\n -> text "    |" <> rep (n-3) top (char ' ')) intervals
-        content = hcat top $ zipWith (\x n -> hpad (n + 2) ' ' top x) cs intervals
+-- | Show holes in a schedule, skipping the Enum/Schedule boiler plate.
+showHolesSchedule :: forall i. forall v. forall s. (Data (Schedule i v s), EnumApply Data (s (Schedule i v s)), Typeable1 s, Typeable i, Typeable v) => Schedule i v s => (Box, [Schedule i v s])
+showHolesSchedule s = enumApply (CFunc f :: CFunc Data (Box, [Schedule i v s])) $ review schedule s
+  where f a = showHoles (Proxy :: Proxy (Schedule i v s)) a
+
+-- | Show a tree
+showTree :: Tree Box -> Box
+showTree (Node n ns) = this <> connect // header // content
+  where this = n <> text " "
+        cs = map showTree ns
+        intervals = map (succ . succ . cols) cs & _head %~ max (cols this)
+        header = hcat top $ map (\x -> text "¦" <> rep (x-1) top (char ' ')) intervals
+        connect = hcat top $ map (\x -> rep x top (char '-') <> char '+') $ safeInit $ intervals & _head %~ subtract (cols this)
+        content = hcat top $ zipWith (\x y -> hpad y ' ' top x) cs intervals
+
+-- | A version of 'init' that returns an empty list when given an empty list
+safeInit :: [a] -> [a]
+safeInit [] = []
+safeInit x = init x
+
+-- | Render a schedule as a tree.
+showScheduleTree :: forall i. forall s. forall v. (EnumApply Data (s (Schedule i v s)), Typeable1 s, Typeable v, Typeable i, Data (s (Schedule i v s))) => Schedule i v s -> Box
+showScheduleTree = showTree . unfoldTree showHolesSchedule
+
+
