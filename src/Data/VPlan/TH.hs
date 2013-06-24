@@ -42,7 +42,7 @@ type family Modifiers s :: * -> *
 
 -- | Generate the type families IxValue and Index for lens.
 genIxedFamilies :: Name -> Q [Dec]
-genIxedFamilies = reify >=> getTCInfo >=> fmap concat . for [mkName "Index", mkName "IxValue"] . genIxedFamily
+genIxedFamilies = reify >=> getTCInfo >=> for [mkName "Index", mkName "IxValue"] . genIxedFamily
 
 -- | Get the name of a type variable binder
 getTVName :: TyVarBndr -> Name
@@ -54,8 +54,8 @@ appsT :: TypeQ -> [TypeQ] -> TypeQ
 appsT = foldl appT
 
 -- | Generate the ixed family f for the type t with the type arguments tv.
-genIxedFamily :: (Name, [TyVarBndr]) -> Name -> Q [Dec]
-genIxedFamily (t,tv) f = fmap pure $ tySynInstD f [appsT (conT t) $ map (varT . getTVName) tv] $
+genIxedFamily :: (Name, [TyVarBndr]) -> Name -> Q Dec
+genIxedFamily (t,tv) f = tySynInstD f [appsT (conT t) $ map (varT . getTVName) tv] $
                          appT (conT f) $ varT $ getTVName $ last tv
 
 -- | Generate the ixed and contains instances from the AtSansFunctor.Ixed/Contains instances for type t.
