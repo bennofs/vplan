@@ -5,17 +5,21 @@
 {-# LANGUAGE PatternGuards         #-}
 {-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE TupleSections         #-}
 {-# LANGUAGE TypeOperators         #-}
 
 -- | Functions to pretty-print schedules
 module Data.VPlan.Print where
 
 import           Control.Applicative
+import           Control.Arrow            hiding ((<+>))
 import           Control.Lens
 import           Control.Monad.Identity
 import           Control.Monad.Writer     hiding ((<>))
 import           Data.Data
 import           Data.Generics            hiding (gshow)
+import           Data.Maybe
 import           Data.Proxy
 import           Data.Traversable         (sequenceA)
 import           Data.Tree
@@ -93,3 +97,7 @@ showScheduleTree :: forall i. forall s. forall v. (EnumApply Data (s (Schedule i
 showScheduleTree = showTree . unfoldTree showHolesSchedule
 
 
+makeLenses ''ScheduleView
+
+-- | Show a table
+showTable :: 

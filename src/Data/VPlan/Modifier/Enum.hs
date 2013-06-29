@@ -25,7 +25,6 @@
 -- Portability : non-portable (uses various GHC-specific extensions)
 module Data.VPlan.Modifier.Enum (
     (:><:)(R,L)
-  , Close(..)
   , enumValue
   , enumSchedule
   , enumItem
@@ -39,7 +38,6 @@ module Data.VPlan.Modifier.Enum (
 import           Control.Applicative
 import           Control.Lens
 import           Data.Data
-import           Data.Void
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Builder
 import           Data.VPlan.Class
@@ -57,16 +55,6 @@ deriving instance (Typeable s, Typeable1 a, Typeable1 b, Data (b s), Data (a s))
 -- | Shorter alias
 type C = (:><:)
 
--- | This type signalizes the end of a chain of (:><:)'s.
-data Close a = Close Void deriving (Eq)
-makeModifier ''Close
-deriveClass ''Close
-
-deriving instance (Data a) => Data (Close a)
-
-instance A.Contains f (Close a) where contains _ _ (Close v) = absurd v
-instance A.Ixed f (Close a) where ix _ _ (Close v)           = absurd v
-
 -- | Require that a type enum can contain the given value
 class EnumContains a b where
 
@@ -75,6 +63,7 @@ class EnumContains a b where
 
 instance                       EnumContains a a       where enumValue = id
 instance                       EnumContains a (C a b) where enumValue = L
+instance                       EnumContains b (C a b) where enumValue = R
 instance (EnumContains c  b) => EnumContains c (C a b) where enumValue = R . enumValue
 
 instance (A.Contains f (a s), A.Contains f (b s), Index (a s) ~ Index s, Index (b s) ~ Index s,
@@ -106,9 +95,6 @@ data CFunc ctx r = CFunc
 -- | Class to which allows to apply functions to the values in an Enum
 class EnumApply ctx e where
   enumApply :: CFunc ctx b -> e -> b
-
-instance EnumApply ctx (Close a) where
-  enumApply _ (Close v) = absurd v
 
 instance (ctx (l a), EnumApply ctx (r a)) => EnumApply ctx (C l r a) where
   enumApply f (L a) = cfunc f a
