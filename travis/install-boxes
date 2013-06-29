@@ -1,0 +1,7 @@
+#! /bin/bash
+
+# Installs a new version of boxes from git, with split dependency updated to spilt 0.2.*
+git clone https://github.com/Eelis/boxes
+cd boxes
+cabal install
+cd ..
