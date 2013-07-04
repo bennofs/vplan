@@ -100,6 +100,9 @@ instance (ctx (l a), EnumApply ctx (r a)) => EnumApply ctx (C l r a) where
   enumApply f (L a) = cfunc f a
   enumApply f (R a) = enumApply f a
 
+instance (ctx a) => EnumApply ctx a where
+  enumApply f a = cfunc f a
+
 -- | Build a value as a schedule containing an enum.
 enumSchedule :: (EnumContains a s) => a (Schedule i v s) -> Schedule i v s
 enumSchedule = view schedule . enumValue

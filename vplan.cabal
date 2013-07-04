@@ -24,6 +24,7 @@ library
     , syb
     , tagged
     , containers
+    , repa
 
   exposed-modules:
       Data.VPlan

@@ -33,11 +33,11 @@ type Builder b a = Writer (DList b) a
 runBuilder :: Builder b () -> [b]
 runBuilder b = DL.toList $ execWriter b
 
--- | Add a single item to a 'Builder'.
+-- | Add a single item to a 'Builder'. The item is inserted after the last item.
 item :: a -> Builder a ()
 item = dlist . DL.singleton
 
--- | Add items in a DList to a builder. This is just tell.
+-- | Add items in a DList to a builder.
 dlist :: DList a -> Builder a ()
 dlist = tell
 
