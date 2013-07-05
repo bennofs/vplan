@@ -1,8 +1,9 @@
 language: haskell
-before_install:
+install:
 
   # Install boxes (git version)
    - travis/install-boxes
 
   # Try installing some of the build-deps with apt-get for speed.
    - travis/cabal-apt-install
+
