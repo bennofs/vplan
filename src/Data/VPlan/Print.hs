@@ -1,5 +1,3 @@
-{-# LANGUAGE ConstraintKinds       #-}
-{-# LANGUAGE DeriveDataTypeable    #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PatternGuards         #-}
@@ -7,18 +5,19 @@
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TupleSections         #-}
+{-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
 
--- | Functions to pretty-print schedules
+-- | This module provides functions for printing schedules.
 module Data.VPlan.Print where
 
 import           Control.Applicative
-import           Control.Arrow            hiding ((<+>))
 import           Control.Lens
 import           Control.Monad.Identity
 import           Control.Monad.Writer     hiding ((<>))
 import           Data.Data
 import           Data.Generics            hiding (gshow)
+import           Data.List
 import           Data.Maybe
 import           Data.Proxy
 import           Data.Traversable         (sequenceA)
@@ -51,12 +50,13 @@ gshow = gshowQ id
 
 -- | Like @gshow@, but allows to specify a function that modifies the recursive caller function. This allows you
 -- to provide custom special-case functions.
-gshowQ :: (Data a) => Extender Box -> Bool -> a -> Box
+gshowQ :: forall a. (Data a) => Extender Box -> Bool -> a -> Box
 gshowQ f p = runIdentity . tshow f' p
-  where f' g = Identity . f (runIdentity . g)
+  where f' :: (forall t. Typeable t => (t -> Identity Box) -> t -> Identity Box)
+        f' g = Identity . f (runIdentity . g)
 
 -- | Like @gshowQ@, but allows to traverse with an applicative.
-tshow :: (Data a, Applicative m) => (forall t. Typeable t => (t -> m Box) -> t -> m Box) -> Bool -> a -> m Box
+tshow :: forall m. forall a. (Data a, Applicative m) => (forall t. Typeable t => (t -> m Box) -> t -> m Box) -> Bool -> a -> m Box
 tshow f p = showG `extQ` (pure . text) `ext1Q` slist
   where showG o = fmap ?? cs $ \cs' -> case cs' of
           [] -> c
@@ -64,6 +64,7 @@ tshow f p = showG `extQ` (pure . text) `ext1Q` slist
           where c = text $ showConstr $ toConstr o
                 cs = sequenceA $ gmapQ (f $ tshow f True) o
                 enc = if p then enclose '(' ')' else id
+        slist :: forall b. Data b => [b] -> m Box
         slist l = enclose '[' ']' . punctuateH top (char ',') <$> traverse (f $ tshow f True) (l `asTypeOf` [])
 
 -- | Shows a value marking holes of a given type with "_" and returning an ordered list with the values of the holes.
@@ -75,7 +76,8 @@ showHoles _ a = runWriter $ (tshow (`extQ` f) False a :: Writer [p] Box)
 -- | Show holes in a schedule, skipping the Enum/Schedule boiler plate.
 showHolesSchedule :: forall i. forall v. forall s. (Data (Schedule i v s), EnumApply Data (s (Schedule i v s)), Typeable1 s, Typeable i, Typeable v) => Schedule i v s => (Box, [Schedule i v s])
 showHolesSchedule s = enumApply (CFunc f :: CFunc Data (Box, [Schedule i v s])) $ review schedule s
-  where f a = showHoles (Proxy :: Proxy (Schedule i v s)) a
+  where f :: forall a. (Data a) => a -> (Box, [Schedule i v s])
+        f a = showHoles (Proxy :: Proxy (Schedule i v s)) a
 
 -- | Show a tree
 showTree :: Tree Box -> Box
@@ -96,8 +98,11 @@ safeInit x = init x
 showScheduleTree :: forall i. forall s. forall v. (EnumApply Data (s (Schedule i v s)), Typeable1 s, Typeable v, Typeable i, Data (s (Schedule i v s))) => Schedule i v s -> Box
 showScheduleTree = showTree . unfoldTree showHolesSchedule
 
+-- | Show a function from a pair to a box as a table in the given range.
+showFromToTable :: (Enum e) => ((e,e) -> Box) -> (e,e) -> (e,e) -> Box -> Box -> Box
+showFromToTable f (x,y) (x',y') h v = hcat top $ intersperse h $ map g [x..x']
+  where g a = vcat right $ intersperse v $ map ((v <>) . f . (a,)) [y..y']
 
-makeLenses ''ScheduleView
-
--- | Show a table
-showTable :: 
+-- | Render a part of a schedule as a table
+showScheduleTable :: (Ixed (Accessor (First (IxValue s))) s, Index s ~ (a,a), Enum a, Show (IxValue s)) => (a,a) -> (a,a) -> s -> Box
+showScheduleTable b e s = showFromToTable (\x -> text $ fromMaybe "-" $ fmap show $ s ^? ix x) b e (char ' ') nullBox

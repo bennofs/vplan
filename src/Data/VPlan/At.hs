@@ -1,21 +1,13 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes            #-}
--- |
--- Module      : $Header$
--- Description : This module is a workaround for a bug in GHC 7.4. We need the lens' classes 'Contains', 'Ixed' and 'At'
---               without their Functor super class. The names in this module clash with lens, so you need to import it
---               qualified.
--- Copyright   : (c) Benno Fünfstück
--- License     : GPL-3
---
--- Maintainer  : benno.fuenfstueck@gmail.com
--- Stability   : experimental
--- Portability : portable
+
+-- | This module is a workaround for a bug in GHC 7.4. We need the lens' classes 'Contains', 'Ixed' and 'At'
+-- without their Functor super class. The names in this module clash with lens, so you need to import it qualified.
 module Data.VPlan.At
-  ( Contains, contains,
-    Ixed, ix,
-    At, at
+  ( Contains(contains)
+  , Ixed(ix)
+  , At(at)
   ) where
 
 import           Control.Lens (Index, IndexedLens', IndexedLensLike', IxValue)

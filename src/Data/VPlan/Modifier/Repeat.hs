@@ -6,15 +6,8 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
--- |
--- Module      : $Header$
--- Description : A repeating modifier.
--- Copyright   : (c) Benno Fünfstück
--- License     : GPL-3
---
--- Maintainer  : benno.fuenfstueck@gmail.com
--- Stability   : experimental
--- Portability : non-portable (uses various GHC extensions)
+
+-- | A repeating modifier.
 module Data.VPlan.Modifier.Repeat
   ( Repeat(..)
   ) where

@@ -9,20 +9,12 @@
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE UndecidableInstances       #-}
--- |
--- Module      : $Header$
--- Description : The schedule data type.
--- Copyright   : (c) Benno Fünfstück
--- License     : GPL-3
---
--- Maintainer  : benno.fuenfstueck@gmail.com
--- Stability   : experimental
--- Portability : non-portable (uses various GHC extensions)
+
+-- | The schedule data type.
 module Data.VPlan.Schedule (
     Schedule(..)
   , schedule
-  , Supported
-  , new
+  , Supported(new)
   , ScheduleType
   ) where
 

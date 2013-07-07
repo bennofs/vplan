@@ -6,15 +6,8 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
--- |
--- Module      : $Header$
--- Description : A modifier that allows to attach some additional static data to another modifier.
--- Copyright   : (c) Benno Fünfstück
--- License     : GPL-3
---
--- Maintainer  : benno.fuenfstueck@gmail.com
--- Stability   : experimental
--- Portability : non-portable
+
+-- | A modifier that allows to attach some additional static data to another modifier.
 module Data.VPlan.Modifier.Annotate
   ( Annotate(..)
   , annotate

@@ -24,7 +24,6 @@ library
     , syb
     , tagged
     , containers
-    , repa
 
   exposed-modules:
       Data.VPlan
@@ -39,6 +38,7 @@ library
     , Data.VPlan.Modifier.Combine
     , Data.VPlan.Modifier.Annotate
     , Data.VPlan.Modifier.Repeat
+    , Data.VPlan.Print
     , Data.VPlan.Class
     , Data.VPlan.At
     , Data.VPlan.TH

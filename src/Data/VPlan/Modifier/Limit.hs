@@ -6,15 +6,8 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
--- |
--- Module      : $Header$
--- Description : Limit a modifier with some predicate on the index
--- Copyright   : (c) Benno Fünfstück
--- License     : GPL-3
---
--- Maintainer  : benno.fuenfstueck@gmail.com
--- Stability   : experimental
--- Portability : non-portable
+
+-- | Limit a modifier with some predicate on the index
 module Data.VPlan.Modifier.Limit (
     Limit()
   , condition
@@ -68,6 +61,6 @@ lower = Limit LT
 equal :: (Ord (Index s)) => Index s -> s -> Limit s
 equal = Limit EQ
 
--- | Limit another schedule to all the indices hight than the given one
+-- | Limit another schedule to all the indices heigher than the given one
 greater :: (Ord (Index s)) => Index s -> s -> Limit s
 greater = Limit GT

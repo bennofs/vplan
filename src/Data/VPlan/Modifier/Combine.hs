@@ -6,15 +6,8 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
--- |
--- Module      : $Header$
--- Description : A modifier that combines the result of several modifiers.
--- Copyright   : (c) Benno Fünfstück
--- License     : GPL-3
---
--- Maintainer  : benno.fuenfstueck@gmail.com
--- Stability   : experimental
--- Portability : non-portable (Uses various GHC extensions)
+
+-- | A modifier that combines the result of several modifiers.
 module Data.VPlan.Modifier.Combine (
     Combine (..)
   , combine

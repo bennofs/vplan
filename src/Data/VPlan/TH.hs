@@ -4,15 +4,8 @@
 {-# LANGUAGE UndecidableInstances  #-}
 {-# LANGUAGE CPP                   #-}
 {-# LANGUAGE TypeFamilies          #-}
--- |
--- Module      : $Header$
--- Description : Some template-haskell functions for generating boilerplate instances and defintions.
--- Copyright   : (c) Benno Fünfstück
--- License     : GPL-3
---
--- Maintainer  : benno.fuenfstueck@gmail.com
--- Stability   : experimental
--- Portability : portable
+
+-- | Some template-haskell functions for generating boilerplate instances and defintions.
 module Data.VPlan.TH
   ( -- * Interface
     genIxedFamilies

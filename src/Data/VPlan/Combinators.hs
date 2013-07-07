@@ -2,15 +2,8 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
--- |
--- Module      : $Header$
--- Description : Combinators for building schedules, using the modifiers provided by this package.
--- Copyright   : (c) Benno Fünfstück
--- License     : GPL-3
---
--- Maintainer  : benno.fuenfstueck@gmail.com
--- Stability   : experimental
--- Portability : non-portable
+
+-- | Combinators for building schedules, using the modifiers provided by this package.
 module Data.VPlan.Combinators
 (   (!<-)
   , (!<|)
@@ -45,11 +38,13 @@ a !<- b = new $ a $ new b
 -- | @a <-| b@ is similar to @a <-! b@, with the difference that b is already a 'Schedule'.
 (!<|) :: (Supported m s) => (t -> m s) -> t -> s
 a !<| b = new $ a b
+infixr 6 !<|
 
 -- | Combine two simple schedules using the 'Combine' modifier. This ensures that
 -- on traversal, the values of the first given schedule are traversed first.
 (-||-) :: (Supported Combine s) => s -> s -> s
 s -||- t = new $ combine s t
+infixl 1 -||-
 
 -- | This is just an empty schedule.
 empty :: (Supported E.Empty s) => s

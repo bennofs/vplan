@@ -1,13 +1,4 @@
--- |
--- Module      : $Header$
--- Description : Utilities for using the Writer monad to build a list of things.
--- Copyright   : (c) Benno Fünfstück
--- License     : GPL-3
---
--- Maintainer  : benno.fuenfstueck@gmail.com
--- Stability   : experimental
--- Portability : portable
-
+-- | Utilities for using the Writer monad to build a list of things.
 module Data.VPlan.Builder
  ( -- * Data type definition
    Builder

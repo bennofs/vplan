@@ -6,25 +6,13 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE TemplateHaskell      #-}
 {-# LANGUAGE FlexibleInstances    #-}
--- |
--- Module      : $Header$
--- Description : Classes that may be implemented by the modifiers to support some features.
--- Copyright   : (c) Benno Fünfstück
--- License     : GPL-3
---
--- Maintainer  : benno.fuenfstueck@gmail.com
--- Stability   : experimental
--- Portability : non-portable (uses various GHC extensions)
 
+-- | Classes that may be implemented by the modifiers to support some features.
 module Data.VPlan.Class
   ( Span
-  , Limited
-  , Periodic
-  , HasSpan
-  , tmod
-  , imax
-  , imin
-  , interval
+  , Limited(imin,imax)
+  , Periodic(interval)
+  , HasSpan(tmod)
   , derivePeriodic
   , deriveLimited
   , deriveClass
@@ -41,6 +29,7 @@ import           Data.VPlan.TH
 
 -- | A class for types that have spans. (Like dates, ...)
 class HasSpan a where
+
   type Span a
   type Span a = a
 

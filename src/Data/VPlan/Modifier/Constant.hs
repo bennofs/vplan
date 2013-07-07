@@ -6,16 +6,8 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
--- |
--- Module      : $Header$
--- Description : A modifier that always returns a constant value.
--- Copyright   : (c) Benno Fünfstück
--- License     : GPL-3
---
--- Maintainer  : benno.fuenfstueck@gmail.com
--- Stability   : experimental
--- Portability : non-portable
 
+-- | A modifier that always returns a constant value.
 module Data.VPlan.Modifier.Constant (
     Constant(..)
   , constant  ) where
@@ -26,7 +18,7 @@ import qualified Data.VPlan.At    as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
 
--- | A modifier that always returns the same value, no matter to what it is applied.
+-- | A modifier that always returns the same value, for all possible indices.
 newtype Constant s = Constant (IxValue s)
 makeModifier ''Constant
 makeIso ''Constant

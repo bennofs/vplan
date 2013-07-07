@@ -13,25 +13,14 @@
 {-# LANGUAGE UndecidableInstances  #-}
 {-# OPTIONS_GHC -fno-warn-orphans  #-}
 
--- |
--- Module      : $Header$
--- Description : A modifier that can contain exactly one out of multiple modifiers of possible
---               different types.
--- Copyright   : (c) Benno Fünfstück
--- License     : GPL-3
---
--- Maintainer  : benno.fuenfstueck@gmail.com
--- Stability   : experimental
--- Portability : non-portable (uses various GHC-specific extensions)
+-- | A modifier that can contain exactly one out of multiple modifiers of different types.
 module Data.VPlan.Modifier.Enum (
     (:><:)(R,L)
-  , enumValue
   , enumSchedule
   , enumItem
   , scheduleItem
-  , enumApply
-  , EnumContains
-  , EnumApply
+  , EnumContains(enumValue)
+  , EnumApply(enumApply)
   , CFunc(..)
   ) where
 
