@@ -74,7 +74,7 @@ showHoles _ a = runWriter $ (tshow (`extQ` f) False a :: Writer [p] Box)
         f x = text "_" <$ tell [x]
 
 -- | Show holes in a schedule, skipping the Enum/Schedule boiler plate.
-showHolesSchedule :: forall i. forall v. forall s. (Data (Schedule i v s), EnumApply Data (s (Schedule i v s)), Typeable1 s, Typeable i, Typeable v) => Schedule i v s => (Box, [Schedule i v s])
+showHolesSchedule :: forall i. forall v. forall s. (Data (Schedule i v s), EnumApply Data (s (Schedule i v s)), Typeable1 s, Typeable i, Typeable v) => Schedule i v s -> (Box, [Schedule i v s])
 showHolesSchedule s = enumApply (CFunc f :: CFunc Data (Box, [Schedule i v s])) $ review schedule s
   where f :: forall a. (Data a) => a -> (Box, [Schedule i v s])
         f a = showHoles (Proxy :: Proxy (Schedule i v s)) a
