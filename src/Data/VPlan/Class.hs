@@ -6,6 +6,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE TemplateHaskell      #-}
 {-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE ConstraintKinds      #-}
 
 -- | Classes that may be implemented by the modifiers to support some features.
 module Data.VPlan.Class
