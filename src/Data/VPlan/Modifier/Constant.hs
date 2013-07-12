@@ -6,6 +6,7 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 
 -- | A modifier that always returns a constant value.
 module Data.VPlan.Modifier.Constant (
@@ -19,13 +20,15 @@ import           Data.VPlan.Class
 import           Data.VPlan.TH
 
 -- | A modifier that always returns the same value, for all possible indices.
-newtype Constant s = Constant (IxValue s)
+newtype Constant (s :: * -> * -> *) i v = Constant v deriving (Eq)
 makeModifier ''Constant
 makeIso ''Constant
 deriveClass ''Constant
 
-deriving instance (Data (IxValue s), Data s) => Data (Constant s)
-deriving instance (Eq (IxValue s)) => Eq (Constant s)
+deriving instance (Typeable2 s, Typeable i, Typeable v, Data v) => Data (Constant s i v)
 
-instance (Gettable f) => A.Contains f (Constant s) where contains = containsTest  $ const $ const True
-instance (Functor f) => A.Ixed f (Constant s)      where ix i f   = from constant $ indexed f i
+instance (Gettable f) => A.Contains f (Constant s i v)                 where contains = containsTest  $ const $ const True
+instance (Functor f, v ~ IxValue (s i v)) => A.Ixed f (Constant s i v) where ix i f   = from constant $ indexed f i
+instance Functor (Constant s i) where  fmap f    (Constant x) = Constant $ f x
+instance Bifunctor (Constant s) where  bimap _ f (Constant x) = Constant $ f x
+instance Profunctor (Constant s) where dimap _ f (Constant x) = Constant $ f x

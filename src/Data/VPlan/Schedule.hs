@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable         #-}
+{-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE EmptyDataDecls             #-}
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE FlexibleInstances          #-}
@@ -9,6 +10,7 @@
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
 {-# LANGUAGE UndecidableInstances       #-}
+{-# LANGUAGE ConstraintKinds            #-}
 
 -- | The schedule data type.
 module Data.VPlan.Schedule (
@@ -16,38 +18,42 @@ module Data.VPlan.Schedule (
   , schedule
   , Supported(new)
   , ScheduleType
+  , ModSame
+  , ModInstance
   ) where
 
 import           Control.Lens
+import           GHC.Exts
 import           Data.Data
-import qualified Data.VPlan.At as A
+import qualified Data.VPlan.At        as A
 import           Data.VPlan.TH
+import           GHC.Generics
 
--- | The type of a schedule. This type is just 'fix' at the type level.
-newtype Schedule i v s = Schedule (s (Schedule i v s))
+
+-- | The type of a schedule. This is like fix, but with the indices added.
+newtype Schedule s i v = Schedule (s (Schedule s) i v) deriving (Generic)
 makeIso ''Schedule
-genTypeable ''Schedule
 genIxedInstances ''Schedule
 
-deriving instance (Data (s (Schedule i v s)), Typeable (Schedule i v s)) => Data (Schedule i v s)
+deriving instance (ModInstance Data s i v, Typeable (Schedule s i v)) => Data (Schedule s i v)
+deriving instance (ModInstance Eq s i v) => Eq (Schedule s i v)
+deriving instance (ModInstance (A.Contains f) s i v) => A.Contains f (Schedule s i v)
+deriving instance (ModInstance (A.Ixed f) s i v, ModSame Index s i v, ModSame IxValue s i v) => A.Ixed f (Schedule s i v)
 
-instance (Data (s (Schedule i v s)), Typeable1 s, Typeable v, Typeable i) => Plated (Schedule i v s)
-type instance Index (Schedule i v s) = i
-type instance IxValue (Schedule i v s) = v
+instance (Data (Schedule s i v)) => Plated (Schedule s i v)
 
-type instance Modifiers (Schedule i v s) = s
+type instance Index (Schedule s i v) = i
+type instance IxValue (Schedule s i v) = v
+type instance Modifiers (Schedule s i v) = s
 
--- | Get the schedule type corresponding to a given modifier type.
 type family ScheduleType m :: *
-type instance ScheduleType a = Schedule (Index a) (IxValue a) (Modifiers a)
+type instance ScheduleType a = Schedule (Modifiers a) (Index a) (IxValue a)
 
-deriving instance (A.Contains f (s (Schedule i v s))) => A.Contains f (Schedule i v s)
-deriving instance (A.Ixed f (s (Schedule i v s)), IxValue (s (Schedule i v s)) ~ v,
-                   Index (s (Schedule i v s)) ~ i) => A.Ixed f (Schedule i v s)
-deriving instance (Eq (s (Schedule i v s))) => Eq (Schedule i v s)
+type ModSame t s i v = (t (Schedule s i v) ~ t (s (Schedule s) i v))
+type ModInstance (x :: * -> Constraint) s i v = (x (s (Schedule s) i v))
 
 -- | Assert that a Schedule s supports a given modifier m.
 class Supported m s where
 
   -- | Construct a Schedule with that modifier.
-  new :: m s -> s
+  new :: m s i v -> s i v

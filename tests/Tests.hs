@@ -34,7 +34,7 @@ scheduleModifiers =
   , testProperty "swap swaps two items" prop_swap
   ]
 
-type SimpleSchedule a b = Schedule a b (Constant :><: Limit :><: Empty :><: Combine :><: Reference)
+type SimpleSchedule a b = Schedule (Constant :><: Limit :><: Empty :><: Combine :><: Reference) a b
 
 prop_empty_contains :: Int -> Bool
 prop_empty_contains x = not $ (empty :: SimpleSchedule Int Int) ^. contains x
@@ -51,7 +51,7 @@ prop_single_ix x y = (single x :: SimpleSchedule Int Int) ^@.. ix y == [(y,x)]
 prop_schedule_iso :: Int -> Bool
 prop_schedule_iso x = view schedule (review schedule s) == s
                       && review schedule (view schedule s2) == s2
-  where s2 = x ^. constant :: Constant (Schedule Int Int Constant)
+  where s2 = x ^. constant :: Constant (Schedule Constant) Int Int
         s = single x :: SimpleSchedule Int Int
 
 prop_at_contains :: Int -> Int -> Bool

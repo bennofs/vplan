@@ -56,4 +56,4 @@ import           Data.VPlan.TH
 type AllModifiers = Constant :><: Combine :><: Empty :><: Limit :><: Reference
 
 -- | An universal schedule, that can supports all the modifier provided in this package.
-type USchedule i v = Schedule i v AllModifiers
+type USchedule i v = Schedule AllModifiers i v

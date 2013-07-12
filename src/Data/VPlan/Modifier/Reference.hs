@@ -6,6 +6,7 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 
 -- | A modifier that references a value in a schedule
 module Data.VPlan.Modifier.Reference (
@@ -21,20 +22,19 @@ import           Data.VPlan.Class
 import           Data.VPlan.TH
 
 -- | Reference the value at index '_source' in the schedule '_underlying'.
-data Reference s = Reference {_source :: Index s, _underlying :: s}
+data Reference s i v = Reference {_source :: i, _underlying :: s i v} deriving (Eq)
 makeLenses ''Reference
 makeModifier ''Reference
 deriveClass ''Reference
 
-deriving instance (Eq (Index s), Eq s) => Eq (Reference s)
-deriving instance (Data (Index s), Data s) => Data (Reference s)
+deriving instance (Data i, Data (s i v), Typeable2 s, Typeable i, Typeable v) => Data (Reference s i v)
 
 -- | Construct a new reference.
-reference :: Index s -> s -> Reference s
+reference :: i -> s i v -> Reference s i v
 reference = Reference
 
-instance (Eq (Index s), Gettable f, A.Contains f s) => A.Contains f (Reference s) where
+instance (Eq i, i ~ Index (s i v), Gettable f, A.Contains f (s i v)) => A.Contains f (Reference s i v) where
   contains _ f r = underlying ?? r $ A.contains (r ^. source) f
 
-instance (Eq (Index s), A.Ixed f s, Functor f) => A.Ixed f (Reference s) where
+instance (Eq i, i ~ Index (s i v), A.Ixed f (s i v), Functor f) => A.Ixed f (Reference s i v) where
   ix _ f r = underlying ?? r $ A.ix (r ^. source) f

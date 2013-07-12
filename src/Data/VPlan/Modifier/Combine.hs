@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable    #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -22,18 +23,27 @@ import           Data.VPlan.TH
 
 -- | Combine two modifiers into one. On traversal, results of the first modifier are traversed
 -- first. After that, the results of the second modifier are traversed.
-data Combine s = Combine s s deriving (Eq)
+data Combine s i v = Combine (s i v) (s i v) deriving (Eq)
 makeModifier ''Combine
 deriveClass ''Combine
 
-deriving instance (Data s) => Data (Combine s)
+deriving instance (Data (s i v), Typeable2 s, Typeable i, Typeable v) => Data (Combine s i v)
 
 -- | Combine two modifiers. See 'Combine' for details.
-combine :: e -> e -> Combine e
+combine :: s i v -> s i v -> Combine s i v
 combine = Combine
 
-instance (Gettable f, A.Contains (Accessor Bool) s) => A.Contains f (Combine s) where
+instance (Bifunctor s) => Bifunctor (Combine s) where
+  bimap f g (Combine a b) = Combine (bimap f g a) (bimap f g b)
+
+instance (Functor (s i)) => Functor (Combine s i) where
+  fmap f (Combine a b) = Combine (fmap f a) (fmap f b)
+
+instance (Profunctor s) => Profunctor (Combine s) where
+  dimap l r (Combine a b) = Combine (dimap l r a) (dimap l r b)
+
+instance (Gettable f, A.Contains (Accessor Bool) (s i v)) => A.Contains f (Combine s i v) where
   contains = containsTest $ \i (Combine a b) -> a ^. A.contains i || b ^. A.contains i
 
-instance (A.Ixed f e, Applicative f) => A.Ixed f (Combine e) where
+instance (A.Ixed f (s i v), Applicative f) => A.Ixed f (Combine s i v) where
   ix i f (Combine a b) = liftA2 combine (A.ix i f a) (A.ix i f b)

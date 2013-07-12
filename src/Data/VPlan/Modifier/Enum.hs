@@ -25,6 +25,7 @@ module Data.VPlan.Modifier.Enum (
   ) where
 
 import           Control.Applicative
+import           GHC.Exts
 import           Control.Lens
 import           Data.Data
 import qualified Data.VPlan.At       as A
@@ -34,12 +35,12 @@ import           Data.VPlan.Schedule
 import           Data.VPlan.TH
 
 -- | An Either for types with one type argument (which is passed to both sides)
-data (:><:) a b s = L (a s) | R (b s) deriving (Eq)
+data (:><:) a b (s :: * -> * -> *) i v = L (a s i v) | R (b s i v) deriving (Eq)
 infixr 7 :><:
 
 makeModifier ''(:><:)
 
-deriving instance (Typeable s, Typeable1 a, Typeable1 b, Data (b s), Data (a s)) => Data ((:><:) a b s)
+deriving instance (Typeable v, Typeable i, BothInstance Data a b s i v, Typeable2 (C a b s)) => Data ((:><:) a b s i v)
 
 -- | Shorter alias
 type C = (:><:)
@@ -48,33 +49,47 @@ type C = (:><:)
 class EnumContains a b where
 
   -- | Create an enum with the given value.
-  enumValue :: a s -> b s
+  enumValue :: a s i v -> b (s :: * -> * -> *) i v
 
 instance                       EnumContains a a       where enumValue = id
 instance                       EnumContains a (C a b) where enumValue = L
 instance                       EnumContains b (C a b) where enumValue = R
 instance (EnumContains c  b) => EnumContains c (C a b) where enumValue = R . enumValue
 
-instance (A.Contains f (a s), A.Contains f (b s), Index (a s) ~ Index s, Index (b s) ~ Index s,
-          Functor f) => A.Contains f (C a b s) where
+type BothInstance (c :: * -> Constraint) a b (s :: * -> * -> *) i v = (c (a s i v), c (b s i v))
+type BothInstance1 (c :: (* -> *) -> Constraint) a b (s :: * -> * -> *) i = (c (a s i), c (b s i))
+type BothInstance2 (c :: (* -> * -> *) -> Constraint) a b (s:: * -> * -> *) = (c (a s), c (b s))
+type BothSame f a b s i v = (f (C a b (s :: * -> * -> *) i v) ~ f (a s i v), f (C a b s i v) ~ f (b s i v))
+
+instance (BothInstance (A.Contains f) a b s i v, BothSame Index a b s i v, Functor f) => A.Contains f (C a b s i v) where
   contains i f (L x) = L <$> A.contains i f x
   contains i f (R x) = R <$> A.contains i f x
 
-instance (A.Ixed f (a s), Functor f, A.Ixed f (b s), Index (a s) ~ Index s, Index (b s) ~ Index s,
-          IxValue (a s) ~ IxValue s, IxValue (b s) ~ IxValue s) => A.Ixed f (C a b s) where
+instance (Functor f, BothInstance (A.Ixed f) a b s i v, BothSame Index a b s i v, BothSame IxValue a b s i v) => A.Ixed f (C a b s i v) where
   ix i f (L x) = L <$> A.ix i f x
   ix i f (R x) = R <$> A.ix i f x
 
-instance (Periodic (a s), Periodic (b s), Index (a s) ~ Index s, Index (b s) ~ Index s) => Periodic (C a b s) where
+instance (BothInstance Periodic a b s i v, BothSame Index a b s i v) => Periodic (C a b s i v) where
   interval (L a) = interval a
   interval (R a) = interval a
 
-instance (Limited (a s), Limited (b s), Index (a s) ~ Index s, Index (b s) ~ Index s) => Limited (C a b s) where
+instance (BothInstance Limited a b s i v, BothSame Index a b s i v) => Limited (C a b s i v) where
   imin (L a) = imin a
   imin (R a) = imin a
   imax (L a) = imax a
   imax (R a) = imax a
 
+instance (BothInstance1 Functor a b s i) => Functor (C a b s i) where
+  fmap f (L x) = L $ fmap f x
+  fmap f (R x) = R $ fmap f x
+
+instance (BothInstance2 Bifunctor a b s) => Bifunctor (C a b s) where
+  bimap f g (L x) = L $ bimap f g x
+  bimap f g (R x) = R $ bimap f g x
+
+instance (BothInstance2 Profunctor a b s) => Profunctor (C a b s) where
+  dimap l r (L x) = L $ dimap l r x
+  dimap l r (R x) = R $ dimap l r x
 
 -- | A polymorphic, constrained function returning some type r.
 data CFunc ctx r = CFunc
@@ -85,7 +100,7 @@ data CFunc ctx r = CFunc
 class EnumApply ctx e where
   enumApply :: CFunc ctx b -> e -> b
 
-instance (ctx (l a), EnumApply ctx (r a)) => EnumApply ctx (C l r a) where
+instance (ctx (l s i v), EnumApply ctx (r s i v)) => EnumApply ctx (C l r s i v) where
   enumApply f (L a) = cfunc f a
   enumApply f (R a) = enumApply f a
 
@@ -93,15 +108,15 @@ instance (ctx a) => EnumApply ctx a where
   enumApply f a = cfunc f a
 
 -- | Build a value as a schedule containing an enum.
-enumSchedule :: (EnumContains a s) => a (Schedule i v s) -> Schedule i v s
+enumSchedule :: (EnumContains a s) => a (Schedule s) i v -> Schedule s i v
 enumSchedule = view schedule . enumValue
 
 -- | Build an enum value as a single item.
-enumItem :: (EnumContains a e) => a (Schedule i v s) -> Builder (e (Schedule i v s)) ()
+enumItem :: (EnumContains a e) => a (Schedule s) i v -> Builder (e (Schedule s) i v) ()
 enumItem = item . enumValue
 
 -- | Build an enum value as a single schedule item.
-scheduleItem :: (EnumContains a s) => a (Schedule i v s) -> Builder (Schedule i v s) ()
+scheduleItem :: (EnumContains a s) => a (Schedule s) i v -> Builder (Schedule s i v) ()
 scheduleItem = item . enumSchedule
 
-instance (EnumContains m s) => Supported m (Schedule i v s) where new = enumSchedule
+instance (EnumContains m s) => Supported m (Schedule s) where new = enumSchedule

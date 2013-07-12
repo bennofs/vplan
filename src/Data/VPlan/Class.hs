@@ -108,8 +108,9 @@ deriveClass :: Name -> Q [Dec]
 deriveClass n = concat <$> traverse ($ n) [derivePeriodic, deriveLimited]
 
 -- define these instances here to break import cycle
-instance (Periodic (s (Schedule i v s)), i ~ Index (s (Schedule i v s))) => Periodic (Schedule i v s) where
+instance (ModInstance Periodic s i v, ModSame Index s i v) => Periodic (Schedule s i v) where
   interval = interval . review schedule
-instance (Limited (s (Schedule i v s)), i ~ Index (s (Schedule i v s))) => Limited (Schedule i v s) where
+
+instance (ModInstance Limited s i v, ModSame Index s i v) => Limited (Schedule s i v) where
   imax = imax . review schedule
   imin = imin . review schedule

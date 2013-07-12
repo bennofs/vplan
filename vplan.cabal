@@ -1,7 +1,7 @@
 name:                vplan
 version:             0.1.0.0
-synopsis:            Ein Programm zum Abrufen und Auswerten des Vertretungsplans
-homepage:            http://github.com/bennofs/vplan-utils
+synopsis:            A library for flexible schedules
+homepage:            http://github.com/bennofs/vplan
 license:             GPL-3
 license-file:        LICENSE
 author:              Benno Fünfstück
@@ -13,17 +13,21 @@ build-type:          Simple
 cabal-version:       >=1.8
 
 library
+
   build-depends:
       base
     , lens > 3.8
     , mtl
     , dlist
     , template-haskell
+    , typeable-th
     , void
     , boxes
-    , syb
     , tagged
     , containers
+    , profunctors
+    , bifunctors
+    , syb
 
   exposed-modules:
       Data.VPlan
