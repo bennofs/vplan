@@ -28,6 +28,7 @@ library
     , profunctors
     , bifunctors
     , syb
+    , ghc-prim
 
   exposed-modules:
       Data.VPlan
