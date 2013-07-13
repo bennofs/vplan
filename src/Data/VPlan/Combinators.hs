@@ -21,7 +21,6 @@ module Data.VPlan.Combinators
 
 import           Control.Lens                  hiding (at)
 import           Data.VPlan.Builder
-import           Data.VPlan.Class
 import           Data.VPlan.Modifier.Combine
 import           Data.VPlan.Modifier.Constant
 import qualified Data.VPlan.Modifier.Empty     as E
@@ -43,7 +42,7 @@ infixr 6 !<|
 -- | Combine two simple schedules using the 'Combine' modifier. This ensures that
 -- on traversal, the values of the first given schedule are traversed first.
 (-||-) :: (Supported Combine s) => s i v -> s i v -> s i v
-s -||- t = new $ combine s t
+s -||- t = new $ combine [s,t]
 infixl 1 -||-
 
 -- | This is just an empty schedule.
@@ -69,7 +68,7 @@ except x s = new (lower x s) -||- new (greater x s)
 
 -- | Build a list of schedules to sequence with (-||-). Later items take precendence over earlier items.
 buildCombine :: (Supported Combine s, Supported E.Empty s) => Builder (s i v) () -> s i v
-buildCombine = foldr (-||-) empty . runBuilder
+buildCombine = new . Combine . runBuilder
 
 -- | Move an item to another place. @move source target@ moves an item at index @source@ to
 -- index @target@. When there is already an item at the target position, the moved item is placed behind
@@ -84,5 +83,5 @@ swap :: (Supported Combine s, Supported Limit s, Supported R.Reference s, Ord i)
 swap a b s = except b (except a s) -||- eq b (ref a s) -||- eq a (ref b s)
 
 -- | Repeat a given schedule every n time units.
-every :: (Supported Repeat s) => Span i -> s i v -> s i v
-every n = new . Repeat n
+every :: (Supported Repeat s, Num i) => i -> s i v -> s i v
+every n = new . Repeat (n,0)

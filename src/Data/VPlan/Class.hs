@@ -1,19 +1,17 @@
-{-# LANGUAGE DefaultSignatures    #-}
-{-# LANGUAGE FlexibleContexts     #-}
-{-# LANGUAGE PatternGuards        #-}
-{-# LANGUAGE ScopedTypeVariables  #-}
-{-# LANGUAGE TypeFamilies         #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE TemplateHaskell      #-}
-{-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE ConstraintKinds      #-}
+{-# LANGUAGE DefaultSignatures     #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE PatternGuards         #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE UndecidableInstances  #-}
+{-# LANGUAGE TemplateHaskell       #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE ConstraintKinds       #-}
 
 -- | Classes that may be implemented by the modifiers to support some features.
 module Data.VPlan.Class
-  ( Span
-  , Limited(imin,imax)
+  ( Limited(imin,imax)
   , Periodic(interval)
-  , HasSpan(tmod)
   , derivePeriodic
   , deriveLimited
   , deriveClass
@@ -27,27 +25,6 @@ import           Data.Foldable       (foldl')
 import           Data.VPlan.Schedule
 import           Language.Haskell.TH
 import           Data.VPlan.TH
-
--- | A class for types that have spans. (Like dates, ...)
-class HasSpan a where
-
-  type Span a
-  type Span a = a
-
-  -- | Return the time `mod` a given span. This should return the time unchanged when the span is zero. 
-  -- It should behave like the haskell `mod` function on negative times/spans (if they exist for the type).
-  tmod :: a -> Span a -> a
-
-  default tmod :: (Span a ~ a, Integral a) => a -> a -> a
-  tmod x y
-    | y == 0 = x
-    | otherwise = mod x y
-
-instance HasSpan Integer
-instance HasSpan Int
-instance (HasSpan a, HasSpan b) => HasSpan (a,b) where
-  type Span (a,b) = (Span a, Span b)
-  tmod (a,b) = bimap (tmod a) (tmod b)
 
 -- | A class for modifiers that have a max and min index bound.
 class Limited a where
@@ -81,10 +58,10 @@ class Periodic a where
   -- | The interval after which the modifier repeats. The interval may only be valid within the index range
   -- (gminBound a, gmaxBound a).  The default implementation takes the lcm of all the individual intervals of all the
   -- children schedules. If there are no children schedules, the interval is assumed to be 1.
-  interval :: a -> Span (Index a)
+  interval :: a -> Index a
 
-  default interval :: (Integral (Span (Index a)), Typeable (ScheduleType a), Data a, Periodic (ScheduleType a))
-                   => a -> Span (Index a)
+  default interval :: (Integral (Index a), Typeable (ScheduleType a), Data a, Periodic (ScheduleType a))
+                   => a -> Index a
   interval a
     | (h:t) <- ms = foldl' (flip $ lcm . interval) (interval h) t
     | otherwise = 1
@@ -101,7 +78,7 @@ deriveLimited n = let t = resolveType n in
 derivePeriodic :: Name -> Q [Dec]
 derivePeriodic n = let t = resolveType n in
   [d|
-   instance (Integral (Span (Index $t)), Data $t, Typeable (ScheduleType $t), Periodic (ScheduleType $t)) => Periodic $t
+   instance (Integral (Index $t), Data $t, Typeable (ScheduleType $t), Periodic (ScheduleType $t)) => Periodic $t
   |]
 
 -- | Derive all classes in this module

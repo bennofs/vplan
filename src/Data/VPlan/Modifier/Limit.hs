@@ -2,11 +2,12 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE StandaloneDeriving    #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
 
 -- | Limit a modifier with some predicate on the index
 module Data.VPlan.Modifier.Limit (
@@ -20,7 +21,9 @@ module Data.VPlan.Modifier.Limit (
   ) where
 
 import           Control.Applicative
-import           Control.Lens
+import           Control.Lens        hiding ((.=))
+import           Data.Aeson
+import           Data.Aeson.Types
 import           Data.Data
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
@@ -56,6 +59,14 @@ instance (A.Ixed f (s i v), Applicative f, Ord i, i ~ Index (s i v)) => A.Ixed f
 
 instance Functor (s i) => Functor (Limit s i) where fmap f = limited %~ fmap f
 instance Bifunctor s => Bifunctor (Limit s)   where bimap f g (Limit c b u) = Limit c (f b) $ bimap f g u
+instance Contravariant (s i) => Contravariant (Limit s i) where contramap f = limited %~ contramap f
+
+instance (FromJSON (s i v), FromJSON i) => FromJSON (Limit s i v) where
+  parseJSON (Object o) = Limit <$> (fmap read $ o .: "condition") <*> o .: "bound" <*> o .: "child"
+  parseJSON v = typeMismatch "Object" v
+
+instance (ToJSON (s i v), ToJSON i) => ToJSON (Limit s i v) where
+  toJSON (Limit c b m) = object [ "condition" .= show c, "bound" .= b, "child" .= m ]
 
 -- | Limit another schedule to all indices lower than the given one
 lower :: (Ord i) => i -> s i v -> Limit s i v

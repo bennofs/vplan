@@ -29,6 +29,9 @@ library
     , bifunctors
     , syb
     , ghc-prim
+    , aeson
+    , lens-aeson
+    , text
 
   exposed-modules:
       Data.VPlan

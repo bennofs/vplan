@@ -2,9 +2,10 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE StandaloneDeriving    #-}
 {-# LANGUAGE TemplateHaskell       #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
 
@@ -16,9 +17,12 @@ module Data.VPlan.Modifier.Annotate
   , annotated
   ) where
 
-import           Control.Lens
+import           Control.Applicative
+import           Control.Lens        hiding ((.=))
+import           Data.Aeson
+import           Data.Aeson.Types
 import           Data.Data
-import qualified Data.VPlan.At    as A
+import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
 
@@ -38,17 +42,16 @@ annotate = Annotate
 
 deriving instance (Data a, Data (s i v), Typeable2 s, Typeable i, Typeable v) => Data (Annotate a s i v)
 
-instance (A.Contains f (s i v), Functor f) => A.Contains f (Annotate a s i v) where
-  contains = fmap annotated . A.contains
+instance (A.Contains f (s i v), Functor f) => A.Contains f (Annotate a s i v) where contains = fmap annotated . A.contains
+instance (A.Ixed f (s i v), Functor f) => A.Ixed f (Annotate a s i v) where ix = fmap annotated . A.ix
+instance (Functor (s i)) => Functor (Annotate a s i) where fmap f = annotated %~ fmap f
+instance (Bifunctor s) => Bifunctor (Annotate a s) where bimap f g = annotated %~ bimap f g
+instance (Profunctor s) => Profunctor (Annotate a s) where dimap f g = annotated %~ dimap f g
+instance (Contravariant (s i)) => Contravariant (Annotate a s i) where contramap f = annotated %~ contramap f
 
-instance (A.Ixed f (s i v), Functor f) => A.Ixed f (Annotate a s i v) where
-  ix = fmap annotated . A.ix
+instance (FromJSON (s i v), FromJSON a) => FromJSON (Annotate a s i v) where
+  parseJSON (Object o) = Annotate <$> o .: "data" <*> o .: "child"
+  parseJSON v = typeMismatch "Object" v
 
-instance (Functor (s i)) => Functor (Annotate a s i) where
-  fmap f (Annotate a x) = Annotate a (fmap f x)
-
-instance (Bifunctor s) => Bifunctor (Annotate a s) where
-  bimap f g (Annotate a x) = Annotate a (bimap f g x)
-
-instance (Profunctor s) => Profunctor (Annotate a s) where
-  dimap f g (Annotate a x) = Annotate a (dimap f g x)
+instance (ToJSON (s i v), ToJSON a) => ToJSON (Annotate a s i v) where
+  toJSON (Annotate a c) = object [ "data" .= a, "child" .= c ]

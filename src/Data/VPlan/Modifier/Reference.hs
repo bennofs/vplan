@@ -2,11 +2,12 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE StandaloneDeriving    #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
 
 -- | A modifier that references a value in a schedule
 module Data.VPlan.Modifier.Reference (
@@ -15,9 +16,12 @@ module Data.VPlan.Modifier.Reference (
   , reference
   ) where
 
-import           Control.Lens
+import           Control.Applicative
+import           Control.Lens        hiding ((.=))
+import           Data.Aeson
+import           Data.Aeson.Types
 import           Data.Data
-import qualified Data.VPlan.At    as A
+import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
 
@@ -38,3 +42,14 @@ instance (Eq i, i ~ Index (s i v), Gettable f, A.Contains f (s i v)) => A.Contai
 
 instance (Eq i, i ~ Index (s i v), A.Ixed f (s i v), Functor f) => A.Ixed f (Reference s i v) where
   ix _ f r = underlying ?? r $ A.ix (r ^. source) f
+
+instance Functor (s i) => Functor (Reference s i) where fmap f = underlying %~ fmap f
+instance Bifunctor s => Bifunctor (Reference s) where bimap f g (Reference i u) = Reference (f i) $ bimap f g u
+instance Contravariant (s i) => Contravariant (Reference s i) where contramap f = underlying %~ contramap f
+
+instance (FromJSON i, FromJSON (s i v)) => FromJSON (Reference s i v) where
+  parseJSON (Object o) = Reference <$> o .: "index" <*> o .: "child"
+  parseJSON v = typeMismatch "Object" v
+
+instance (ToJSON i, ToJSON (s i v)) => ToJSON (Reference s i v) where
+  toJSON (Reference i u) = object ["index" .= i, "child" .= u]

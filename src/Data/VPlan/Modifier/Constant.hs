@@ -2,20 +2,24 @@
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE StandaloneDeriving    #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE UndecidableInstances  #-}
-{-# LANGUAGE ScopedTypeVariables   #-}
 
 -- | A modifier that always returns a constant value.
 module Data.VPlan.Modifier.Constant (
     Constant(..)
-  , constant  ) where
+  , constant
+  ) where
 
-import           Control.Lens
+import           Control.Applicative
+import           Control.Lens        hiding ((.=))
+import           Data.Aeson.Types
 import           Data.Data
-import qualified Data.VPlan.At    as A
+import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
 
@@ -32,3 +36,10 @@ instance (Functor f, v ~ IxValue (s i v)) => A.Ixed f (Constant s i v) where ix 
 instance Functor (Constant s i) where  fmap f    (Constant x) = Constant $ f x
 instance Bifunctor (Constant s) where  bimap _ f (Constant x) = Constant $ f x
 instance Profunctor (Constant s) where dimap _ f (Constant x) = Constant $ f x
+
+instance (FromJSON v) => FromJSON (Constant s i v) where
+  parseJSON (Object o) = Constant <$> o .: "value"
+  parseJSON v = typeMismatch "Object" v
+
+instance (ToJSON v) => ToJSON (Constant s i v) where
+  toJSON (Constant v) = object ["value" .= v]

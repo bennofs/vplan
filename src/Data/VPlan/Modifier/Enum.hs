@@ -6,6 +6,7 @@
 {-# LANGUAGE OverlappingInstances  #-}
 {-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE StandaloneDeriving    #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
@@ -25,14 +26,18 @@ module Data.VPlan.Modifier.Enum (
   ) where
 
 import           Control.Applicative
+import           Data.Aeson.Types
+import           Data.Maybe
 import           GHC.Exts
 import           Control.Lens
 import           Data.Data
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Builder
 import           Data.VPlan.Class
+import qualified Data.Text           as T
 import           Data.VPlan.Schedule
 import           Data.VPlan.TH
+import           Control.Lens.Aeson
 
 -- | An Either for types with one type argument (which is passed to both sides)
 data (:><:) a b (s :: * -> * -> *) i v = L (a s i v) | R (b s i v) deriving (Eq)
@@ -90,6 +95,43 @@ instance (BothInstance2 Bifunctor a b s) => Bifunctor (C a b s) where
 instance (BothInstance2 Profunctor a b s) => Profunctor (C a b s) where
   dimap l r (L x) = L $ dimap l r x
   dimap l r (R x) = R $ dimap l r x
+
+instance (BothInstance1 Contravariant a b s i) => Contravariant (C a b s i) where
+  contramap f (L x) = L $ contramap f x
+  contramap f (R x) = R $ contramap f x
+
+-- | Unwrap one constructor application in a TypeRep
+unapply :: TypeRep -> TypeRep
+unapply t = typeRepTyCon t `mkTyConApp` dropEnd 1 (typeRepArgs t)
+
+-- | Select a the given element of an association list, failing with the default given.
+caseOf :: (Eq k) => (k -> a) -> [(k,a)] -> k -> a
+caseOf def assoc k = fromMaybe (def k) $ assoc ^? traversed . filtered ((==k) . fst) . _2
+
+instance (BothInstance FromJSON a (C b c) s i v, Typeable2 (a s)) => FromJSON (C a (C b c) s i v) where
+  parseJSON (Object o) 
+    | o ^? ix "modifier" . _String == Just (T.pack $ show typL) = L <$> parseJSON (Object $ sans "modifier" o)
+    | otherwise = R <$> parseJSON (Object o)
+    where typL = unapply $ typeOf2 (undefined :: a s () ())
+  parseJSON v = typeMismatch "Object" v
+
+instance (BothInstance FromJSON a b s i v, BothInstance2 Typeable2 a b s) => FromJSON (C a b s i v) where
+  parseJSON (Object o) = o .: "modifier" >>= caseOf failure 
+      [ (show typL, L <$> parseJSON (Object $ sans "modifier" o))
+      , (show typR, R <$> parseJSON (Object $ sans "modifier" o))
+      ]
+    where failure m = fail $ "Unknown modifier: " ++ m
+          typL = unapply $ typeOf2 (undefined :: a s () ())
+          typR = unapply $ typeOf2 (undefined :: b s () ())
+  parseJSON v = typeMismatch "Object" v
+
+instance (BothInstance ToJSON a (C b c) s i v, Typeable2 (a s)) => ToJSON (C a (C b c) s i v) where
+  toJSON (L x) = let (Object o) = toJSON x in Object $ o & at "modifier" ?~ String (T.pack $ show $ unapply $ typeOf2 (undefined :: a s () ()))
+  toJSON (R x) = toJSON x
+
+instance (BothInstance ToJSON a b s i v, BothInstance2 Typeable2 a b s) => ToJSON (C a b s i v) where
+  toJSON (L x) = let (Object o) = toJSON x in Object $ o & at "modifier" ?~ String (T.pack $ show $ unapply $ typeOf2 (undefined :: a s () ()))
+  toJSON (R x) = let (Object o) = toJSON x in Object $ o & at "modifier" ?~ String (T.pack $ show $ unapply $ typeOf2 (undefined :: b s () ()))
 
 -- | A polymorphic, constrained function returning some type r.
 data CFunc ctx r = CFunc
