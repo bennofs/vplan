@@ -9,7 +9,27 @@
 {-# LANGUAGE TypeOperators         #-}
 
 -- | This module provides functions for printing schedules.
-module Data.VPlan.Print where
+module Data.VPlan.Print
+  (-- * Printing functions
+    showScheduleTree
+  , showScheduleTable
+   -- * Pretty printing utilities
+  , enclose
+  , rep
+  , hpad
+  , showFromToTable
+  , showTree
+   -- * Implementation
+  , gshow
+  , gshowQ
+  , tshow
+  , showHoles
+  , showHolesSchedule
+  , safeInit
+   -- * Reexports
+  , render
+  , printBox
+  ) where
 
 import           Control.Applicative
 import           Control.Lens

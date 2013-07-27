@@ -20,9 +20,10 @@ module Data.VPlan.Modifier.Enum (
   , enumSchedule
   , enumItem
   , scheduleItem
-  , EnumContains(enumValue)
+  , EnumContains(enumValue, castEnum)
   , EnumApply(enumApply)
   , CFunc(..)
+  , enumv
   ) where
 
 import           Control.Applicative
@@ -30,6 +31,7 @@ import           Data.Aeson.Types
 import           Data.Maybe
 import           GHC.Exts
 import           Control.Lens
+import           Control.Monad
 import           Data.Data
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Builder
@@ -37,6 +39,7 @@ import           Data.VPlan.Class
 import qualified Data.Text           as T
 import           Data.VPlan.Schedule
 import           Data.VPlan.TH
+import           Data.VPlan.Util
 import           Control.Lens.Aeson
 
 -- | An Either for types with one type argument (which is passed to both sides)
@@ -56,10 +59,25 @@ class EnumContains a b where
   -- | Create an enum with the given value.
   enumValue :: a s i v -> b (s :: * -> * -> *) i v
 
-instance                       EnumContains a a       where enumValue = id
-instance                       EnumContains a (C a b) where enumValue = L
-instance                       EnumContains b (C a b) where enumValue = R
-instance (EnumContains c  b) => EnumContains c (C a b) where enumValue = R . enumValue
+  -- | Try to access the value of the requested type in the enum. Returns Nothing if a value of another type
+  -- is currently stored in the enum.
+  castEnum :: b (s :: * -> * -> *) i v -> Maybe :$ a s i v
+
+instance                       EnumContains a a       where 
+  enumValue = id
+  castEnum = Just
+
+instance                       EnumContains a (C a b) where 
+  enumValue = L
+  castEnum = preview $ enumEither . _Left
+
+instance                       EnumContains b (C a b) where 
+  enumValue = R
+  castEnum = preview $ enumEither . _Right
+
+instance (EnumContains c b) => EnumContains c (C a b) where 
+  enumValue = R . enumValue
+  castEnum = preview (enumEither . _Right) >=> castEnum
 
 type BothInstance (c :: * -> Constraint) a b (s :: * -> * -> *) i v = (c (a s i v), c (b s i v))
 type BothInstance1 (c :: (* -> *) -> Constraint) a b (s :: * -> * -> *) i = (c (a s i), c (b s i))
@@ -162,3 +180,14 @@ scheduleItem :: (EnumContains a s) => a (Schedule s) i v -> Builder (Schedule s 
 scheduleItem = item . enumSchedule
 
 instance (EnumContains m s) => Supported m (Schedule s) where new = enumSchedule
+
+-- | Convert an Enum to/from an Either
+enumEither :: Iso (C a b s i v) (C a' b' s' i' v') (Either (a s i v) (b s i v)) (Either (a' s' i' v') (b' s' i' v'))
+enumEither = iso ?? either L R $ \e -> case e of
+  L x -> Left x
+  R x -> Right x
+
+-- | A prism that focuses the element at the given type in an enum. The v stands for "value", it's there because the name
+-- enum is already taken by lens.
+enumv :: (EnumApply Typeable :$ e s i v, EnumContains a e, EnumContains b e) => Prism (e s i v) (e s i v) (a s i v) (b s i v)
+enumv = prism enumValue (\e -> maybe (Left e) Right $ castEnum e)
