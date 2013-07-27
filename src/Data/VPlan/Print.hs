@@ -85,8 +85,8 @@ showTree (Node n ns) = this <> connect // header // content
   where this = n <> text " "
         cs = map showTree ns
         intervals = map (succ . succ . cols) cs & _head %~ max (cols this)
-        header = hcat top $ map (\x -> text "¦" <> rep (x-1) top (char ' ')) intervals
-        connect = hcat top $ map (\x -> rep x top (char '-') <> char '+') $ safeInit $ intervals & _head %~ subtract (cols this)
+        header = hcat top $ map (\x -> hpad x ' ' top $ text "¦") intervals
+        connect = hcat top $ map (\x -> rep (pred x) top (char '-') <> char '+') $ safeInit $ intervals & _head %~ subtract (cols this - 1)
         content = hcat top $ zipWith (\x y -> hpad y ' ' top x) cs intervals
 
 -- | A version of 'init' that returns an empty list when given an empty list
