@@ -28,6 +28,7 @@ import           Data.Data
 import qualified Data.VPlan.At        as A
 import           Data.VPlan.TH
 import           GHC.Generics
+import           Data.Foldable (Foldable(..))
 import           Data.Aeson
 
 
@@ -45,6 +46,8 @@ deriving instance (ModInstance1 Functor s i) => Functor (Schedule s i)
 deriving instance (ModInstance1 Contravariant s i) => Contravariant (Schedule s i)
 deriving instance (ModInstance2 Profunctor s) => Profunctor (Schedule s)
 deriving instance (ModInstance2 Bifunctor s) => Bifunctor (Schedule s)
+deriving instance (ModInstance1 Foldable s i) => Foldable (Schedule s i)
+deriving instance (ModInstance1 Traversable s i) => Traversable (Schedule s i)
 deriving instance (ModInstance FromJSON s i v) => FromJSON (Schedule s i v)
 deriving instance (ModInstance ToJSON s i v) => ToJSON (Schedule s i v)
 
