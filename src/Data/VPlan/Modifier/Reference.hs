@@ -21,6 +21,7 @@ import           Control.Lens        hiding ((.=))
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Data
+import           Data.Foldable       (Foldable (..))
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
@@ -46,6 +47,8 @@ instance (Eq i, i ~ Index (s i v), A.Ixed f (s i v), Functor f) => A.Ixed f (Ref
 instance Functor (s i) => Functor (Reference s i) where fmap f = underlying %~ fmap f
 instance Bifunctor s => Bifunctor (Reference s) where bimap f g (Reference i u) = Reference (f i) $ bimap f g u
 instance Contravariant (s i) => Contravariant (Reference s i) where contramap f = underlying %~ contramap f
+instance Foldable (s i) => Foldable (Reference s i) where fold = fold . view underlying
+instance Traversable (s i) => Traversable (Reference s i) where traverse = underlying . traverse
 
 instance (FromJSON i, FromJSON (s i v)) => FromJSON (Reference s i v) where
   parseJSON (Object o) = Reference <$> o .: "index" <*> o .: "child"

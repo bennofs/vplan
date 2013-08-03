@@ -20,6 +20,7 @@ import           Control.Lens        hiding ((.=))
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Data
+import           Data.Foldable       (Foldable (..))
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
@@ -50,6 +51,12 @@ instance (Gettable f, A.Contains (Accessor Bool) (s i v)) => A.Contains f (Combi
 
 instance (A.Ixed f (s i v), Applicative f) => A.Ixed f (Combine s i v) where
   ix i f (Combine a) = Combine <$> traverse (A.ix i f) a
+
+instance (Foldable (s i)) => Foldable (Combine s i) where
+  fold (Combine a) = foldMap fold a
+
+instance (Traversable (s i)) => Traversable (Combine s i) where
+  traverse f (Combine a) = Combine <$> traverse (traverse f) a
 
 instance FromJSON (s i v) => FromJSON (Combine s i v) where
   parseJSON (Object o) = Combine <$> o .: "childs"

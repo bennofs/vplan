@@ -22,6 +22,7 @@ import           Control.Lens        hiding ((.=))
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Data
+import           Data.Foldable       (Foldable (..))
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
@@ -48,6 +49,8 @@ instance (Functor (s i)) => Functor (Annotate a s i) where fmap f = annotated %~
 instance (Bifunctor s) => Bifunctor (Annotate a s) where bimap f g = annotated %~ bimap f g
 instance (Profunctor s) => Profunctor (Annotate a s) where dimap f g = annotated %~ dimap f g
 instance (Contravariant (s i)) => Contravariant (Annotate a s i) where contramap f = annotated %~ contramap f
+instance (Foldable (s i)) => Foldable (Annotate a s i) where fold = views annotated fold
+instance (Traversable (s i)) => Traversable (Annotate a s i) where traverse = annotated . traverse
 
 instance (FromJSON (s i v), FromJSON a) => FromJSON (Annotate a s i v) where
   parseJSON (Object o) = Annotate <$> o .: "data" <*> o .: "child"

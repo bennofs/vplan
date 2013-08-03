@@ -22,6 +22,7 @@ import           Control.Lens        hiding ((.=))
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Data
+import           Data.Foldable       (Foldable (..))
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
@@ -61,6 +62,9 @@ instance (Functor f, A.Ixed f (s i v), Integral i, Index (s i v) ~ i) => A.Ixed 
 
 instance Functor (s i) => Functor (Repeat s i) where fmap f = repeated %~ fmap f
 instance Bifunctor s => Bifunctor (Repeat s) where bimap f g (Repeat i u) = Repeat (bimap f f i) $ bimap f g u
+instance Contravariant (s i) => Contravariant (Repeat s i) where contramap = over repeated . contramap
+instance Foldable (s i) => Foldable (Repeat s i) where fold = fold . view repeated
+instance Traversable (s i) => Traversable (Repeat s i) where traverse = repeated . traverse
 
 instance (FromJSON i, Num i, FromJSON (s i v)) => FromJSON (Repeat s i v) where
   parseJSON (Object o) = Repeat . (,0) <$> o .: "interval" <*> o .: "child"

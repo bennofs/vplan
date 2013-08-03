@@ -30,6 +30,7 @@ import           Control.Applicative
 import           Data.Aeson.Types
 import           Data.Maybe
 import           GHC.Exts
+import           Data.Foldable (Foldable(..))
 import           Control.Lens
 import           Control.Monad
 import           Data.Data
@@ -117,6 +118,14 @@ instance (BothInstance2 Profunctor a b s) => Profunctor (C a b s) where
 instance (BothInstance1 Contravariant a b s i) => Contravariant (C a b s i) where
   contramap f (L x) = L $ contramap f x
   contramap f (R x) = R $ contramap f x
+
+instance (BothInstance1 Foldable a b s i) => Foldable (C a b s i) where
+  fold (L x) = fold x
+  fold (R x) = fold x
+
+instance (BothInstance1 Traversable a b s i) => Traversable (C a b s i) where
+  traverse f (L x) = L <$> traverse f x
+  traverse f (R x) = R <$> traverse f x
 
 -- | Unwrap one constructor application in a TypeRep
 unapply :: TypeRep -> TypeRep

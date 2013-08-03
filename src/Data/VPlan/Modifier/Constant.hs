@@ -19,6 +19,7 @@ import           Control.Applicative
 import           Control.Lens        hiding ((.=))
 import           Data.Aeson.Types
 import           Data.Data
+import           Data.Foldable       (Foldable (..))
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
@@ -36,6 +37,8 @@ instance (Functor f, v ~ IxValue (s i v)) => A.Ixed f (Constant s i v) where ix 
 instance Functor (Constant s i) where  fmap f    (Constant x) = Constant $ f x
 instance Bifunctor (Constant s) where  bimap _ f (Constant x) = Constant $ f x
 instance Profunctor (Constant s) where dimap _ f (Constant x) = Constant $ f x
+instance Foldable (Constant s i) where fold (Constant v) = v
+instance Traversable (Constant s i) where traverse f (Constant v) = Constant <$> f v
 
 instance (FromJSON v) => FromJSON (Constant s i v) where
   parseJSON (Object o) = Constant <$> o .: "value"
