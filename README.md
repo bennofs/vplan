@@ -11,160 +11,93 @@ Introduction
 Warning: *This is work-in-progress. The API may still change. I don't care about backwards compatibility, so use at your
 own risk!*
 
+Note: *An understanding of [lens](http://lens.github.io/) is required in order to use this package. You should also
+be familar with the standard typeclasses (Functor, Applicative, Monad, Foldable, Traversable).*
+
 This package provides a datastructure for building flexible timetables in haskell. It aims to be extensible, but also
 provides a lot of features out of the box.
 
-Schedules (or Timetables) are built with so-called 'Modifiers'. A modifier is just a datatype that stands for an
-operation or a generater. Examples of modifiers are:
-  -   Empty: doesn't contain a value for any index in the schedule.
-  -   Constant a: generates a constant value a, for every index in the schedule.
-  -   Limit c bound s: Limits the input range of another modifier s, so it behaves like s only when the index compared to
-                       the bound is equal to the condition. For all other indices, it behaves like 'Empty'.
-  -   and some more
-
-Modifiers are types of kind * -> *. They get the schedule type as the first argument, so that they themselves can
-contain schedules. This leads to a Tree-like structure of types. The Schedule datatype just takes a modifier and passes
-itself to that modifier, so we get an infinitely recursive type.
-
+Schedules (or Timetables) are built with so-called 'Modifiers'. A modifier is just a data type that represents an
+operation on a schedule or a generator of values. Examples of modifiers are:
+  -   Empty    : doesn't contain a value for any index in the schedule. 
+  -   Constant : generates a constant value a, for every index in the schedule.
+  -   Limit    : Limits the input range of another modifier, so that it doesn't contain any values at indices outside 
+  -              of the start-end range.
+  -   ...
 
 Building up and indexing schedules
 ----------------------------------
-How do you use these modifiers? To get started, import Data.VPlan:
+So how do you use these modifiers? First, we have to import the VPlan library:
 
     >>> import Data.VPlan
 
-There are some combinators for building Schedules with the included Modifiers in Data.VPlan.Combinators, which is export
-ed by Data.VPlan. The simplest combinator is empty, which just creates an empty schedule:
+The high-level interface is exported from Data.VPlan.Combinators. It contains various functions for building schedules, for example
+`empty` :
+
 
     >>> :t empty
-    empty :: Supported Empty s => s
+    empty :: Supported Empty s => s i v
 
-This tells us that our Schedule type has to support the Empty modifier, and if it does, we can get a schedule with it.
-In this example, we're just going to use the Empty modifier as the only modifier in our Schedule type. To index into an
-Schedule, you can use the Traversal `ix` from the lens package:
-
-    >>> (empty :: Schedule Int Int Empty) ^? ix 10
-    Nothing
-
-Here we're telling to lookup the index 10 in a schedule, and return the first item in a Just, or Nothing if there is no
-item. In this case, we get a Nothing because the empty schedule doesn't contain a value at any place.
-The type of this empty schedule is Schedule Int Int Empty, which stands for a schedule with indices of type Int,
-values of type Int and only one modifier, Empty. There is also a lens to check if there is a value at a given place,
-called contains:
-
-    >>> (empty :: Schedule Int Int Empty) ^. contains 10
-    False
-
-As we expected, we got False, because there is no value at index 10.
-Let's look at another combinator, with the name 'single'. It's type is:
-
-    >>> :t single
-    single :: Supported Constant s => IxValue s -> s
-
-This allows use the create schedules that contain the same value at every index, for example 3:
-
-    >>> (single 3 :: Schedule Int Int Constant) ^? ix 5
-    Just 3
-
-So far we only had Schedules with one Modifier. But you can't do much with one Modifier, so there is another Modifier
-we can use at top-level that combines multiple modifiers. It works like this:
+This says that we can create an empty schedule (s) for indices of type (i) which contains values of type (v), but only if the Empty generator
+is supported by that schedule. A schedule can be made with the Schedule data type, which takes a list of modifiers and the index/value type.
+So, we can define a schedule that supports the Empty, Combine, Const, Limit and Repeat modifiers, with Int indices and containing String values:
 
     >>> :set -XTypeOperators
-    >>> (single 3 :: Schedule Int Int (Constant :><: Empty :><: Close)) ^? ix 5
-    Just 3
+    >>> type CustomSchedule = Schedule (Empty :><: Combine :><: Const :><: Limit :><: Repeat) Int 
 
-First we're enabling the TypeOperators language extension. Then we're creating a Schedule with a single value 3, which
-goes from Int to Int and contain either an Empty modifier or a Constant modifier. The Close just marks the end of the
-list, but don't forget it.
+Note that we had to enable the TypeOperators extension in order to use the (:><:) operator provided by VPlan. There is also an USchedule type alias
+provided by VPlan that constructs a schedule supporting most modifiers. But back to our example, we can the create an empty schedule 
+of our type now:
 
-There is a type alias which chains all modifiers available in this package, called AllModifiers, and a Schedule type
-that supports all those modifiers with the name USchedule. We're using this from now on,
-so we don't have to write out all of the Modifiers.
+    >>> let s = empty :: CustomSchedule
 
-With that knowledge, we can look at further combinators. First, there is eq, which takes an index `i` and limits a given
-schedule, so that it acts like Empty for all indices that are not equal to `i`. Example:
+Indexing is done via the Ixed instance from lens:
 
-    >>> (eq 3 (single 4) :: USchedule Int Int) ^? ix 3
-    Just 4
-    >>> (eq 3 (single 4) :: USchedule Int Int) ^? ix 5
+    >>> s ^? ix 1      -- Try to get the value at index 1 in the schedule
     Nothing
 
-To chain multiple schedules together, with the first one taking higher precendence than the last one, you can use `-||-`:
+There is also an instance of Contains, which allows you to check if the schedule has some key (i.e. it's value is not Nothing)
 
-    >>> let s = eq 3 (single 4) -||- eq 5 (single 1) -||- eq 3 (single 2) -||- eq 6 (single 10) :: USchedule Int Int
-    >>> s ^. contains 2
+    >>> s ^. contains 1
     False
-    >>> s ^? ix 5
-    Just 1
-    >>> s ^.. ix 3
-    [4,2]
 
-In the last example, we used `^..` to get all the values at a given index, with earlier values before later values.
-You can also move or swap values in a schedule:
+Lets build a more interresting schedule: A schedule that contains a value only at the given key.
 
-    >>> let s1 = move 6 1 s
-    >>> s1 ^? ix 1
-    Just 10
-    >>> s1 ^? ix 6
+    >>> let t = eq 3 (single "Hello world") :: CustomSchedule   -- Only contains "Hello world" at the index 3, nothing else.
+    >>> t ^? ix 3                                               -- Lookup the value at index 3
+    Just "Hello world"
+    >>> t ^? ix 4                                               -- At any other index, we only get Nothing.
     Nothing
-    >>> let s2 = move 1 3 s1
-    >>> s2 ^.. ix 3
-    [4,2,10]
-    >>> let s3 = swap 3 5 s2
-    >>> s3 ^? ix 3
-    Just 1
-    >>> s3 ^? ix 5
-    Just 4
+
+There are a few new things in that example. The first is `single`, which is just a function returning a schedule that has
+the given value at all indices. But our value should only be located at the index 3, so we need to narrow our schedule
+to only contain "Hello world" at the index *eq*ual to 3, using `eq`.
+
+But how can a schedule mutiple values at different indices? There is one combinator we haven't talked about yet, with the name (-||-).
+With it, we can *mix* multiple schedules into one. So if we have one schedule with a value at index 3, and another one with a value
+at the index 4, the result of combining these schedules using (-||-) will have a value at both of those indices. A little example
+to illustrate that:
+
+    >>> let u = eq 4 (single "Another value") :: CustomSchedule
+    >>> let tu = t -||- u
+    >>> s ^? ix 4
+    Just "Another value"
+    >>> s ^? ix 3
+    Just "Hello world"
+
+But that still isn't that interresting. After all, we can do that with just a Data.Map too. But the next example shows something
+we cannot do easily with maps: Repeating.
+
+    >>> let tu' = every 4 tu   -- Repeat the schedule every 4 items
+    >>> tu' ^? ix 3 -- Just as before
+    Just "Hello world"
+    >>> tu' ^? ix 7 -- This is new
+    Just "Hello world"
 
 You can find more combinators in the Data.VPlan.Combinators module, they are documented using haddock.
 
-Inspecting schedules
---------------------
-Other than indexing and creating schedules, you might also want to _inspect_ schedules, querying there structure
-and data. For this purpose, Schedule is an instance of Plated (a class from lens), which allows you to obtain the
-immediate children of some modifier. Example:
-
-    >>> :t (single 3 -||- single 4 :: USchedule Int Int) ^.. plate
-    [USchedule Int Int]
-
-Because there is no pretty printing for Schedules yet, you can't really try this. But you can get all the values
-of some type in a Schedule, by using template from Data.Data.Lens (lens package):
-
-    >>> (single 3 -||- single 4 :: USchedule Int Int) ^.. template :: [Int]
-    [3,4]
-
-To learn more about this, look at the documentation of the Control.Lens.Plated and Data.Data.Lens packages. All
-Modifiers defined in this package have Typeable and Data instances, so that shoulnd't be a problem.
-
-Defining custom modifiers
--------------------------
-Here are the steps you need to do to define your own modifiers:
- -  enable TemplateHaskell, StandaloneDeriving, FlexibleContexts and any extensions GHC wants you to enable
- -  import Data.VPlan.At qualified (in the following steps, we assume the alias A for the import)
- -  make a datatype for your modifier that takes the Schedule type as last argument
- -  Define the classes defined in Data.VPlan.Class. For a simple modifier, you can derive those classes using:
-
-        deriveClasses ''YourDataType
- -  call the TH-macro `makeModifier` like this:
-
-        makeModifier ''YourDataType
- -  derive the instances you want using standalone deriving. Recommended: `Eq` and `Data` at least. Example:
-
-        deriving instance (Eq (Index s), Eq a) => Eq (YourDataType a s)
- -  make instances for A.Contains and A.Ixed. Look at the implementations of the included modifiers for example
-    definitions.
- -  Use your data type as modifier for the schedule, for example by chaining it onto AllModifiers:
-
-        type YourModifiers = YourModifier :><: AllModifiers
-These steps may sound complicated, but they aren't as complicted as you might think.
-Most of the instances are not strictly required, but they provide basic functionality you will probably need.
-You could also define a modifier without those instances, but it's usage will be limited.
-
-TODO
-----
- -  Maybe some pretty prining for schedules?
- -  Serialization of schedules?
 
 Known shortcomings / Bugs
 -------------------------
- -  The type inference pretty bad
+ - The type inference pretty bad
+ - Linked to the above: The error messages can be VERY dense
