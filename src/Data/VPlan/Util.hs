@@ -3,10 +3,21 @@
 
 -- | Miscellaneous functions and types that belong to no other module
 module Data.VPlan.Util
-  ( (:$)
+  (
+   -- * Functions
+    gdiv
+  , gmod
+  , gdivMod
+   -- * Types
+  , (:$)
   , Flip
   , By
   ) where
+
+import           Control.Lens
+import           Control.Monad
+import           Data.Group
+import           Data.Monoid
 
 -- | This is '($)' at the type level.
 type a :$ b = a b
@@ -17,3 +28,43 @@ type Flip a b c = a c b
 
 -- | Alias for 'Flip'.
 type By a b c = a c b
+
+-- TODO: Maybe a better name for the following 3 functions?
+-- Suggestions:  gdiv:    howMany
+--               gdivMod: ???
+--               gmod:    rest?, ???
+
+-- | This is the inverse of 'timesN'. It calculates how many times a given
+-- group object fits into another object of the same group. It's basically
+-- a 'div' function that works on arbitrary groups.
+--
+-- Examples:
+--
+-- >>> (Sum 11) `gmod` (Sum 2) (Sum 11)
+-- 5
+--
+-- >>> (Product 27) `gmod` (Product 3)
+-- 3
+gdiv :: (Ord a, Group a) => a -> a -> Int
+gdiv xs x = fst $ xs `gdivMod` x
+
+-- | A version of divMod that works for arbitrary groups.
+gdivMod :: (Ord a, Group a) => a -> a -> (Int, a)
+gdivMod xs x
+  | x > xs = (0,xs)
+  | x == xs = (1,mempty)
+  | otherwise = over _1 (+ getSum steps) $ (xs <> invert half) `gdivMod` x
+  where (steps, half) = until moreThanHalf (join mappend) $ (Sum 1, x)
+        moreThanHalf (_,a) = (xs <> invert a) < a
+
+-- | This is like mod, but for arbitrary groups.
+--
+-- Examples:
+--
+-- >>> (Sum 11) `gmod` (Sum 2)
+-- Sum 1
+--
+-- >>> (Product 29) `gmod` (Product 3)
+-- Product 2
+gmod :: (Ord a, Group a) => a -> a -> a
+gmod x xs = snd $ xs `gdivMod` x
