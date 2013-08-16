@@ -2,12 +2,14 @@
 {-# LANGUAGE FunctionalDependencies     #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE TemplateHaskell            #-}
 
 -- | A representation of time and time spans compatible with VPlan.
 module Data.VPlan.Time where
 
-import           Control.Lens
+import           Control.Applicative
+import           Control.Lens        hiding ((.=))
 import           Data.Aeson
 import           Data.Group
 import           Data.Semigroup
@@ -43,7 +45,7 @@ instance FromJSON ContinuousTime where
 _ContinuousTime :: Iso' ContinuousTime Rational
 _ContinuousTime = iso (getSum . getContinuousTime) (ContinuousTime . Sum)
 
-newtype Day = Day { getDay :: DiscreteTime } deriving (Monoid, Group, Semigroup, Eq, Ord, Enum)
+newtype Day = Day { getDay :: DiscreteTime } deriving (Monoid, Group, Semigroup, Eq, Ord, Enum, ToJSON, FromJSON)
 
 -- | Isomorphism between the day index (monday is zero) and a Day value.
 _Day :: Iso' Day Integer
@@ -59,7 +61,7 @@ saturday  = _Day # 5
 sunday    = _Day # 6
 
 -- | A date represented by the week number and a day in the week.
-data WeekDate = WeekDate { _weekdateWeek :: Integer, _weekdateDay :: Day }
+data WeekDate = WeekDate { _weekdateWeek :: Integer, _weekdateDay :: Day } deriving (Eq, Ord)
 makeFields ''WeekDate
 
 instance Semigroup WeekDate
@@ -70,3 +72,9 @@ instance Monoid WeekDate where
 
 instance Group WeekDate where
   invert a = a & week %~ negate & day %~ invert
+
+instance ToJSON WeekDate where
+  toJSON o = object [ "week" .= (o ^. week), "day" .= (o ^. day)]
+
+instance FromJSON WeekDate where
+  parseJSON = withObject "WeekDate" $ \o -> WeekDate <$> o .: "week" <*> o .: "day"
