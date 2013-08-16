@@ -50,6 +50,8 @@ library
     , Data.VPlan.Modifier.Repeat
     , Data.VPlan.Print
     , Data.VPlan.Class
+    , Data.VPlan.Time
+    , Data.VPlan.Util
     , Data.VPlan.At
     , Data.VPlan.TH
 
