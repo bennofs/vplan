@@ -54,7 +54,7 @@ import           Data.VPlan.Time
 import           Data.VPlan.Util
 
 -- | A type alias for all the available modifiers, to avoid having to write out those everytime.
-type AllModifiers = Constant :><: Combine :><: Empty :><: Limit :><: Reference :><: Repeat
+type AllModifiers = Limit :><: Combine :><: Constant :><: Repeat :><: Reference :><: Empty
 
 -- | An universal schedule, that can supports all the modifier provided in this package.
-type USchedule i v = Schedule AllModifiers i v
+type USchedule = Schedule AllModifiers

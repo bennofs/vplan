@@ -1,5 +1,6 @@
 {-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE DeriveDataTypeable    #-}
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -31,13 +32,14 @@ import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
 import           Data.VPlan.Util
+import           GHC.Generics
 
 -- | The repeat modifier repeats another modifier after a given interval. To use this modifier, @span@ should be equal to @Span i.@
 -- They can get out of sync when using bimap or dimap.
 data Repeat s i v = Repeat
     { _rinterval' :: (i,i)  -- These need to be subtracted to get the interval. We store both to avoid requiring a Num constraint in Bifunctor.
     , _repeated   :: s i v
-    }
+    } deriving (Generic)
 makeLenses ''Repeat
 makeModifier ''Repeat
 
@@ -48,6 +50,7 @@ pairedDiff f (u,l) = g <$> f (u <> invert l)
 rinterval :: (Group i) => Lens' (Repeat s i v) i
 rinterval = rinterval' . pairedDiff
 
+deriving instance (Show i, Show (s i v)) => Show (Repeat s i v)
 deriving instance (Data i, Data (s i v), Typeable2 s, Typeable i, Typeable v) => Data (Repeat s i v)
 deriving instance (Eq i, Eq (s i v)) => Eq (Repeat s i v)
 

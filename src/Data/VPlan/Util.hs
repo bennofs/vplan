@@ -51,6 +51,8 @@ gdiv xs x = fst $ xs `gdivMod` x
 -- | A version of divMod that works for arbitrary groups.
 gdivMod :: (Ord a, Group a) => a -> a -> (Int, a)
 gdivMod xs x
+  | xs < mempty = over _1 negate $ over _2 (mappend x . invert) $ gdivMod (invert xs) x
+  | x < mempty = over _1 negate $ over _2 (mappend x) $ gdivMod xs (invert x)
   | x > xs = (0,xs)
   | x == xs = (1,mempty)
   | otherwise = over _1 (+ getSum steps) $ (xs <> invert half) `gdivMod` x
@@ -64,7 +66,7 @@ gdivMod xs x
 -- >>> (Sum 11) `gmod` (Sum 2)
 -- Sum 1
 --
--- >>> (Product 29) `gmod` (Product 3)
--- Product 2
+-- >>> (Product 29) `gmod` (Product $ 3 % 1)
+-- Product {getProduct = 29 % 27}
 gmod :: (Ord a, Group a) => a -> a -> a
-gmod x xs = snd $ xs `gdivMod` x
+gmod xs x= snd $ xs `gdivMod` x

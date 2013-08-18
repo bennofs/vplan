@@ -38,6 +38,7 @@ makeIso ''Schedule
 genIxedInstances ''Schedule
 makeTypeable ''Schedule
 
+deriving instance (ModInstance Show s i v) => Show (Schedule s i v)
 deriving instance (ModInstance Data s i v, Typeable (Schedule s i v)) => Data (Schedule s i v)
 deriving instance (ModInstance Eq s i v) => Eq (Schedule s i v)
 deriving instance (ModInstance (A.Contains f) s i v) => A.Contains f (Schedule s i v)

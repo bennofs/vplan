@@ -1,8 +1,12 @@
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE DeriveFunctor              #-}
+{-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE FunctionalDependencies     #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE StandaloneDeriving         #-}
 {-# LANGUAGE TemplateHaskell            #-}
 
 -- | A representation of time and time spans compatible with VPlan.
@@ -11,11 +15,15 @@ module Data.VPlan.Time where
 import           Control.Applicative
 import           Control.Lens        hiding ((.=))
 import           Data.Aeson
+import           Data.Data
 import           Data.Group
 import           Data.Semigroup
 
+deriving instance Typeable1 Sum
+deriving instance (Data a) => Data (Sum a)
+
 -- | A discrete time value. There exists a smallest time unit and there exists a unique successor and predecessor for all values.
-newtype DiscreteTime = DiscreteTime { getDiscreteTime :: Sum Integer } deriving (Monoid, Group, Semigroup, Eq, Ord, Abelian)
+newtype DiscreteTime = DiscreteTime { getDiscreteTime :: Sum Integer } deriving (Monoid, Group, Semigroup, Eq, Ord, Abelian, Show, Typeable, Data)
 
 instance Num DiscreteTime where
   (+) = (<>)
@@ -42,7 +50,7 @@ _DiscreteTime = iso (getSum . getDiscreteTime) (DiscreteTime . Sum)
 
 -- | A continuous time value. There is no smallest unit and there is always another
 -- time value between two given different time values.
-newtype ContinuousTime = ContinuousTime { getContinuousTime :: Sum Rational } deriving (Monoid, Group, Semigroup, Eq, Ord, Abelian)
+newtype ContinuousTime = ContinuousTime { getContinuousTime :: Sum Rational } deriving (Monoid, Group, Semigroup, Eq, Ord, Abelian, Show, Typeable, Data)
 
 instance Num ContinuousTime where
   (+) = (<>)
@@ -69,7 +77,7 @@ _ContinuousTime :: Iso' ContinuousTime Rational
 _ContinuousTime = iso (getSum . getContinuousTime) (ContinuousTime . Sum)
 
 -- | Represents WeekDay. This representation assumes 7-day weeks.
-newtype WeekDay = WeekDay { getWeekDay :: Int } deriving (Eq, Ord, ToJSON, FromJSON, Show)
+newtype WeekDay = WeekDay { getWeekDay :: Int } deriving (Eq, Ord, ToJSON, FromJSON, Show, Data, Typeable)
 
 -- | Isomorphism between the day index (monday is zero) and a Day value.
 _WeekDay :: Iso' WeekDay Int
@@ -99,7 +107,7 @@ saturday  = _WeekDay # 5
 sunday    = _WeekDay # 6
 
 -- | A date represented by the week number and a day in the week.
-data WeekDate = WeekDate { _weekdateWeek :: Integer, _weekdateDay :: WeekDay } deriving (Eq, Ord, Show)
+data WeekDate = WeekDate { _weekdateWeek :: Integer, _weekdateDay :: WeekDay } deriving (Eq, Ord, Show, Data, Typeable)
 makeFields ''WeekDate
 
 instance Semigroup WeekDate

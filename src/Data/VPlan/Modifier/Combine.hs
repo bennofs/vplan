@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable    #-}
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -24,27 +25,32 @@ import           Data.Foldable       (Foldable (..))
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
+import           GHC.Generics
 
 -- | Combine multiple modifiers into one. Values are traversed in the order of the modifers, i.e. the
 -- values of the first modifier are traversed first.
-data Combine s i v = Combine [s i v] deriving (Eq)
+data Combine s i v = Combine [s i v] deriving (Eq, Generic)
 makeModifier ''Combine
 deriveClass ''Combine
 
+deriving instance Show (s i v) => Show (Combine s i v)
 deriving instance (Data (s i v), Typeable2 s, Typeable i, Typeable v) => Data (Combine s i v)
 
 -- | Combine multiple modifiers. See 'Combine' for details.
 combine :: [s i v] -> Combine s i v
 combine = Combine
 
-instance (Bifunctor s) => Bifunctor (Combine s) where
+instance Bifunctor s => Bifunctor (Combine s) where
   bimap f g (Combine a) = Combine $ fmap (bimap f g) a
 
-instance (Functor (s i)) => Functor (Combine s i) where
+instance Functor (s i) => Functor (Combine s i) where
   fmap f (Combine a) = Combine (fmap (fmap f) a)
 
-instance (Profunctor s) => Profunctor (Combine s) where
+instance Profunctor s => Profunctor (Combine s) where
   dimap l r (Combine a) = Combine (fmap (dimap l r) a)
+
+instance Contravariant (s i) => Contravariant (Combine s i) where
+  contramap f (Combine l) = Combine $ map (contramap f) l
 
 instance (Gettable f, A.Contains (Accessor Bool) (s i v)) => A.Contains f (Combine s i v) where
   contains = containsTest $ \i (Combine a) -> any (view $ A.contains i) a

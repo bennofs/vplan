@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable    #-}
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -29,10 +30,11 @@ import           Data.Foldable       (Foldable (..))
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
+import           GHC.Generics
 
 -- | The 'Limit' modifier takes another modifier and behaves like that one, but only when the index compared to
 -- the bound gives the 'condition'. If that's not the case, it behaves like the empty modifier.
-data Limit s i v = Limit { _condition :: Ordering, _bound :: i, _limited :: s i v }
+data Limit s i v = Limit { _condition :: Ordering, _bound :: i, _limited :: s i v } deriving (Generic, Eq)
 makeLenses ''Limit
 makeModifier ''Limit
 derivePeriodic ''Limit
@@ -45,8 +47,8 @@ instance (Limited (s i v), Index (s i v) ~ i, Ord i, Enum i) => Limited (Limit s
   imax (Limit EQ b _) = Just b
   imax (Limit LT b u) = (min (pred b) <$> imax u) <|> (Just $ pred b)
 
+deriving instance (Show i, Show (s i v)) => Show (Limit s i v)
 deriving instance (Data i, Typeable2 s, Typeable i, Typeable v, Data (s i v)) => Data (Limit s i v)
-deriving instance (Eq i, Eq (s i v)) => Eq (Limit s i v)
 
 instance (A.Contains f (s i v), Ord i, i ~ Index (s i v), Gettable f) => A.Contains f (Limit s i v) where
   contains i f l

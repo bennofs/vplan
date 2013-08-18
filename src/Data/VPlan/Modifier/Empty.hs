@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable    #-}
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -24,13 +25,15 @@ import           Data.Monoid
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
+import           GHC.Generics
 
 -- | This doesn't contain any value, it just ignores the s parameter (except for the IxValue/Ixed families)
-data Empty (s :: * -> * -> *) i v = Empty deriving (Eq)
+data Empty (s :: * -> * -> *) i v = Empty deriving (Eq, Show, Generic)
 makeModifier ''Empty
 deriveClass ''Empty
 
 deriving instance (Typeable2 s, Typeable i, Typeable v) => Data (Empty s i v)
+
 instance (Gettable f) => A.Contains f (Empty s i v) where contains = containsTest $ const $ const False
 instance (Applicative f) => A.Ixed f (Empty s i v) where ix _ _ = pure
 instance Functor (Empty s i) where fmap _ Empty = Empty

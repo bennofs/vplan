@@ -11,7 +11,8 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
-{-# LANGUAGE UndecidableInstances  #-}
+{-# LANGUAGE UndecidableInstances  #-} 
+{-# LANGUAGE DeriveGeneric         #-}
 {-# OPTIONS_GHC -fno-warn-orphans  #-}
 
 -- | A modifier that can contain exactly one out of multiple modifiers of different types.
@@ -24,6 +25,10 @@ module Data.VPlan.Modifier.Enum (
   , EnumApply(enumApply)
   , CFunc(..)
   , enumv
+  , BothInstance
+  , BothInstance1
+  , BothInstance2
+  , C
   ) where
 
 import           Control.Applicative
@@ -42,13 +47,15 @@ import           Data.VPlan.Schedule
 import           Data.VPlan.TH
 import           Data.VPlan.Util
 import           Control.Lens.Aeson
+import           GHC.Generics hiding (C)
 
 -- | An Either for types with one type argument (which is passed to both sides)
-data (:><:) a b (s :: * -> * -> *) i v = L (a s i v) | R (b s i v) deriving (Eq)
+data (:><:) a b (s :: * -> * -> *) i v = L (a s i v) | R (b s i v) deriving (Eq, Generic)
 infixr 7 :><:
 
 makeModifier ''(:><:)
 
+deriving instance (BothInstance Show a b s i v) => Show (C a b s i v)
 deriving instance (Typeable v, Typeable i, BothInstance Data a b s i v, Typeable2 (C a b s)) => Data ((:><:) a b s i v)
 
 -- | Shorter alias

@@ -60,14 +60,19 @@ library
 
 test-suite vplan-tests
   type:           exitcode-stdio-1.0
-  main-is:        Tests.hs
+  main-is:        Main.hs
   hs-source-dirs: tests
   build-depends:
       base
     , transformers
     , QuickCheck
-    , test-framework
-    , test-framework-quickcheck2
+    , tasty
+    , tasty-th
+    , nats
+    , semigroups
+    , bifunctors
+    , tasty-quickcheck
+    , tagged
     , vplan
     , lens
   ghc-options:   -Wall

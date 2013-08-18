@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable    #-}
+{-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -23,13 +24,15 @@ import           Data.Foldable       (Foldable (..))
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
+import           GHC.Generics        hiding (from)
 
 -- | A modifier that always returns the same value, for all possible indices.
-newtype Constant (s :: * -> * -> *) i v = Constant v deriving (Eq)
+newtype Constant (s :: * -> * -> *) i v = Constant v deriving (Eq, Generic)
 makeModifier ''Constant
 makeIso ''Constant
 deriveClass ''Constant
 
+deriving instance Show v => Show (Constant s i v)
 deriving instance (Typeable2 s, Typeable i, Typeable v, Data v) => Data (Constant s i v)
 
 instance (Gettable f) => A.Contains f (Constant s i v)                 where contains = containsTest  $ const $ const True
