@@ -30,6 +30,9 @@ Building up and indexing schedules
 So how do you use these modifiers? First, we have to import the VPlan library:
 
     >>> import Data.VPlan
+    >>> import Control.Lens
+
+You also need to import lens, as it provides most of the functions and type classes for VPlan.
 
 The high-level interface is exported from Data.VPlan.Combinators. It contains various functions for building schedules, for example
 `empty` :

@@ -10,10 +10,6 @@ module Data.VPlan
  , module Data.VPlan.Combinators
  , module Data.VPlan.Class
 
-   -- ** Functions for modifying schedules
-   -- Nearly all functions for indexing schedules are provided by lens
- , module Control.Lens
-
    -- ** Functions for printing schedule
  , module Data.VPlan.Print
 
@@ -31,13 +27,16 @@ module Data.VPlan
    -- ** Defining new modifiers
  , module Data.VPlan.TH
 
+   -- ** Other things
+ , module Data.VPlan.Time
+ , module Data.VPlan.Util
+
    -- * Convenience definitions
  , AllModifiers
  , USchedule
 
  ) where
 
-import           Control.Lens
 import           Data.VPlan.Class
 import           Data.VPlan.Combinators
 import           Data.VPlan.Modifier.Annotate
@@ -51,6 +50,8 @@ import           Data.VPlan.Modifier.Repeat
 import           Data.VPlan.Print
 import           Data.VPlan.Schedule
 import           Data.VPlan.TH
+import           Data.VPlan.Time
+import           Data.VPlan.Util
 
 -- | A type alias for all the available modifiers, to avoid having to write out those everytime.
 type AllModifiers = Constant :><: Combine :><: Empty :><: Limit :><: Reference :><: Repeat
