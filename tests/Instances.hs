@@ -20,7 +20,7 @@ import           Test.QuickCheck
 instance (Arbitrary :$ s (Schedule s) i v, Supported Empty (Schedule s)) => Arbitrary (Schedule s i v) where
   arbitrary = sized $ \s ->
     if s < 5 then pure Data.VPlan.empty else resize (min s 70) $ Schedule <$> arbitrary
-  shrink (Schedule s) = Schedule <$> shrink s
+  shrink (Schedule s) = [Data.VPlan.empty] ++ do Schedule <$> shrink s
 
 --------------------------------------------------------------------------------
 -- Arbitrary instances for time values

@@ -51,7 +51,7 @@ gdiv xs x = fst $ xs `gdivMod` x
 -- | A version of divMod that works for arbitrary groups.
 gdivMod :: (Ord a, Group a) => a -> a -> (Int, a)
 gdivMod xs x
-  | xs < mempty = over _1 negate $ over _2 (mappend x . invert) $ gdivMod (invert xs) x
+  | xs < mempty = over _1 negate $ over _2 (\r -> if r /= mempty then x <> invert r else r) $ gdivMod (invert xs) x
   | x < mempty = over _1 negate $ over _2 (mappend x) $ gdivMod xs (invert x)
   | x > xs = (0,xs)
   | x == xs = (1,mempty)
