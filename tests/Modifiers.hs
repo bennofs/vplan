@@ -8,6 +8,8 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
+
+-- | Test the modifier instances and behaviours
 module Modifiers where
 
 import           Control.Lens
@@ -122,6 +124,16 @@ prop_repeat_index s i n = all prop [0..pred i]
   where sch = Repeat (i,0) s
         start = i * fromIntegral n
         prop o = sch ^? ix (start <> o) == s ^? ix o
+
+--------------------------------------------------------------------------------
+--- Combine modifier
+
+prop_combine_instances :: Property
+prop_combine_instances = checkInstances (Proxy :: Proxy Combine) [functor, bifunctor, contravariant, profunctor, ixed]
+
+prop_combine_index :: [USchedule DiscreteTime Int] -> DiscreteTime -> Bool
+prop_combine_index s i = sch ^.. ix i == concatMap (toListOf $ ix i) s
+  where sch = combine s
 
 --------------------------------------------------------------------------------
 --- Enum modifier
