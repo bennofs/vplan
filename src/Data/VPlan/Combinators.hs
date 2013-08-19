@@ -8,7 +8,7 @@ module Data.VPlan.Combinators
 (   (!<-)
   , (!<|)
   , (-||-)
-  , empty
+  , blank
   , single
   , eq
   , except
@@ -46,8 +46,8 @@ s -||- t = new $ combine [s,t]
 infixl 1 -||-
 
 -- | This is just an empty schedule.
-empty :: (Supported E.Empty s) => s i v
-empty = new E.Empty
+blank :: (Supported E.Empty s) => s i v
+blank = new E.Empty
 
 -- | A schedule that contains a single value.
 single :: (Supported Constant s) => v -> s i v
