@@ -3,11 +3,13 @@ before_install:
 
   # Install tasty from git, with fixed stm dependency bound and more quickcheck options.
   - git clone -b quickcheck-options https://github.com/bennofs/tasty 
-  - pushd && cd tasty/core && cabal install && popd
-  - pushd && cd tasty/quickcheck && cabal install && popd
-  - echo $PWD # Test
+  - cd $TRAVIS_BUILD_DIR/tasty/core       && cabal install
+  - cd $TRAVIS_BUILD_DIR/tasty/quickcheck && cabal install
 
 install:
 
+  # Get to the build directory
+  - cd $TRAVIS_BUILD_DIR
+
   # Try installing some of the build-deps with apt-get for speed.
-   - travis/cabal-apt-install
+  - travis/cabal-apt-install
