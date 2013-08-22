@@ -37,7 +37,7 @@ import           GHC.Generics
 -- | The repeat modifier repeats another modifier after a given interval. To use this modifier, @span@ should be equal to @Span i.@
 -- They can get out of sync when using bimap or dimap.
 data Repeat s i v = Repeat
-    { _rinterval' :: (i,i)  -- These need to be subtracted to get the interval. We store both to avoid requiring a Num constraint in Bifunctor.
+    { _rinterval' :: (i,i)  -- These need to be subtracted to get the interval. We store both to avoid requiring a Group constraint in Bifunctor.
     , _repeated   :: s i v
     } deriving (Generic)
 makeLenses ''Repeat
@@ -51,8 +51,11 @@ rinterval :: (Group i) => Lens' (Repeat s i v) i
 rinterval = rinterval' . pairedDiff
 
 deriving instance (Show i, Show (s i v)) => Show (Repeat s i v)
+deriving instance (Read i, Read (s i v)) => Read (Repeat s i v)
 deriving instance (Data i, Data (s i v), Typeable2 s, Typeable i, Typeable v) => Data (Repeat s i v)
-deriving instance (Eq i, Eq (s i v)) => Eq (Repeat s i v)
+instance (Group i, Eq i, Eq (s i v)) => Eq (Repeat s i v) where
+  a == b = a ^. rinterval == b ^. rinterval
+           && a ^. repeated == b ^. repeated
 
 instance (Group i, Index (s i v) ~ i) => Periodic (Repeat s i v) where interval r = r ^. rinterval
 instance Limited (Repeat s i v) where

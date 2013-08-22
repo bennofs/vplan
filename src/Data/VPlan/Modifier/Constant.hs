@@ -33,6 +33,7 @@ makeIso ''Constant
 deriveClass ''Constant
 
 deriving instance Show v => Show (Constant s i v)
+deriving instance Read v => Read (Constant s i v)
 deriving instance (Typeable2 s, Typeable i, Typeable v, Data v) => Data (Constant s i v)
 
 instance (Gettable f) => A.Contains f (Constant s i v)                 where contains = containsTest  $ const $ const True

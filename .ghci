@@ -1,3 +1,5 @@
+:set -package tasty
+:set -package tasty-th
 :set -optP-include -optPdist/build/autogen/cabal_macros.h
 :set -isrc
 :set -itests

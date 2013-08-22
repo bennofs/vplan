@@ -23,7 +23,7 @@ deriving instance Typeable1 Sum
 deriving instance (Data a) => Data (Sum a)
 
 -- | A discrete time value. There exists a smallest time unit and there exists a unique successor and predecessor for all values.
-newtype DiscreteTime = DiscreteTime { getDiscreteTime :: Sum Integer } deriving (Monoid, Group, Semigroup, Eq, Ord, Abelian, Show, Typeable, Data)
+newtype DiscreteTime = DiscreteTime { getDiscreteTime :: Sum Integer } deriving (Monoid, Group, Semigroup, Eq, Ord, Abelian, Show, Typeable, Data, Read)
 
 instance Num DiscreteTime where
   (+) = (<>)
@@ -50,7 +50,7 @@ _DiscreteTime = iso (getSum . getDiscreteTime) (DiscreteTime . Sum)
 
 -- | A continuous time value. There is no smallest unit and there is always another
 -- time value between two given different time values.
-newtype ContinuousTime = ContinuousTime { getContinuousTime :: Sum Rational } deriving (Monoid, Group, Semigroup, Eq, Ord, Abelian, Show, Typeable, Data)
+newtype ContinuousTime = ContinuousTime { getContinuousTime :: Sum Rational } deriving (Monoid, Group, Semigroup, Eq, Ord, Abelian, Show, Typeable, Data, Read)
 
 instance Num ContinuousTime where
   (+) = (<>)
@@ -77,7 +77,7 @@ _ContinuousTime :: Iso' ContinuousTime Rational
 _ContinuousTime = iso (getSum . getContinuousTime) (ContinuousTime . Sum)
 
 -- | Represents WeekDay. This representation assumes 7-day weeks.
-newtype WeekDay = WeekDay { getWeekDay :: Int } deriving (Eq, Ord, ToJSON, FromJSON, Show, Data, Typeable)
+newtype WeekDay = WeekDay { getWeekDay :: Int } deriving (Eq, Ord, ToJSON, FromJSON, Show, Data, Typeable, Read)
 
 -- | Isomorphism between the day index (monday is zero) and a Day value.
 _WeekDay :: Iso' WeekDay Int
@@ -107,7 +107,7 @@ saturday  = _WeekDay # 5
 sunday    = _WeekDay # 6
 
 -- | A date represented by the week number and a day in the week.
-data WeekDate = WeekDate { _weekdateWeek :: Integer, _weekdateDay :: WeekDay } deriving (Eq, Ord, Show, Data, Typeable)
+data WeekDate = WeekDate { _weekdateWeek :: Integer, _weekdateDay :: WeekDay } deriving (Eq, Ord, Show, Data, Typeable, Read)
 makeFields ''WeekDate
 
 instance Semigroup WeekDate

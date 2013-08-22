@@ -56,6 +56,7 @@ infixr 7 :><:
 makeModifier ''(:><:)
 
 deriving instance (BothInstance Show a b s i v) => Show (C a b s i v)
+deriving instance (BothInstance Read a b s i v) => Read (C a b s i v)
 deriving instance (Typeable v, Typeable i, BothInstance Data a b s i v, Typeable2 (C a b s)) => Data ((:><:) a b s i v)
 
 -- | Shorter alias

@@ -28,7 +28,7 @@ import           Data.VPlan.TH
 import           GHC.Generics
 
 -- | This doesn't contain any value, it just ignores the s parameter (except for the IxValue/Ixed families)
-data Empty (s :: * -> * -> *) i v = Empty deriving (Eq, Show, Generic)
+data Empty (s :: * -> * -> *) i v = Empty deriving (Eq, Show, Generic, Read)
 makeModifier ''Empty
 deriveClass ''Empty
 

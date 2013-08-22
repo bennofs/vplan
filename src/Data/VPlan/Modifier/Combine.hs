@@ -29,16 +29,14 @@ import           GHC.Generics
 
 -- | Combine multiple modifiers into one. Values are traversed in the order of the modifers, i.e. the
 -- values of the first modifier are traversed first.
-data Combine s i v = Combine [s i v] deriving (Eq, Generic)
+newtype Combine s i v = Combine [s i v] deriving (Eq, Generic)
+makeIso ''Combine
 makeModifier ''Combine
 deriveClass ''Combine
 
 deriving instance Show (s i v) => Show (Combine s i v)
+deriving instance Read (s i v) => Read (Combine s i v)
 deriving instance (Data (s i v), Typeable2 s, Typeable i, Typeable v) => Data (Combine s i v)
-
--- | Combine multiple modifiers. See 'Combine' for details.
-combine :: [s i v] -> Combine s i v
-combine = Combine
 
 instance Bifunctor s => Bifunctor (Combine s) where
   bimap f g (Combine a) = Combine $ fmap (bimap f g) a

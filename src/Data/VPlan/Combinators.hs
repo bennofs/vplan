@@ -42,7 +42,7 @@ infixr 6 !<|
 -- | Combine two simple schedules using the 'Combine' modifier. This ensures that
 -- on traversal, the values of the first given schedule are traversed first.
 (-||-) :: (Supported Combine s) => s i v -> s i v -> s i v
-s -||- t = new $ combine [s,t]
+s -||- t = new $ view combine [s,t]
 infixl 1 -||-
 
 -- | This is just an empty schedule.
@@ -57,7 +57,7 @@ single = new . view constant
 ref :: (Supported R.Reference s) => i -> s i v -> s i v
 ref x = new . R.reference x
 
--- Don't use at as the name, because it's already taken by lens
+-- Don't use 'at' as the name, because it's already taken by lens
 -- | Apply a modifier only at a given index in the schedule.
 eq :: (Supported Limit s, Ord i) => i -> s i v -> s i v
 eq w a = equal w !<| a
@@ -73,6 +73,8 @@ buildCombine = new . Combine . runBuilder
 -- | Move an item to another place. @move source target@ moves an item at index @source@ to
 -- index @target@. When there is already an item at the target position, the moved item is placed behind
 -- the already-existing item. The source index is set to empty.
+-- 
+-- Note: When there is no item at the source index, the entry at the target index won't be changed at all!
 move :: (Supported Combine s, Supported Limit s, Supported E.Empty s, Supported R.Reference s, Ord i)
      => i -> i -> s i v -> s i v
 move f t s = except f s -||- eq t (ref f s)

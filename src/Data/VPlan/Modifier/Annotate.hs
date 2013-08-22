@@ -31,8 +31,8 @@ import           GHC.Generics
 
 -- | @Annotate a@ is a modifier that can attach data of type @a@ to some other modifier.
 data Annotate a s i v = Annotate
-  { _attached  :: a       -- ^ Contains the attached value
-  , _annotated :: s i v   -- ^ Contains the modifier the value is attached to
+  { _attached  :: a         -- ^ Contains the attached value
+  , _annotated :: (s i v)   -- ^ Contains the modifier the value is attached to
   } deriving (Eq, Generic)
 
 makeLenses ''Annotate
@@ -45,6 +45,7 @@ annotate = Annotate
 
 deriving instance (Data a, Data (s i v), Typeable2 s, Typeable i, Typeable v) => Data (Annotate a s i v)
 deriving instance (Show (s i v), Show a) => Show (Annotate a s i v)
+deriving instance (Read (s i v), Read a) => Read (Annotate a s i v)
 
 instance (A.Contains f (s i v), Functor f) => A.Contains f (Annotate a s i v) where contains = fmap annotated . A.contains
 instance (A.Ixed f (s i v), Functor f) => A.Ixed f (Annotate a s i v) where ix = fmap annotated . A.ix

@@ -75,4 +75,7 @@ test-suite vplan-tests
     , tagged
     , vplan
     , lens
+    , bytestring
+    , aeson
+    , mtl
   ghc-options:   -Wall

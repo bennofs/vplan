@@ -12,8 +12,9 @@
 
 -- | Limit a modifier with some predicate on the index
 module Data.VPlan.Modifier.Limit (
-    Limit()
+    Limit(..)
   , condition
+  , limit
   , bound
   , limited
   , lower
@@ -39,6 +40,9 @@ makeLenses ''Limit
 makeModifier ''Limit
 derivePeriodic ''Limit
 
+limit :: Ordering -> i -> s i v -> Limit s i v
+limit = Limit
+
 instance (Limited (s i v), Index (s i v) ~ i, Ord i, Enum i) => Limited (Limit s i v) where
   imin (Limit GT b u) = (max (succ b) <$> imin u) <|> (Just $ succ b)
   imin (Limit EQ b _) = Just b
@@ -48,6 +52,7 @@ instance (Limited (s i v), Index (s i v) ~ i, Ord i, Enum i) => Limited (Limit s
   imax (Limit LT b u) = (min (pred b) <$> imax u) <|> (Just $ pred b)
 
 deriving instance (Show i, Show (s i v)) => Show (Limit s i v)
+deriving instance (Read i, Read (s i v)) => Read (Limit s i v)
 deriving instance (Data i, Typeable2 s, Typeable i, Typeable v, Data (s i v)) => Data (Limit s i v)
 
 instance (A.Contains f (s i v), Ord i, i ~ Index (s i v), Gettable f) => A.Contains f (Limit s i v) where

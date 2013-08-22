@@ -37,6 +37,7 @@ makeModifier ''Reference
 deriveClass ''Reference
 
 deriving instance (Show i, Show (s i v)) => Show (Reference s i v)
+deriving instance (Read i, Read (s i v)) => Read (Reference s i v)
 deriving instance (Data i, Data (s i v), Typeable2 s, Typeable i, Typeable v) => Data (Reference s i v)
 
 -- | Construct a new reference.
