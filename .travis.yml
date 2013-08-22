@@ -2,7 +2,8 @@ language: haskell
 before_install:
 
   # Install tasty from git, with fixed stm dependency bound and more quickcheck options.
-  - git clone https://github.com/bennofs/tasty && cd tasty && cabal install
+  - git clone https://github.com/bennofs/tasty && cd tasty/core && cabal install && cd ../quickcheck && cabal install
+  - echo $PWD # Test
 
 install:
 
