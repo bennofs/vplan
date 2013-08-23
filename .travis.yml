@@ -6,7 +6,13 @@ before_install:
   - cd $TRAVIS_BUILD_DIR/tasty/core       && cabal install
   - cd $TRAVIS_BUILD_DIR/tasty/quickcheck && cabal install
 
-platform_version: 2013.2.0.0
+ghc: 7.6
+ghcs: 
+  - 7.6
+ghc_version: 7.6
+haskell_ghc: 7.6
+haskell_ghc_version: 7.6
+haskell_platform_version: 2013.2.0.0
 install:
 
   # Get to the build directory
