@@ -1,5 +1,5 @@
-{-# LANGUAGE PolyKinds     #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE PolyKinds      #-}
+{-# LANGUAGE TypeOperators  #-}
 
 -- | Miscellaneous functions and types that belong to no other module
 module Data.VPlan.Util

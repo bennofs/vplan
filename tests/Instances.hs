@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans       #-}
 {-# LANGUAGE ConstraintKinds            #-}
+{-# LANGUAGE PolyKinds                  #-}
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -18,11 +19,13 @@ import           Control.Lens
 import           Control.Monad
 import qualified Data.ByteString          as BS
 import qualified Data.ByteString.Lazy     as LBS
-import           Data.VPlan
-import           Debug.Trace
+import           Data.VPlan hiding ((:$))
 import           GHC.Real
 import           Test.QuickCheck
 import           Test.QuickCheck.Function
+
+type a :$ b = a b
+infixr 0 :$
 
 instance (Arbitrary :$ s (Schedule s) i v, Supported Empty (Schedule s)) => Arbitrary (Schedule s i v) where
   arbitrary = sized $ \s ->

@@ -72,15 +72,15 @@ class EnumContains a b where
   -- is currently stored in the enum.
   castEnum :: b (s :: * -> * -> *) i v -> Maybe :$ a s i v
 
-instance                       EnumContains a a       where 
+instance EnumContains a a where 
   enumValue = id
   castEnum = Just
 
-instance                       EnumContains a (C a b) where 
+instance EnumContains a (C a b) where 
   enumValue = L
   castEnum = preview $ enumEither . _Left
 
-instance                       EnumContains b (C a b) where 
+instance EnumContains b (C a b) where 
   enumValue = R
   castEnum = preview $ enumEither . _Right
 
@@ -206,5 +206,5 @@ enumEither = iso ?? either L R $ \e -> case e of
 
 -- | A prism that focuses the element at the given type in an enum. The v stands for "value", it's there because the name
 -- enum is already taken by lens.
-enumv :: (EnumApply Typeable :$ e s i v, EnumContains a e, EnumContains b e) => Prism (e s i v) (e s i v) (a s i v) (b s i v)
+enumv :: (EnumApply Typeable (e s i v), EnumContains a e, EnumContains b e) => Prism (e s i v) (e s i v) (a s i v) (b s i v)
 enumv = prism enumValue (\e -> maybe (Left e) Right $ castEnum e)

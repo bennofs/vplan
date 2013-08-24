@@ -1,4 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeOperators   #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 
 -- | Test for the combinators in the Data.VPlan.Combinators module
 module Combinators where
@@ -41,8 +43,11 @@ prop_except i s  = not (sch ^. contains i) .&. forIndicesEqual (arbitrary `suchT
   where sch = except i s
 
 prop_move :: DiscreteTime -> DiscreteTime -> Timetable -> Property
-prop_move f t s = not (sch ^. contains f) .&. (sch ^.. ix t == (s ^.. ix f ++ s ^.. ix t)) .&. forIndicesEqual (arbitrary `suchThat` neither [f,t]) sch s
+prop_move f t s = not (sch ^. contains f) .&. sch ^.. ix t == (s ^.. ix f ++ s ^.. ix t) .&. forIndicesEqual (arbitrary `suchThat` neither [f,t]) sch s
   where sch = move f t s
+        prop
+          | t == f = sch ^.. ix t == s ^.. ix f
+          | otherwise = sch ^.. ix t == s ^.. ix f ++ s ^.. ix t
 
 prop_swap :: DiscreteTime -> DiscreteTime -> Timetable -> Property
 prop_swap i1 i2 s = sch ^? ix i1 == s ^? ix i2 .&. sch ^? ix i2 == s ^? ix i1 .&. forIndicesEqual (arbitrary `suchThat` neither [i1,i2]) sch s

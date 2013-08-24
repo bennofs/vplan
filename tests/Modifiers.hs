@@ -8,25 +8,31 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE PolyKinds             #-}
 
 -- | Test the modifier instances and behaviours
 module Modifiers where
 
 import           Control.Lens
 import           Data.Aeson
-import qualified Data.ByteString.Lazy     as LBS
-import           Data.List
 import           Data.Maybe
-import           Data.Proxy
 import           Data.Semigroup
-import           Data.Tagged
-import           Data.VPlan
+import           Data.VPlan hiding ((:$))
 import           Instances                ()
 import           Laws
 import           Test.QuickCheck.Function
 import           Test.Tasty
 import           Test.Tasty.QuickCheck
 import           Test.Tasty.TH
+
+-- These definitions are for GHC 7.4
+-- GHC 7.4 seems to screw up PolyKinds, so we need to redefine these data types.
+
+newtype Tagged a b = Tagged { untag :: b }
+data Proxy a = Proxy
+
+type a :$ b = a b
+infixr 0 :$
 
 data Void2 a b
 
