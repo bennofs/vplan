@@ -22,7 +22,7 @@ operation on a schedule or a generator of values. Examples of modifiers are:
   -   Empty    : doesn't contain a value for any index in the schedule. 
   -   Constant : generates a constant value a, for every index in the schedule.
   -   Limit    : Limits the input range of another modifier, so that it doesn't contain any values at indices outside 
-  -              of the start-end range.
+                 of the start-end range.
   -   ...
 
 Building up and indexing schedules
@@ -46,10 +46,10 @@ is supported by that schedule. A schedule can be made with the Schedule data typ
 So, we can define a schedule that supports the Empty, Combine, Const, Limit and Repeat modifiers, with Int indices and containing String values:
 
     >>> :set -XTypeOperators
-    >>> type CustomSchedule = Schedule (Empty :><: Combine :><: Const :><: Limit :><: Repeat) Int 
+    >>> type CustomSchedule = Schedule (Empty :><: Combine :><: Const :><: Limit :><: Repeat) Int String
 
 Note that we had to enable the TypeOperators extension in order to use the (:><:) operator provided by VPlan. There is also an USchedule type alias
-provided by VPlan that constructs a schedule supporting most modifiers. But back to our example, we can the create an empty schedule 
+provided by VPlan that constructs a schedule supporting most modifiers. But back to our example, we can create an empty schedule 
 of our type now:
 
     >>> let s = empty :: CustomSchedule
@@ -76,7 +76,7 @@ There are a few new things in that example. The first is `single`, which is just
 the given value at all indices. But our value should only be located at the index 3, so we need to narrow our schedule
 to only contain "Hello world" at the index *eq*ual to 3, using `eq`.
 
-But how can a schedule mutiple values at different indices? There is one combinator we haven't talked about yet, with the name (-||-).
+But how can a schedule have mutiple values at different indices? There is one combinator we haven't talked about yet, with the name (-||-).
 With it, we can *mix* multiple schedules into one. So if we have one schedule with a value at index 3, and another one with a value
 at the index 4, the result of combining these schedules using (-||-) will have a value at both of those indices. A little example
 to illustrate that:
