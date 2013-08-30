@@ -41,7 +41,7 @@ instance (Functor f, v ~ IxValue (s i v)) => A.Ixed f (Constant s i v) where ix 
 instance Functor (Constant s i) where  fmap f    (Constant x) = Constant $ f x
 instance Bifunctor (Constant s) where  bimap _ f (Constant x) = Constant $ f x
 instance Profunctor (Constant s) where dimap _ f (Constant x) = Constant $ f x
-instance Foldable (Constant s i) where fold f (Constant v) = f v
+instance Foldable (Constant s i) where foldMap f (Constant v) = f v
 instance Traversable (Constant s i) where traverse f (Constant v) = Constant <$> f v
 
 instance (FromJSON v) => FromJSON (Constant s i v) where
