@@ -1,22 +1,10 @@
 language: haskell
-before_install:
-
-  # Install tasty from git, with fixed stm dependency bound and more quickcheck options.
-  - git clone -b quickcheck-options https://github.com/bennofs/tasty 
-  - cd $TRAVIS_BUILD_DIR/tasty/core       && cabal install
-  - cd $TRAVIS_BUILD_DIR/tasty/quickcheck && cabal install
-
-ghc: 7.6
-ghcs: 
-  - 7.6
-ghc_version: 7.6
-haskell_ghc: 7.6
-haskell_ghc_version: 7.6
-haskell_platform_version: 2013.2.0.0
 install:
-
-  # Get to the build directory
-  - cd $TRAVIS_BUILD_DIR
 
   # Try installing some of the build-deps with apt-get for speed.
   - travis/cabal-apt-install
+
+script: 
+
+  # Could also use cabal test, but that doesn't provide colorful output
+  - cabal configure --enable-tests && cabal build && dist/build/vplan-tests/vplan-tests --quickcheck-tests 500
