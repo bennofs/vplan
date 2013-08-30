@@ -1,6 +1,3 @@
-{-# LANGUAGE PolyKinds      #-}
-{-# LANGUAGE TypeOperators  #-}
-
 -- | Miscellaneous functions and types that belong to no other module
 module Data.VPlan.Util
   (
@@ -8,26 +5,12 @@ module Data.VPlan.Util
     gdiv
   , gmod
   , gdivMod
-   -- * Types
-  , (:$)
-  , Flip
-  , By
   ) where
 
 import           Control.Lens
 import           Control.Monad
 import           Data.Group
 import           Data.Monoid
-
--- | This is '($)' at the type level.
-type a :$ b = a b
-infixr 0 :$
-
--- | This is 'flip' at the type level.
-type Flip a b c = a c b
-
--- | Alias for 'Flip'.
-type By a b c = a c b
 
 -- TODO: Maybe a better name for the following 3 functions?
 -- Suggestions:  gdiv:    howMany

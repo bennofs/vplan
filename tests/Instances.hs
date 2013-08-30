@@ -1,6 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans       #-}
 {-# LANGUAGE ConstraintKinds            #-}
-{-# LANGUAGE PolyKinds                  #-}
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -19,21 +18,18 @@ import           Control.Lens
 import           Control.Monad
 import qualified Data.ByteString          as BS
 import qualified Data.ByteString.Lazy     as LBS
-import           Data.VPlan hiding ((:$))
+import           Data.VPlan
 import           GHC.Real
 import           Test.QuickCheck
 import           Test.QuickCheck.Function
 
-type a :$ b = a b
-infixr 0 :$
-
-instance (Arbitrary :$ s (Schedule s) i v, Supported Empty (Schedule s)) => Arbitrary (Schedule s i v) where
+instance (Arbitrary (s (Schedule s) i v), Supported Empty (Schedule s)) => Arbitrary (Schedule s i v) where
   arbitrary = sized $ \s ->
     if s < 5 then pure blank else resize (min s 50) $ Schedule <$> arbitrary
   shrink (Schedule s) = blank : do Schedule <$> shrink s
 
-instance (Function :$ s (Schedule s ) i v) => Function (Schedule s i v) where function = functionMap (review schedule) (view schedule)
-instance (CoArbitrary :$ s (Schedule s) i v) => CoArbitrary (Schedule s i v) where coarbitrary = reviews schedule coarbitrary
+instance Function (s (Schedule s ) i v) => Function (Schedule s i v) where function = functionMap (review schedule) (view schedule)
+instance CoArbitrary (s (Schedule s) i v) => CoArbitrary (Schedule s i v) where coarbitrary = reviews schedule coarbitrary
 
 --------------------------------------------------------------------------------
 -- Arbitrary instances for time values
@@ -62,11 +58,11 @@ instance CoArbitrary ContinuousTime where coarbitrary = views _ContinuousTime co
 deriving instance (Arbitrary v) => Arbitrary (Constant s i v)
 instance Arbitrary (Empty s i v) where arbitrary = pure Empty
 
-instance (Arbitrary :$ s i v, Arbitrary a) => Arbitrary (Annotate a s i v) where
+instance (Arbitrary (s i v), Arbitrary a) => Arbitrary (Annotate a s i v) where
   arbitrary = decreaseSize $ annotate <$> arbitrary <*> arbitrary
   shrink = attached shrink >=> annotated shrink
 
-instance (Arbitrary :$ s i v, Arbitrary i, Ord i) => Arbitrary (Limit s i v) where
+instance (Arbitrary (s i v), Arbitrary i, Ord i) => Arbitrary (Limit s i v) where
   arbitrary = decreaseSize $ frequency $ map (_2 %~ \x -> liftA2 x arbitrary arbitrary)
     [ (50, equal)
     , (25, lower)
@@ -74,23 +70,23 @@ instance (Arbitrary :$ s i v, Arbitrary i, Ord i) => Arbitrary (Limit s i v) whe
     ]
   shrink = bound shrink >=> condition shrink >=> limited shrink
 
-instance (Arbitrary :$ s i v, Arbitrary i) => Arbitrary (Reference s i v) where
+instance (Arbitrary (s i v), Arbitrary i) => Arbitrary (Reference s i v) where
   arbitrary = decreaseSize $ reference <$> arbitrary <*> arbitrary
   shrink = referenced shrink
 
-instance (Arbitrary :$ s i v, Arbitrary i, Ord i, Num i) => Arbitrary (Repeat s i v) where
+instance (Arbitrary (s i v), Arbitrary i, Ord i, Num i) => Arbitrary (Repeat s i v) where
   arbitrary = decreaseSize $ Repeat <$> minmax <*> arbitrary
     where minmax = do
             x <- abs <$> arbitrary
             y <- fmap abs arbitrary `suchThat` (/= x)
             return (max x y, min x y)
 
-instance (Arbitrary :$ s i v) => Arbitrary (Combine s i v) where
+instance Arbitrary (s i v) => Arbitrary (Combine s i v) where
   arbitrary = decreaseSize $ view combine <$> list
     where list = frequency ([(1,0),(2,1),(5,1),(3,4)] & traversed . _2 %~ pure) >>= flip vectorOf arbitrary
   shrink = from combine shrink
 
-instance (BothInstance Arbitrary a b s i v) => Arbitrary (C a b s i v) where
+instance BothInstance Arbitrary a b s i v => Arbitrary (C a b s i v) where
   arbitrary = frequency
     [ (1, L <$> arbitrary)
     , (3, R <$> arbitrary)

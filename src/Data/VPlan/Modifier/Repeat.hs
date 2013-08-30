@@ -1,4 +1,3 @@
-{-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE DeriveDataTypeable    #-}
 {-# LANGUAGE DeriveGeneric         #-}
 {-# LANGUAGE FlexibleContexts      #-}
@@ -62,10 +61,10 @@ instance Limited (Repeat s i v) where
   imin _ = Nothing
   imax _ = Nothing
 
-instance (Functor f, A.Contains f :$ s i v, Group i, Ord i, Index (s i v) ~ i) => A.Contains f (Repeat s i v) where
+instance (Functor f, A.Contains f (s i v), Group i, Ord i, Index (s i v) ~ i) => A.Contains f (Repeat s i v) where
   contains i f r = repeated ?? r $ A.contains (i `gmod` (r ^. rinterval)) f
 
-instance (Functor f, A.Ixed f :$ s i v, Ord i, Group i, Index (s i v) ~ i) => A.Ixed f (Repeat s i v) where
+instance (Functor f, A.Ixed f (s i v), Ord i, Group i, Index (s i v) ~ i) => A.Ixed f (Repeat s i v) where
   ix i f r = repeated ?? r $ A.ix (i `gmod` (r ^. rinterval)) f
 
 instance Functor (s i) => Functor (Repeat s i) where fmap f = repeated %~ fmap f
@@ -74,7 +73,7 @@ instance Contravariant (s i) => Contravariant (Repeat s i) where contramap = ove
 instance Foldable (s i) => Foldable (Repeat s i) where foldMap = views repeated . foldMap
 instance Traversable (s i) => Traversable (Repeat s i) where traverse = repeated . traverse
 
-instance (FromJSON i, Monoid i, FromJSON :$ s i v) => FromJSON (Repeat s i v) where
+instance (FromJSON i, Monoid i, FromJSON (s i v)) => FromJSON (Repeat s i v) where
   parseJSON (Object o) = Repeat . (,mempty) <$> o .: "interval" <*> o .: "child"
   parseJSON v = typeMismatch "Object" v
 

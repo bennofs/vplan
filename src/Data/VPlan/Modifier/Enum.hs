@@ -45,7 +45,6 @@ import           Data.VPlan.Class
 import qualified Data.Text           as T
 import           Data.VPlan.Schedule
 import           Data.VPlan.TH
-import           Data.VPlan.Util
 import           Control.Lens.Aeson
 import           GHC.Generics hiding (C)
 
@@ -70,7 +69,7 @@ class EnumContains a b where
 
   -- | Try to access the value of the requested type in the enum. Returns Nothing if a value of another type
   -- is currently stored in the enum.
-  castEnum :: b (s :: * -> * -> *) i v -> Maybe :$ a s i v
+  castEnum :: b (s :: * -> * -> *) i v -> Maybe (a s i v)
 
 instance EnumContains a a where 
   enumValue = id

@@ -17,7 +17,7 @@ import           Control.Lens
 import           Data.Aeson
 import           Data.Maybe
 import           Data.Semigroup
-import           Data.VPlan hiding ((:$))
+import           Data.VPlan
 import           Instances                ()
 import           Laws
 import           Test.QuickCheck.Function
@@ -31,16 +31,13 @@ import           Test.Tasty.TH
 newtype Tagged a b = Tagged { untag :: b }
 data Proxy a = Proxy
 
-type a :$ b = a b
-infixr 0 :$
-
 data Void2 a b
 
 -- | A profunctor schedule
-type ProS = Schedule :$ Combine :><: Constant :><: Empty
+type ProS = Schedule (Combine :><: Constant :><: Empty)
 
 -- | A contravariant schedule
-type ContraS = Schedule :$ Empty :><: Combine :><: Reference :><: Limit :><: Repeat
+type ContraS = Schedule (Empty :><: Combine :><: Reference :><: Limit :><: Repeat)
 
 type QC v = (Arbitrary v, Eq v, Show v)
 type Mod m (s :: * -> * -> *) = m s DiscreteTime Int
