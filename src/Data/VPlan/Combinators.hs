@@ -77,7 +77,7 @@ buildCombine = new . Combine . runBuilder
 -- Note: When there is no item at the source index, the entry at the target index won't be changed at all!
 move :: (Supported Combine s, Supported Limit s, Supported E.Empty s, Supported R.Reference s, Ord i)
      => i -> i -> s i v -> s i v
-move f t s = except f s -||- eq t (ref f s)
+move f t s = eq t (ref f s) -||- except f s
 
 -- | Swap two items at given indices.
 swap :: (Supported Combine s, Supported Limit s, Supported R.Reference s, Ord i)

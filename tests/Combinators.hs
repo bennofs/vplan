@@ -41,11 +41,13 @@ prop_eq i s = sch ^? ix i == s ^? ix i .&. forIndicesEmpty (arbitrary `suchThat`
 prop_except :: DiscreteTime -> Timetable -> Property
 prop_except i s  = not (sch ^. contains i) .&. forIndicesEqual (arbitrary `suchThat` (/= i)) sch s
   where sch = except i s
-
 prop_move :: DiscreteTime -> DiscreteTime -> Timetable -> Property
-prop_move f t s = not (sch ^. contains f) .&. sch ^.. ix t == (s ^.. ix f ++ s ^.. ix t) .&. forIndicesEqual (arbitrary `suchThat` neither [f,t]) sch s
+prop_move f t s = prop1 .&. prop2 .&. forIndicesEqual (arbitrary `suchThat` neither [f,t]) sch s
   where sch = move f t s
-        prop
+        prop1
+          | t == f = True
+          | otherwise = not (sch ^. contains f)
+        prop2
           | t == f = sch ^.. ix t == s ^.. ix f
           | otherwise = sch ^.. ix t == s ^.. ix f ++ s ^.. ix t
 
