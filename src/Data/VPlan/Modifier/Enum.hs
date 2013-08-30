@@ -128,8 +128,8 @@ instance (BothInstance1 Contravariant a b s i) => Contravariant (C a b s i) wher
   contramap f (R x) = R $ contramap f x
 
 instance (BothInstance1 Foldable a b s i) => Foldable (C a b s i) where
-  fold (L x) = fold x
-  fold (R x) = fold x
+  foldMap f (L x) = foldMap f x
+  foldMap f (R x) = foldMap f x
 
 instance (BothInstance1 Traversable a b s i) => Traversable (C a b s i) where
   traverse f (L x) = L <$> traverse f x

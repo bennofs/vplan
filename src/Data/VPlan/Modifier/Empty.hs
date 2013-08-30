@@ -42,5 +42,5 @@ instance Bifunctor (Empty s) where bimap _ _ Empty = Empty
 instance Contravariant (Empty s i) where contramap _ Empty = Empty
 instance FromJSON (Empty s i v) where parseJSON _ = pure Empty
 instance ToJSON (Empty s i v) where toJSON _ = emptyObject
-instance Foldable (Empty s i) where fold = mempty
+instance Foldable (Empty s i) where fold _ = mempty
 instance Traversable (Empty s i) where traverse = const $ pure . coerce

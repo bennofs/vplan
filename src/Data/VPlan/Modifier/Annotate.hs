@@ -53,7 +53,7 @@ instance (Functor (s i)) => Functor (Annotate a s i) where fmap f = annotated %~
 instance (Bifunctor s) => Bifunctor (Annotate a s) where bimap f g = annotated %~ bimap f g
 instance (Profunctor s) => Profunctor (Annotate a s) where dimap f g = annotated %~ dimap f g
 instance (Contravariant (s i)) => Contravariant (Annotate a s i) where contramap f = annotated %~ contramap f
-instance (Foldable (s i)) => Foldable (Annotate a s i) where fold = views annotated fold
+instance (Foldable (s i)) => Foldable (Annotate a s i) where foldMap = views annotated . foldMap
 instance (Traversable (s i)) => Traversable (Annotate a s i) where traverse = annotated . traverse
 
 instance (FromJSON (s i v), FromJSON a) => FromJSON (Annotate a s i v) where

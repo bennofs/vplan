@@ -57,7 +57,7 @@ instance (A.Ixed f (s i v), Applicative f) => A.Ixed f (Combine s i v) where
   ix i f (Combine a) = Combine <$> traverse (A.ix i f) a
 
 instance (Foldable (s i)) => Foldable (Combine s i) where
-  fold (Combine a) = foldMap fold a
+  foldMap f (Combine a) = foldMap (foldMap f) a
 
 instance (Traversable (s i)) => Traversable (Combine s i) where
   traverse f (Combine a) = Combine <$> traverse (traverse f) a

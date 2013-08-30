@@ -71,7 +71,7 @@ instance (Functor f, A.Ixed f :$ s i v, Ord i, Group i, Index (s i v) ~ i) => A.
 instance Functor (s i) => Functor (Repeat s i) where fmap f = repeated %~ fmap f
 instance Bifunctor s => Bifunctor (Repeat s) where bimap f g (Repeat i u) = Repeat (bimap f f i) $ bimap f g u
 instance Contravariant (s i) => Contravariant (Repeat s i) where contramap = over repeated . contramap
-instance Foldable (s i) => Foldable (Repeat s i) where fold = fold . view repeated
+instance Foldable (s i) => Foldable (Repeat s i) where foldMap = views repeated . foldMap
 instance Traversable (s i) => Traversable (Repeat s i) where traverse = repeated . traverse
 
 instance (FromJSON i, Monoid i, FromJSON :$ s i v) => FromJSON (Repeat s i v) where

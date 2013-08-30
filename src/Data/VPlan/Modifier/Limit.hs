@@ -68,7 +68,7 @@ instance (A.Ixed f (s i v), Applicative f, Ord i, i ~ Index (s i v)) => A.Ixed f
 instance Functor (s i) => Functor (Limit s i) where fmap f = limited %~ fmap f
 instance Bifunctor s => Bifunctor (Limit s)   where bimap f g (Limit c b u) = Limit c (f b) $ bimap f g u
 instance Contravariant (s i) => Contravariant (Limit s i) where contramap f = limited %~ contramap f
-instance Foldable (s i) => Foldable (Limit s i) where fold = fold . view limited
+instance Foldable (s i) => Foldable (Limit s i) where foldMap = views limited . foldMap
 instance Traversable (s i) => Traversable (Limit s i) where traverse = limited . traverse
 
 instance (FromJSON (s i v), FromJSON i) => FromJSON (Limit s i v) where
