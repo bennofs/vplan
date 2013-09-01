@@ -13,7 +13,7 @@ import           Test.Tasty
 import           Test.Tasty.QuickCheck
 import           Test.Tasty.TH
 
-type Timetable = USchedule DiscreteTime Int
+type Timetable = UScheduleVoidConfig DiscreteTime Int
 
 neither :: (Eq a) => [a] -> a -> Bool
 neither of' = not . (`elem` of')

@@ -27,26 +27,26 @@ import           Data.VPlan.TH
 import           GHC.Generics        hiding (from)
 
 -- | A modifier that always returns the same value, for all possible indices.
-newtype Constant (s :: * -> * -> *) i v = Constant v deriving (Eq, Generic)
+newtype Constant (s :: * -> * -> * -> *) c i v = Constant v deriving (Eq, Generic)
 makeModifier ''Constant
 makeIso ''Constant
 deriveClass ''Constant
 
-deriving instance Show v => Show (Constant s i v)
-deriving instance Read v => Read (Constant s i v)
-deriving instance (Typeable2 s, Typeable i, Typeable v, Data v) => Data (Constant s i v)
+deriving instance Show v => Show (Constant s c i v)
+deriving instance Read v => Read (Constant s c i v)
+deriving instance (Typeable3 s, Typeable c, Typeable i, Typeable v, Data v) => Data (Constant s c i v)
 
-instance (Gettable f) => A.Contains f (Constant s i v)                 where contains = containsTest  $ const $ const True
-instance (Functor f, v ~ IxValue (s i v)) => A.Ixed f (Constant s i v) where ix i f   = from constant $ indexed f i
-instance Functor (Constant s i) where  fmap f    (Constant x) = Constant $ f x
-instance Bifunctor (Constant s) where  bimap _ f (Constant x) = Constant $ f x
-instance Profunctor (Constant s) where dimap _ f (Constant x) = Constant $ f x
-instance Foldable (Constant s i) where foldMap f (Constant v) = f v
-instance Traversable (Constant s i) where traverse f (Constant v) = Constant <$> f v
+instance (Gettable f) => A.Contains f (Constant s c i v)                 where contains = containsTest  $ const $ const True
+instance (Functor f, v ~ IxValue (s c i v)) => A.Ixed f (Constant s c i v) where ix i f   = from constant $ indexed f i
+instance Functor (Constant s c i) where  fmap f    (Constant x) = Constant $ f x
+instance Bifunctor (Constant s c) where  bimap _ f (Constant x) = Constant $ f x
+instance Profunctor (Constant s c) where dimap _ f (Constant x) = Constant $ f x
+instance Foldable (Constant s c i) where foldMap f (Constant v) = f v
+instance Traversable (Constant s c i) where traverse f (Constant v) = Constant <$> f v
 
-instance (FromJSON v) => FromJSON (Constant s i v) where
+instance (FromJSON v) => FromJSON (Constant s c i v) where
   parseJSON (Object o) = Constant <$> o .: "value"
   parseJSON v = typeMismatch "Object" v
 
-instance (ToJSON v) => ToJSON (Constant s i v) where
+instance (ToJSON v) => ToJSON (Constant s c i v) where
   toJSON (Constant v) = object ["value" .= v]

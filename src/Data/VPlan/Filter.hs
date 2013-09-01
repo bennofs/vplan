@@ -28,11 +28,11 @@ containsType _ = has (template :: Getting Any s a)
 data Unique = Unique deriving (Typeable, Data)
 
 -- | Replace the toplevel modifier with Empty when it doesn't contain a value.
-cleanTop :: forall i. forall s. forall v. (Supported Empty (Schedule s), Data (Schedule s i Unique), Functor (Schedule s i)) => Schedule s i v -> Schedule s i v
+cleanTop :: forall c i s v. (Supported Empty (Schedule s), Data (Schedule s c i Unique), Functor (Schedule s c i)) => Schedule s c i v -> Schedule s c i v
 cleanTop s
   | containsType (Proxy :: Proxy Unique) $ Unique <$ s = s
   | otherwise = new Empty
 
 -- | Clean a whole Schedule
-cleanSchedule :: (Supported Empty (Schedule s), Data (Schedule s i Unique), Data (Schedule s i v), Functor (Schedule s i)) => Schedule s i v => Schedule s i v
+cleanSchedule :: (Supported Empty (Schedule s), Data (Schedule s c i Unique), Data (Schedule s c i v), Functor (Schedule s c i)) => Schedule s c i v => Schedule s c i v
 cleanSchedule = transform cleanTop

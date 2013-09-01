@@ -34,8 +34,11 @@ module Data.VPlan
    -- * Convenience definitions
  , AllModifiers
  , USchedule
+ , UScheduleVoidConfig
 
  ) where
+
+import Data.Void
 
 import           Data.VPlan.Class
 import           Data.VPlan.Combinators
@@ -58,3 +61,6 @@ type AllModifiers = Limit :><: Combine :><: Constant :><: Repeat :><: Reference 
 
 -- | An universal schedule, that can supports all the modifier provided in this package.
 type USchedule = Schedule AllModifiers
+
+-- | Like 'USchedule', but with the no global configuration.
+type UScheduleVoidConfig = USchedule Void

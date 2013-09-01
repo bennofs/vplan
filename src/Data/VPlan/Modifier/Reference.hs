@@ -31,34 +31,34 @@ import           Data.VPlan.TH
 import           GHC.Generics
 
 -- | Reference the value at index '_source' in the schedule '_referenced' and repeat it infinitely.
-data Reference s i v = Reference {_source :: i, _referenced :: s i v} deriving (Eq, Generic)
+data Reference s c i v = Reference {_source :: i, _referenced :: s c i v} deriving (Eq, Generic)
 makeLenses ''Reference
 makeModifier ''Reference
 deriveClass ''Reference
 
-deriving instance (Show i, Show (s i v)) => Show (Reference s i v)
-deriving instance (Read i, Read (s i v)) => Read (Reference s i v)
-deriving instance (Data i, Data (s i v), Typeable2 s, Typeable i, Typeable v) => Data (Reference s i v)
+deriving instance (Show i, Show (s c i v)) => Show (Reference s c i v)
+deriving instance (Read i, Read (s c i v)) => Read (Reference s c i v)
+deriving instance (Data i, Data (s c i v), Typeable3 s, Typeable c, Typeable i, Typeable v) => Data (Reference s c i v)
 
 -- | Construct a new reference.
-reference :: i -> s i v -> Reference s i v
+reference :: i -> s c i v -> Reference s c i v
 reference = Reference
 
-instance (Eq i, i ~ Index (s i v), Gettable f, A.Contains f (s i v)) => A.Contains f (Reference s i v) where
+instance (Eq i, i ~ Index (s c i v), Gettable f, A.Contains f (s c i v)) => A.Contains f (Reference s c i v) where
   contains _ f r = referenced ?? r $ A.contains (r ^. source) f
 
-instance (Eq i, i ~ Index (s i v), A.Ixed f (s i v), Functor f) => A.Ixed f (Reference s i v) where
+instance (Eq i, i ~ Index (s c i v), A.Ixed f (s c i v), Functor f) => A.Ixed f (Reference s c i v) where
   ix _ f r = referenced ?? r $ A.ix (r ^. source) f
 
-instance Functor (s i) => Functor (Reference s i) where fmap f = referenced %~ fmap f
-instance Bifunctor s => Bifunctor (Reference s) where bimap f g (Reference i u) = Reference (f i) $ bimap f g u
-instance Contravariant (s i) => Contravariant (Reference s i) where contramap f = referenced %~ contramap f
-instance Foldable (s i) => Foldable (Reference s i) where foldMap = views referenced . foldMap
-instance Traversable (s i) => Traversable (Reference s i) where traverse = referenced . traverse
+instance Functor (s c i) => Functor (Reference s c i) where fmap f = referenced %~ fmap f
+instance Bifunctor (s c) => Bifunctor (Reference s c) where bimap f g (Reference i u) = Reference (f i) $ bimap f g u
+instance Contravariant (s c i) => Contravariant (Reference s c i) where contramap f = referenced %~ contramap f
+instance Foldable (s c i) => Foldable (Reference s c i) where foldMap = views referenced . foldMap
+instance Traversable (s c i) => Traversable (Reference s c i) where traverse = referenced . traverse
 
-instance (FromJSON i, FromJSON (s i v)) => FromJSON (Reference s i v) where
+instance (FromJSON i, FromJSON (s c i v)) => FromJSON (Reference s c i v) where
   parseJSON (Object o) = Reference <$> o .: "index" <*> o .: "child"
   parseJSON v = typeMismatch "Object" v
 
-instance (ToJSON i, ToJSON (s i v)) => ToJSON (Reference s i v) where
+instance (ToJSON i, ToJSON (s c i v)) => ToJSON (Reference s c i v) where
   toJSON (Reference i u) = object ["index" .= i, "child" .= u]

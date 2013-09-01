@@ -12,6 +12,7 @@ module Data.VPlan.TH
   , genIxedInstances
   , makeModifier
   , Modifiers
+  , Configuration
 
     -- * Implementation
   , appsT
@@ -32,7 +33,10 @@ import           Language.Haskell.TH
 import           Data.Typeable.TH
 
 -- | Get the modifiers of a schedule.
-type family Modifiers s :: (* -> * -> *) -> * -> * -> *
+type family Modifiers s :: (* -> * -> * -> *) -> * -> * -> * -> *
+
+-- | Get the configuration associated with some schedule
+type family Configuration s :: *
 
 -- | Generate the type families IxValue and Index for lens.
 genIxedFamilies :: Name -> Q [Dec]
@@ -49,7 +53,7 @@ appsT = foldl appT
 
 -- | Get the schedule type of a modifier
 getScheduleType :: [TyVarBndr] -> TypeQ
-getScheduleType tv = vtvn (init $ init tv) `appT` vtvn (init tv) `appT` vtvn tv
+getScheduleType tv = vtvn (init $ init $ init tv) `appT` vtvn (init $ init tv) `appT` vtvn (init tv) `appT` vtvn tv
   where vtvn = varT . getTVName . last
 
 -- | Generate the ixed family f for the type t with the type arguments tv.
@@ -87,7 +91,7 @@ genModifier n = let t = resolveType n in
   [d|
     type instance Modifiers $t = Modifiers $kind2type
   |]
-  where kind2type = reify n >>= getTCInfo >>= \(_,tv) -> (vtvn $ init $ init tv) `appT` (vtvn $ init tv) `appT` (vtvn tv)
+  where kind2type = reify n >>= getTCInfo >>= \(_,tv) -> getScheduleType tv
         vtvn = varT . getTVName . last 
 
 -- | Make all boilerplate instances required for a modifier

@@ -94,10 +94,10 @@ showHoles _ a = runWriter $ (tshow (`extQ` f) False a :: Writer [p] Box)
         f x = text "_" <$ tell [x]
 
 -- | Show holes in a schedule, skipping the Enum/Schedule boiler plate.
-showHolesSchedule :: forall i. forall v. forall s. (Data (Schedule s i v), EnumApply Data (s (Schedule s) i v), Typeable2 (s (Schedule s)), Typeable i, Typeable v) => Schedule s i v -> (Box, [Schedule s i v])
-showHolesSchedule s = enumApply (CFunc f :: CFunc Data (Box, [Schedule s i v])) $ review schedule s
-  where f :: forall a. (Data a) => a -> (Box, [Schedule s i v])
-        f a = showHoles (Proxy :: Proxy (Schedule s i v)) a
+showHolesSchedule :: forall s c i v. (Data (Schedule s c i v), EnumApply Data (s (Schedule s) c i v), Typeable3 (s (Schedule s)), Typeable c, Typeable i, Typeable v) => Schedule s c i v -> (Box, [Schedule s c i v])
+showHolesSchedule s = enumApply (CFunc f :: CFunc Data (Box, [Schedule s c i v])) $ review schedule s
+  where f :: forall a. (Data a) => a -> (Box, [Schedule s c i v])
+        f a = showHoles (Proxy :: Proxy (Schedule s c i v)) a
 
 -- | Show a tree
 showTree :: Tree Box -> Box
@@ -115,7 +115,7 @@ safeInit [] = []
 safeInit x = init x
 
 -- | Render a schedule as a tree.
-showScheduleTree :: forall i. forall s. forall v. (EnumApply Data (s (Schedule s) i v), Typeable2 (s (Schedule s)), Typeable2 (Schedule s), Typeable v, Typeable i, Data (s (Schedule s) i v)) => Schedule s i v -> Box
+showScheduleTree :: forall s c i v. (EnumApply Data (s (Schedule s) c i v), Typeable3 (s (Schedule s)), Typeable3 (Schedule s), Typeable c, Typeable v, Typeable i, Data (s (Schedule s) c i v)) => Schedule s c i v -> Box
 showScheduleTree = showTree . unfoldTree showHolesSchedule
 
 -- | Show a function from a pair to a box as a table in the given range.

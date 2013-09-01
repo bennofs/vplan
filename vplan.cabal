@@ -57,6 +57,7 @@ library
 
   hs-source-dirs:    src
   ghc-options: -Wall -Werror -fwarn-tabs
+  default-language: Haskell2010  
 
 test-suite vplan-tests
   type:           exitcode-stdio-1.0
@@ -77,4 +78,5 @@ test-suite vplan-tests
     , bytestring
     , aeson
     , mtl
+    , void
   ghc-options:   -Wall

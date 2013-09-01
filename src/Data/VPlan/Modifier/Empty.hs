@@ -28,19 +28,19 @@ import           Data.VPlan.TH
 import           GHC.Generics
 
 -- | This doesn't contain any value, it just ignores the s parameter (except for the IxValue/Ixed families)
-data Empty (s :: * -> * -> *) i v = Empty deriving (Eq, Show, Generic, Read)
+data Empty (s :: * -> * -> * -> *) c i v = Empty deriving (Eq, Show, Generic, Read)
 makeModifier ''Empty
 deriveClass ''Empty
 
-deriving instance (Typeable2 s, Typeable i, Typeable v) => Data (Empty s i v)
+deriving instance (Typeable3 s, Typeable c, Typeable i, Typeable v) => Data (Empty s c i v)
 
-instance (Gettable f) => A.Contains f (Empty s i v) where contains = containsTest $ const $ const False
-instance (Applicative f) => A.Ixed f (Empty s i v) where ix _ _ = pure
-instance Functor (Empty s i) where fmap _ Empty = Empty
-instance Profunctor (Empty s) where dimap _ _ Empty = Empty
-instance Bifunctor (Empty s) where bimap _ _ Empty = Empty
-instance Contravariant (Empty s i) where contramap _ Empty = Empty
-instance FromJSON (Empty s i v) where parseJSON _ = pure Empty
-instance ToJSON (Empty s i v) where toJSON _ = emptyObject
-instance Foldable (Empty s i) where fold _ = mempty
-instance Traversable (Empty s i) where traverse = const $ pure . coerce
+instance (Gettable f) => A.Contains f (Empty s c i v) where contains = containsTest $ const $ const False
+instance (Applicative f) => A.Ixed f (Empty s c i v) where ix _ _ = pure
+instance Functor (Empty s c i) where fmap _ Empty = Empty
+instance Profunctor (Empty s c) where dimap _ _ Empty = Empty
+instance Bifunctor (Empty s c) where bimap _ _ Empty = Empty
+instance Contravariant (Empty s c i) where contramap _ Empty = Empty
+instance FromJSON (Empty s c i v) where parseJSON _ = pure Empty
+instance ToJSON (Empty s c i v) where toJSON _ = emptyObject
+instance Foldable (Empty s c i) where fold _ = mempty
+instance Traversable (Empty s c i) where traverse = const $ pure . coerce
