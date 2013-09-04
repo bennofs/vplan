@@ -21,7 +21,6 @@ import           Control.Lens        hiding ((.=))
 import           Data.Aeson
 import           Data.Aeson.Types
 import           Data.Data
-import           Data.Bifoldable
 import           Data.Foldable       (Foldable (..))
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
@@ -45,7 +44,6 @@ instance Profunctor (s c) => Profunctor (Combine s c) where dimap l r (Combine a
 instance Contravariant (s c i) => Contravariant (Combine s c i) where contramap f (Combine l) = Combine $ map (contramap f) l
 instance Foldable (s c i) => Foldable (Combine s c i) where foldMap f (Combine a) = foldMap (foldMap f) a
 instance Traversable (s c i) => Traversable (Combine s c i) where traverse f (Combine a) = Combine <$> traverse (traverse f) a
-instance Bifoldable (s c) => Bifoldable (Combine s c) where 
 
 instance (Gettable f, A.Contains (Accessor Bool) (s c i v)) => A.Contains f (Combine s c i v) where
   contains = containsTest $ \i (Combine a) -> any (view $ A.contains i) a
