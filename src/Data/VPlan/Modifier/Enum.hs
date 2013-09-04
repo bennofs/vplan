@@ -50,7 +50,7 @@ import           GHC.Generics hiding (C)
 
 -- | An Either for types with one type argument (which is passed to both sides)
 data (:><:) a b (s :: * -> * -> * -> *) c i v = L (a s c i v) | R (b s c i v) deriving (Eq, Generic)
-infixr 7 :><:
+infixr 2 :><:
 
 makeModifier ''(:><:)
 
