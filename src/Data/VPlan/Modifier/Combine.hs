@@ -20,7 +20,9 @@ import           Control.Applicative
 import           Control.Lens        hiding ((.=))
 import           Data.Aeson
 import           Data.Aeson.Types
+import           Data.Monoid
 import           Data.Data
+import           Data.VPlan.Util
 import           Data.Foldable       (Foldable (..))
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
@@ -32,7 +34,6 @@ import           GHC.Generics
 newtype Combine s c i v = Combine [s c i v] deriving (Eq, Generic)
 makeIso ''Combine
 makeModifier ''Combine
-deriveClass ''Combine
 
 deriving instance Show (s c i v) => Show (Combine s c i v)
 deriving instance Read (s c i v) => Read (Combine s c i v)
@@ -44,6 +45,14 @@ instance Profunctor (s c) => Profunctor (Combine s c) where dimap l r (Combine a
 instance Contravariant (s c i) => Contravariant (Combine s c i) where contramap f (Combine l) = Combine $ map (contramap f) l
 instance Foldable (s c i) => Foldable (Combine s c i) where foldMap f (Combine a) = foldMap (foldMap f) a
 instance Traversable (s c i) => Traversable (Combine s c i) where traverse f (Combine a) = Combine <$> traverse (traverse f) a
+                                                                  
+instance (Limited (s c i v), Ord (Index (s c i v))) => Limited (Combine s c i v) where
+  imax (Combine as) = maximum <$> traverse imax as
+  imin (Combine as) = minimum <$> traverse imin as
+
+instance (Enum (Index (s c i v)), Monoid (Index (s c i v)), Ord (Index (s c i v)), Periodic (s c i v)) => Periodic (Combine s c i v) where
+  interval (Combine []) = succ mempty
+  interval (Combine (a:as)) = foldl' glcm (interval a) $ map interval as
 
 instance (Gettable f, A.Contains (Accessor Bool) (s c i v)) => A.Contains f (Combine s c i v) where
   contains = containsTest $ \i (Combine a) -> any (view $ A.contains i) a

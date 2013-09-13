@@ -32,15 +32,14 @@ import           GHC.Generics
 -- | @Annotate a@ is a modifier that can attach data of type @a@ to some other modifier.
 data Annotate a s c i v = Annotate
   { _attached  :: a         -- ^ Contains the attached value
-  , _annotated :: (s c i v)   -- ^ Contains the modifier the value is attached to
+  , _annotated :: s c i v   -- ^ Contains the modifier the value is attached to
   } deriving (Eq, Generic)
 
 makeLenses ''Annotate
 makeModifier ''Annotate
-deriveClass ''Annotate
 
 -- | Annotate another modifier with a value of type @a@.
-annotate :: a -> (s c i v) -> Annotate a s c i v
+annotate :: a -> s c i v -> Annotate a s c i v
 annotate = Annotate
 
 deriving instance (Data a, Data (s c i v), Typeable3 s, Typeable c, Typeable i, Typeable v) => Data (Annotate a s c i v)
@@ -55,6 +54,11 @@ instance Profunctor (s c) => Profunctor (Annotate a s c) where dimap f g = annot
 instance Contravariant (s c i) => Contravariant (Annotate a s c i) where contramap f = annotated %~ contramap f
 instance Foldable (s c i) => Foldable (Annotate a s c i) where foldMap = views annotated . foldMap
 instance Traversable (s c i) => Traversable (Annotate a s c i) where traverse = annotated . traverse
+instance Periodic (s c i v) => Periodic (Annotate a s c i v) where interval = views annotated interval
+
+instance Limited (s c i v) => Limited (Annotate a s c i v) where
+  imin = views annotated imin
+  imax = views annotated imax
 
 instance (FromJSON (s c i v), FromJSON a) => FromJSON (Annotate a s c i v) where
   parseJSON (Object o) = Annotate <$> o .: "data" <*> o .: "child"

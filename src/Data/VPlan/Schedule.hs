@@ -17,7 +17,6 @@ module Data.VPlan.Schedule (
     Schedule(..)
   , schedule
   , Supported(new)
-  , ScheduleType
   , ModSame
   , ModInstance
   ) where
@@ -30,6 +29,7 @@ import           Data.VPlan.TH
 import           GHC.Generics
 import           Data.Foldable (Foldable(..))
 import           Data.Aeson
+import           Data.VPlan.Class
 
 
 -- | The type of a schedule. This is like fix, but with the indices added.
@@ -57,11 +57,6 @@ instance Data (Schedule s c i v) => Plated (Schedule s c i v)
 
 type instance Index (Schedule s c i v) = i
 type instance IxValue (Schedule s c i v) = v
-type instance Modifiers (Schedule s c i v) = s
-type instance Configuration (Schedule s c i v) = c
-
-type family ScheduleType m :: *
-type instance ScheduleType a = Schedule (Modifiers a) (Configuration a) (Index a) (IxValue a)
 
 type ModSame t s c i v = (t (Schedule s c i v) ~ t (s (Schedule s) c i v))
 type ModInstance (x :: * -> Constraint) s c i v = x (s (Schedule s) c i v)
@@ -73,3 +68,10 @@ class Supported m s where
 
   -- | Construct a Schedule with that modifier.
   new :: m s c i v -> s c i v
+
+instance (ModInstance Periodic s c i v, ModSame Index s c i v) => Periodic (Schedule s c i v) where
+  interval = interval . review schedule
+
+instance (ModInstance Limited s c i v, ModSame Index s c i v) => Limited (Schedule s c i v) where
+  imax = imax . review schedule
+  imin = imin . review schedule

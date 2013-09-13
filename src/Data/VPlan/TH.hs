@@ -85,15 +85,24 @@ genIxedInstances = reify >=> getTCInfo >=> \(n, tv) -> genIxedInstancesT (foldl 
 resolveType :: Name -> Q Type
 resolveType = reify >=> getTCInfo >=> \(n, tv) -> foldl appT (conT n) $ map (varT . getTVName) tv
 
+{-
 -- | Make a modifiers type instance
 genModifier :: Name -> Q [Dec]
 genModifier n = let t = resolveType n in
   [d|
-    type instance Modifiers $t = Modifiers $kind2type
+    type instance Modifiers $t = Modifiers $scheduleType
   |]
-  where kind2type = reify n >>= getTCInfo >>= \(_,tv) -> getScheduleType tv
-        vtvn = varT . getTVName . last 
+  where scheduleType = reify n >>= getTCInfo >>= \(_,tv) -> getScheduleType tv
 
+-- | Make a configuration type instance
+genConfiguration :: Name -> Q [Dec]
+genConfiguration n = let t = resolveType n in
+  [d|
+    type instance Configuration $t = Configuration $scheduleType
+  |]
+  where scheduleType = reify n >>= getTCInfo >>= getScheduleType . snd
+-}
 -- | Make all boilerplate instances required for a modifier
 makeModifier :: Name -> Q [Dec]
-makeModifier n = concat <$> traverse ($ n) [genIxedFamilies, genIxedInstances, genModifier, makeTypeable]
+makeModifier n = concat <$> traverse ($ n) [genIxedFamilies, genIxedInstances, makeTypeable]
+

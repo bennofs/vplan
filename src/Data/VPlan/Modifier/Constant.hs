@@ -20,6 +20,7 @@ import           Control.Applicative
 import           Control.Lens        hiding ((.=))
 import           Data.Aeson.Types
 import           Data.Data
+import           Data.Monoid
 import           Data.Foldable       (Foldable (..))
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
@@ -30,7 +31,6 @@ import           GHC.Generics        hiding (from)
 newtype Constant (s :: * -> * -> * -> *) c i v = Constant v deriving (Eq, Generic)
 makeModifier ''Constant
 makeIso ''Constant
-deriveClass ''Constant
 
 deriving instance Show v => Show (Constant s c i v)
 deriving instance Read v => Read (Constant s c i v)
@@ -43,6 +43,11 @@ instance Bifunctor (Constant s c) where  bimap _ f (Constant x) = Constant $ f x
 instance Profunctor (Constant s c) where dimap _ f (Constant x) = Constant $ f x
 instance Foldable (Constant s c i) where foldMap f (Constant v) = f v
 instance Traversable (Constant s c i) where traverse f (Constant v) = Constant <$> f v
+instance (Enum (Index (s c i v)), Monoid (Index (s c i v))) => Periodic (Constant s c i v) where interval = const $ succ mempty
+
+instance Limited (Constant s c i v) where
+  imin = const Nothing
+  imax = const Nothing
 
 instance (FromJSON v) => FromJSON (Constant s c i v) where
   parseJSON (Object o) = Constant <$> o .: "value"

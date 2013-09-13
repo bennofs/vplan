@@ -22,6 +22,7 @@ module Data.VPlan.Modifier.Reference (
 import           Control.Applicative
 import           Control.Lens        hiding ((.=))
 import           Data.Aeson
+import           Data.Monoid
 import           Data.Aeson.Types
 import           Data.Data
 import           Data.Foldable       (Foldable (..))
@@ -34,7 +35,6 @@ import           GHC.Generics
 data Reference s c i v = Reference {_source :: i, _referenced :: s c i v} deriving (Eq, Generic)
 makeLenses ''Reference
 makeModifier ''Reference
-deriveClass ''Reference
 
 deriving instance (Show i, Show (s c i v)) => Show (Reference s c i v)
 deriving instance (Read i, Read (s c i v)) => Read (Reference s c i v)
@@ -55,6 +55,13 @@ instance Bifunctor (s c) => Bifunctor (Reference s c) where bimap f g (Reference
 instance Contravariant (s c i) => Contravariant (Reference s c i) where contramap f = referenced %~ contramap f
 instance Foldable (s c i) => Foldable (Reference s c i) where foldMap = views referenced . foldMap
 instance Traversable (s c i) => Traversable (Reference s c i) where traverse = referenced . traverse
+
+instance Limited (Reference s c i v) where
+  imin = const Nothing
+  imax = const Nothing
+
+instance (Enum (Index (s c i v)), Monoid (Index (s c i v))) => Periodic (Reference s c i v) where
+  interval = const $ succ mempty
 
 instance (FromJSON i, FromJSON (s c i v)) => FromJSON (Reference s c i v) where
   parseJSON (Object o) = Reference <$> o .: "index" <*> o .: "child"

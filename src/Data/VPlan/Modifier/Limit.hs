@@ -38,7 +38,6 @@ import           GHC.Generics
 data Limit s c i v = Limit { _condition :: Ordering, _bound :: i, _limited :: s c i v } deriving (Generic, Eq)
 makeLenses ''Limit
 makeModifier ''Limit
-derivePeriodic ''Limit
 
 limit :: Ordering -> i -> s c i v -> Limit s c i v
 limit = Limit
@@ -70,6 +69,7 @@ instance Bifunctor (s c) => Bifunctor (Limit s c)  where bimap f g (Limit c b u)
 instance Contravariant (s c i) => Contravariant (Limit s c i) where contramap f = limited %~ contramap f
 instance Foldable (s c i) => Foldable (Limit s c i) where foldMap = views limited . foldMap
 instance Traversable (s c i) => Traversable (Limit s c i) where traverse = limited . traverse
+instance Periodic (s c i v) => Periodic (Limit s c i v) where interval = views limited interval
 
 instance (FromJSON (s c i v), FromJSON i) => FromJSON (Limit s c i v) where
   parseJSON (Object o) = Limit <$> (fmap read $ o .: "condition") <*> o .: "bound" <*> o .: "child"

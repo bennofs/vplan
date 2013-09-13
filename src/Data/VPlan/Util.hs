@@ -1,10 +1,14 @@
+{-# LANGUAGE BangPatterns #-}
 -- | Miscellaneous functions and types that belong to no other module
 module Data.VPlan.Util
   (
-   -- * Functions
+   -- * Group and Monoid functions
+   -- Note: The functions for monoids/groups in this module are not really efficient, but
+   -- that shouldn't matter most of the time.
     gdiv
   , gmod
   , gdivMod
+  , glcm
   ) where
 
 import           Control.Lens
@@ -39,7 +43,7 @@ gdivMod xs x
   | x > xs = (0,xs)
   | x == xs = (1,mempty)
   | otherwise = over _1 (+ getSum steps) $ (xs <> invert half) `gdivMod` x
-  where (steps, half) = until moreThanHalf (join mappend) $ (Sum 1, x)
+  where (steps, half) = until moreThanHalf (join mappend) (Sum 1, x)
         moreThanHalf (_,a) = (xs <> invert a) < a
 
 -- | This is like mod, but for arbitrary groups.
@@ -52,4 +56,22 @@ gdivMod xs x
 -- >>> (Product 29) `gmod` (Product $ 3 % 1)
 -- Product {getProduct = 29 % 27}
 gmod :: (Ord a, Group a) => a -> a -> a
-gmod xs x= snd $ xs `gdivMod` x
+gmod xs x = snd $ xs `gdivMod` x
+
+-- | This is like lcm, but for arbitrary monoids.
+--
+-- Examples:
+--
+-- >>> (Sum 6) `glcm` (Sum 4)
+-- Sum 12
+--
+-- >>> (Product 4) `glcm` (Product 8)
+-- Product 64 -- = Product (4 * 4 * 4) = Product (8 * 8)
+--
+glcm :: (Ord a, Monoid a) => a -> a -> a
+glcm a' b' = go a' b'
+  where go !a !b
+          | a > b = go a (b <> b')
+          | a < b = go (a <> a') b
+          | otherwise = a
+                    

@@ -121,7 +121,7 @@ instance Group WeekDate where
   invert a = a & week %~ negate & day %~ invert
 
 instance Enum WeekDate where
-  fromEnum date = (fromInteger $ date ^. week) * 7 + (date ^. day . _WeekDay)
+  fromEnum date = fromInteger (date ^. week) * 7 + (date ^. day . _WeekDay)
   toEnum x = let (w,d) = x `divMod` 7 in WeekDate (toInteger w) (WeekDay d)
 
 instance ToJSON WeekDate where
