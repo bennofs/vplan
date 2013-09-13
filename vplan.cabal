@@ -12,6 +12,10 @@ tested-with:         GHC ==7.6.3
 build-type:          Simple
 cabal-version:       >=1.8
 
+source-repository head
+  type: git
+  location: git://github.com/bennofs/vplan.git
+
 library
 
   build-depends:
