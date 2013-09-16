@@ -4,8 +4,7 @@ install:
   # Install latest cabal to build in parallel
   - cabal install Cabal cabal-install
   
-  # Try installing some of the build-deps with apt-get for speed.
-  - travis/cabal-apt-install
+  - ~/.cabal/bin/cabal install -j --only-dependencies --force-reinstalls || travis_retry ~/.cabal/bin/cabal install --only-dependencies --force-reinstalls
 
 script: 
 
