@@ -1,0 +1,26 @@
+#!/bin/bash 
+
+# This script installs the latest cabal. It compiles the Setup.hs file manually, thus avoiding the need
+# to bootstrap Cabal, which should roughly half compile time.
+
+# Get sources
+git clone http://github.com/haskell/cabal
+cd cabal
+git checkout tags/cabal-install-v1.18.0.1
+
+# Compile Setup.hs
+cd Cabal
+mkdir setup
+mv Setup.hs setup/
+cd setup
+ghc --make Setup.hs -o Setup
+cd ..
+
+# Configure
+./setup/Setup configure --user
+
+# Build
+./setup/Setup build
+
+# Install
+./setup/Setup install --user

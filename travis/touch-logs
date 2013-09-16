@@ -1,0 +1,8 @@
+#! /bin/bash
+
+# This script creates dummy logfiles for cabal. This prevents that cabal fails because t
+# he build log file does not yet exist.
+
+~/.cabal/bin/cabal install --dry-run | tail -n+3 | xargs -n1 bash -c 'touch ~/.cabal/logs/${0}.log'
+echo "Created log files:"
+ls ~/.cabal/logs

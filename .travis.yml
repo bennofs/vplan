@@ -2,9 +2,13 @@ language: haskell
 install:
 
   # Install latest cabal to build in parallel
-  - cabal install Cabal cabal-install
+  - travis/fast-install-cabal
   
-  - ~/.cabal/bin/cabal install -j --only-dependencies --force-reinstalls || travis_retry ~/.cabal/bin/cabal install --only-dependencies --force-reinstalls
+  # Prepare logs
+  - travis/touch-logs
+  
+  # Install dependencies
+  - travis_retry ~/.cabal/bin/cabal install -j --only-dependencies --force-reinstalls
 
 script: 
 
