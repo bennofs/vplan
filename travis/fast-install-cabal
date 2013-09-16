@@ -8,6 +8,9 @@ git clone http://github.com/haskell/cabal
 cd cabal
 git checkout tags/cabal-install-v1.18.0.1
 
+################################################################################
+# Cabal library
+
 # Compile Setup.hs
 cd Cabal
 mkdir setup
@@ -24,3 +27,12 @@ cd ..
 
 # Install
 ./setup/Setup install --user
+
+cd ..
+################################################################################
+# cabal-install executable
+
+cd cabal-install
+cabal install 
+
+cd ../..
