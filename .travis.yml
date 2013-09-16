@@ -1,10 +1,13 @@
 language: haskell
 install:
 
+  # Install latest cabal to build in parallel
+  - cabal install Cabal cabal-install
+  
   # Try installing some of the build-deps with apt-get for speed.
   - travis/cabal-apt-install
 
 script: 
 
   # Could also use cabal test, but that doesn't provide colorful output
-  - cabal configure --enable-tests && cabal build && dist/build/vplan-tests/vplan-tests --quickcheck-tests 500
+  - ~/.cabal/bin/cabal configure --enable-tests && ~/.cabal/bn/cabal build && dist/build/vplan-tests/vplan-tests --quickcheck-tests 500
