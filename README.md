@@ -5,9 +5,6 @@ VPlan
 
 A generic library for building schedules (timetables).
 
-*Does not work with GHC 7.4 at the time being (I'm happy to accept patches that make the tests work)*
-
-
 Introduction
 ------------
 Warning: *This is work-in-progress. The API may still change. I don't care about backwards compatibility, so use at your
