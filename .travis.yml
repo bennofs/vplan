@@ -8,7 +8,7 @@ install:
   - time travis/touch-logs
   
   # Install some deps with apt-get
-  - time sudo apt-get install -q -y libghc-vector-dev libghc-text-dev libghc-bifunctors-dev libghc-blaze-builder-dev libghc-comonad-dev libghc-primitive-dev
+  - time sudo apt-get install -q -y libghc-vector-dev libghc-text-dev libghc-primitive-dev
 
   # Install patched packages
   - time travis/install-patched
@@ -25,5 +25,5 @@ script:
 
 env:
 
-  - CABAL=~/.cabal/bin/cabal CABAL_FLAGS='-j --avoid-reinstalls --constraint "text installed" --constraint "vector installed" --constraint "comonad installed" --constraint "primitive installed"'
+  - CABAL=~/.cabal/bin/cabal CABAL_FLAGS='-j --avoid-reinstalls --constraint "text installed" --constraint "vector installed" --constraint "primitive installed"'
    
