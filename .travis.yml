@@ -25,5 +25,5 @@ script:
 
 env:
 
-  - CABAL=~/.cabal/bin/cabal CABAL_FLAGS='-j --avoid-reinstalls --constraint "text installed" --constraint "vector installed" --constraint "contravariant installed" --constraint "comonads installed" --constraint "comonads-fd installed" --constraint "comonad-transformers installed"'
+  - CABAL=~/.cabal/bin/cabal CABAL_FLAGS='-j --avoid-reinstalls --constraint "text installed" --constraint "vector installed" --constraint "comonads installed" 
    
