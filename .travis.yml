@@ -8,7 +8,7 @@ install:
   - time travis/touch-logs
   
   # Install some deps with apt-get
-  - time sudo apt-get install -q -y libghc-vector-dev libghc-aeson-dev libghc-text-dev libghc-aeson-dev libghc-attoparsec-dev libghc-bifunctors-dev libghc-blaze-builder-dev libghc-comonad-dev libghc-comonad-transformers-dev libghc-comonads-fd-dev libghc-contravariant-dev libghc-data-default-dev libghc-distributive-dev libghc-dlist-dev libghc-hashable-dev libghc-monadcatchio-transformers-dev libghc-primitive-dev libghc-semigroupoids-dev libghc-semigroups-dev libghc-split-dev libghc-tagged-dev libghc-unordered-containers-dev libghc-vector-dev libghc-void-dev
+  - time sudo apt-get install -q -y libghc-vector-dev libghc-text-dev libghc-aeson-dev libghc-bifunctors-dev libghc-blaze-builder-dev libghc-comonad-dev libghc-comonad-transformers-dev libghc-comonads-fd-dev libghc-contravariant-dev libghc-distributive-dev libghc-dlist-dev libghc-monadcatchio-transformers-dev libghc-primitive-dev libghc-semigroupoids-dev libghc-semigroups-dev libghc-tagged-dev libghc-vector-dev libghc-void-dev
 
   # Install patched packages
   - time travis/install-patched
@@ -26,4 +26,6 @@ script:
 env:
 
   - CABAL=~/.cabal/bin/cabal 
-    CABAL_FLAGS=-j --avoid-reinstalls --enable-tests --constraint "text installed" --constraint "vector installed"
+    CABAL_FLAGS=-j --avoid-reinstalls --enable-tests --constraint "text installed" --constraint "vector installed" --constraint "void installed" --constraint "contravariant installed" --constraint "distributive installed" --constraint "comonads installed" --constraint "comonads-fd installed" --constraint "comonad-transformers installed"
+                
+   
