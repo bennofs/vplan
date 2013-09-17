@@ -14,7 +14,7 @@ install:
   - time travis/install-patched
 
   # Install dependencies
-  - time travis_retry $CABAL install --only-dependencies --enable-tests $CABAL_FLAGS
+  - echo $CABAL_FLAGS | xargs time travis_retry $CABAL install --only-dependencies --enable-tests
 
 script: 
 
