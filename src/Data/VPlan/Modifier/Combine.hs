@@ -20,13 +20,13 @@ import           Control.Applicative
 import           Control.Lens        hiding ((.=))
 import           Data.Aeson
 import           Data.Aeson.Types
-import           Data.Monoid
 import           Data.Data
-import           Data.VPlan.Util
-import           Data.Foldable       (Foldable (..))
+import           Data.Foldable       (Foldable (..), foldl')
+import           Data.Monoid
 import qualified Data.VPlan.At       as A
 import           Data.VPlan.Class
 import           Data.VPlan.TH
+import           Data.VPlan.Util
 import           GHC.Generics
 
 -- | Combine multiple modifiers into one. Values are traversed in the order of the modifers, i.e. the
