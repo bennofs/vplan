@@ -8,7 +8,7 @@ install:
   - time travis/touch-logs
   
   # Install some deps with apt-get
-  - time sudo apt-get install -q -y libghc-vector-dev libghc-aeson-dev libghc-text-dev
+  - travis/cabal-apt-install
 
   # Install patched packages
   - time travis/install-patched
@@ -18,8 +18,10 @@ install:
 
 script: 
 
+  - $CABAL configure --enable-tests && time $CABAL build 
+
   # Could also use cabal test, but that doesn't provide colorful output
-  - time $CABAL configure --enable-tests && $CABAL build && dist/build/vplan-tests/vplan-tests --quickcheck-tests 500
+  - time dist/build/vplan-tests/vplan-tests --quickcheck-tests 500
 
 env:
 
