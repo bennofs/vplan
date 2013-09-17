@@ -11,9 +11,12 @@ $APT install dctrl-tools
 deps()
 {
   local M='^([^ ]+)-[0-9.]+.*$'
+  echo $M
   local G=' -o ( -P -X libghc-\L\1\E-dev )'
+  echo $G
   local E="$($CABAL_INSTALL_DEPS "$@" --dry-run -v 2> /dev/null \
   | tail -n+3 | sed -re "s/$M/$G/p" | sort -u)"
+  echo $E
   grep-aptavail -n -sPackage \( -FNone -X None \) $E | sort -u
 }
 
