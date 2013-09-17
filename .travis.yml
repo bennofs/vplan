@@ -8,7 +8,7 @@ install:
   - time travis/touch-logs
   
   # Install some deps with apt-get
-  - time sudo apt-get install -q -y libghc-vector-dev libghc-text-dev libghc-aeson-dev libghc-bifunctors-dev libghc-blaze-builder-dev libghc-comonad-dev libghc-comonad-transformers-dev libghc-comonads-fd-dev libghc-contravariant-dev libghc-distributive-dev libghc-dlist-dev libghc-monadcatchio-transformers-dev libghc-primitive-dev libghc-semigroupoids-dev libghc-semigroups-dev libghc-tagged-dev libghc-vector-dev libghc-void-dev
+  - time sudo apt-get install -q -y libghc-vector-dev libghc-text-dev libghc-bifunctors-dev libghc-blaze-builder-dev libghc-comonad-dev libghc-monadcatchio-transformers-dev libghc-primitive-dev
 
   # Install patched packages
   - time travis/install-patched
@@ -25,5 +25,5 @@ script:
 
 env:
 
-  - CABAL=~/.cabal/bin/cabal CABAL_FLAGS='-j --avoid-reinstalls --constraint "text installed" --constraint "vector installed" --constraint "comonads installed"'
+  - CABAL=~/.cabal/bin/cabal CABAL_FLAGS='-j --avoid-reinstalls --constraint "text installed" --constraint "vector installed" --constraint "comonad installed" --constraint "primitive installed" --constraint "MonadCatchIO-transformers installed"'
    
