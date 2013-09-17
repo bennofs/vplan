@@ -7,10 +7,13 @@ install:
   # Prepare logs
   - travis/touch-logs
   
+  # Install some deps with apt-get
+  - sudo apt-get install -q -y libghc-vector-dev libghc-unordered-containers-dev
+
   # Install dependencies
   - travis_retry ~/.cabal/bin/cabal install -j --only-dependencies --avoid-reinstalls --enable-tests
 
 script: 
 
   # Could also use cabal test, but that doesn't provide colorful output
-  - ~/.cabal/bin/cabal configure --enable-tests && ~/.cabal/bn/cabal build && dist/build/vplan-tests/vplan-tests --quickcheck-tests 500
+  - ~/.cabal/bin/cabal configure --enable-tests && ~/.cabal/bin/cabal build && dist/build/vplan-tests/vplan-tests --quickcheck-tests 500
