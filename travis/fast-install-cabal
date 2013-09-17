@@ -33,6 +33,6 @@ cd ..
 # cabal-install executable
 
 cd cabal-install
-cabal install 
+cabal install --constraint "process installed" --constraint "directory installed" --avoid-reinstalls
 
 cd ../..
