@@ -14,7 +14,7 @@ install:
   - time travis/install-patched
 
   # Install dependencies
-  - time travis_retry $CABAL install -j --only-dependencies $CABAL_FLAGS
+  - time travis_retry $CABAL install --only-dependencies $CABAL_FLAGS
 
 script: 
 
@@ -24,4 +24,4 @@ script:
 env:
 
   - CABAL=~/.cabal/bin/cabal 
-    CABAL_FLAGS='--avoid-reinstalls --enable-tests --constraint "text installed" --constraint "vector installed" -j'
+    CABAL_FLAGS=-j --avoid-reinstalls --enable-tests --constraint "text installed" --constraint "vector installed"
