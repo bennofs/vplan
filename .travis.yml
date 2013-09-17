@@ -8,7 +8,7 @@ install:
   - time travis/touch-logs
   
   # Install some deps with apt-get
-  - travis/cabal-apt-install
+  - time sudo apt-get install -q -y libghc-vector-dev libghc-aeson-dev libghc-text-dev libghc-aeson-dev libghc-attoparsec-dev libghc-bifunctors-dev libghc-blaze-builder-dev libghc-comonad-dev libghc-comonad-transformers-dev libghc-comonads-fd-dev libghc-contravariant-dev libghc-data-default-dev libghc-distributive-dev libghc-dlist-dev libghc-hashable-dev libghc-monadcatchio-transformers-dev libghc-primitive-dev libghc-semigroupoids-dev libghc-semigroups-dev libghc-split-dev libghc-tagged-dev libghc-unordered-containers-dev libghc-vector-dev libghc-void-dev
 
   # Install patched packages
   - time travis/install-patched
@@ -21,7 +21,7 @@ script:
   - $CABAL configure --enable-tests && time $CABAL build 
 
   # Could also use cabal test, but that doesn't provide colorful output
-  - time dist/build/vplan-tests/vplan-tests --quickcheck-tests 500
+  - dist/build/vplan-tests/vplan-tests --quickcheck-tests 500
 
 env:
 
