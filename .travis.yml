@@ -11,7 +11,7 @@ install:
   - sudo apt-get install -q -y libghc-vector-dev libghc-aeson-dev libghc-text-dev
 
   # Install dependencies
-  - travis_retry ~/.cabal/bin/cabal install -j --only-dependencies --avoid-reinstalls --enable-tests
+  - travis_retry ~/.cabal/bin/cabal install -j --only-dependencies --avoid-reinstalls --enable-tests --constraint "text installed" --constraint "aeson installed" --constraint "vector installed"
 
 script: 
 
