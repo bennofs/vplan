@@ -8,7 +8,7 @@ install:
   - travis/touch-logs
   
   # Install some deps with apt-get
-  - sudo apt-get install -q -y libghc-vector-dev libghc-unordered-containers-dev
+  - sudo apt-get install -q -y libghc-vector-dev libghc-aeson-dev libghc-text-dev
 
   # Install dependencies
   - travis_retry ~/.cabal/bin/cabal install -j --only-dependencies --avoid-reinstalls --enable-tests
