@@ -8,7 +8,7 @@ install:
   - travis/touch-logs
   
   # Install dependencies
-  - travis_retry ~/.cabal/bin/cabal install -j --only-dependencies --force-reinstalls
+  - travis_retry ~/.cabal/bin/cabal install -j --only-dependencies --avoid-reinstalls --enable-tests
 
 script: 
 
