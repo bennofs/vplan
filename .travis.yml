@@ -14,7 +14,7 @@ install:
   - time travis/install-patched
 
   # Install dependencies
-  - time echo $CABAL_FLAGS | xargs travis_retry $CABAL install --only-dependencies --enable-tests
+  - time travis_retry echo $CABAL_FLAGS | xargs $CABAL install --only-dependencies --enable-tests
 
 script: 
 
@@ -25,5 +25,5 @@ script:
 
 env:
 
-  - CABAL=~/.cabal/bin/cabal CABAL_FLAGS='-j --avoid-reinstalls --constraint "text installed" --constraint "vector installed" --constraint "contravariant installed" --constraint "distributive installed" --constraint "comonads installed" --constraint "comonads-fd installed" --constraint "comonad-transformers installed"'
+  - CABAL=~/.cabal/bin/cabal CABAL_FLAGS='-j --avoid-reinstalls --constraint "text installed" --constraint "vector installed" --constraint "contravariant installed" --constraint "comonads installed" --constraint "comonads-fd installed" --constraint "comonad-transformers installed"'
    
