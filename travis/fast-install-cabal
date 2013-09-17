@@ -35,4 +35,4 @@ cd ..
 cd cabal-install
 cabal install --constraint "process installed" --constraint "directory installed" --avoid-reinstalls
 
-cd ../..
+cd $TRAVIS_BUILD_DIR

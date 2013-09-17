@@ -2,18 +2,26 @@ language: haskell
 install:
 
   # Install latest cabal to build in parallel
-  - travis/fast-install-cabal
+  - time travis/fast-install-cabal
   
   # Prepare logs
-  - travis/touch-logs
+  - time travis/touch-logs
   
   # Install some deps with apt-get
-  - sudo apt-get install -q -y libghc-vector-dev libghc-aeson-dev libghc-text-dev
+  - time sudo apt-get install -q -y libghc-vector-dev libghc-aeson-dev libghc-text-dev
+
+  # Install patched packages
+  - time travis/install-patched
 
   # Install dependencies
-  - travis_retry ~/.cabal/bin/cabal install -j --only-dependencies --avoid-reinstalls --enable-tests --constraint "text installed" --constraint "aeson installed" --constraint "vector installed"
+  - time travis_retry $CABAL install -j --only-dependencies $CABAL_FLAGS
 
 script: 
 
   # Could also use cabal test, but that doesn't provide colorful output
-  - ~/.cabal/bin/cabal configure --enable-tests && ~/.cabal/bin/cabal build && dist/build/vplan-tests/vplan-tests --quickcheck-tests 500
+  - time $CABAL configure --enable-tests && $CABAL build && dist/build/vplan-tests/vplan-tests --quickcheck-tests 500
+
+env:
+
+  - CABAL=~/.cabal/bin/cabal 
+    CABAL_FLAGS='--avoid-reinstalls --enable-tests --constraint "text installed" --constraint "vector installed" -j'

@@ -2,7 +2,7 @@
 set -eu
 
 APT="sudo apt-get -q -y"
-CABAL_INSTALL_DEPS="~/.cabal/bin/cabal install --only-dependencies --force-reinstall"
+CABAL_INSTALL_DEPS="$CABAL install --only-dependencies $CABAL_FLAGS"
 
 $APT update
 $APT install dctrl-tools
@@ -10,17 +10,16 @@ $APT install dctrl-tools
 # Find potential system packages to satisfy cabal dependencies
 deps()
 {
-  local M='^\([^ ]\+\)-[0-9.]\+ (.*$'
-  local G=' -o ( -FPackage -X libghc-\L\1\E-dev )'
+  local M='^([^ ]+)-[0-9.]+.*$'
+  local G=' -o ( -P -X libghc-\L\1\E-dev )'
   local E="$($CABAL_INSTALL_DEPS "$@" --dry-run -v 2> /dev/null \
-  | sed -ne "s/$M/$G/p" | sort -u)"
+  | tail -n+3 | sed -re "s/$M/$G/p" | sort -u)"
   grep-aptavail -n -sPackage \( -FNone -X None \) $E | sort -u
 }
 
 $APT install $(deps "$@") libghc-quickcheck2-dev # QuickCheck is special
-~/.cabal/bin/cabal install --enable-tests --only-dependencies --avoid-reinstalls -j "$@" # Install the rest via Hackage
 
 if ! $APT install hlint ; then
 $APT install $(deps hlint)
-~/.cabal/bin/cabal install hlint
+$CABAL install hlint $CABAL_FLAGS
 fi
