@@ -3,5 +3,5 @@
 # lens-aeson has a too tight bound on text
 git clone git://github.com/bennofs/lens-aeson.git
 cd lens-aeson
-$CABAL install $CABAL_FLAGS
+echo $CABAL_FLAGS | $CABAL install
 cd $TRAVIS_BUILD_DIR
