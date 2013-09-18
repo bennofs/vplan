@@ -10,7 +10,7 @@ copyright:           © 2013 Benno Fünfstück
 stability:           experimental
 tested-with:         GHC ==7.6.3
 build-type:          Simple
-cabal-version:       >=1.8
+cabal-version:       >=1.10
 
 source-repository head
   type: git
