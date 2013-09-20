@@ -26,17 +26,15 @@ module Laws
 import           Control.Applicative
 import           Control.Lens
 import           Data.Aeson
-import           Control.Monad.Identity
 import           Data.Bifunctor
 import qualified Data.ByteString.Lazy     as LBS
 import           Data.Functor.Compose
 import           Data.Maybe
-import           Instances
+import           Instances()
 import           Test.QuickCheck
 import           Test.QuickCheck.Function
 
 -- Taken from properties.hs from the lens source code:
-
 setter_id :: Eq s => Setter' s a -> s -> Bool
 setter_id l s = over l id s == s
 
@@ -123,6 +121,3 @@ isIxed _ = property $ \i ->
 isAeson :: forall proxy a. (Function a, FromJSON a, Eq a, Show a, ToJSON a, CoArbitrary a, Arbitrary a) => proxy a -> Property
 isAeson _ = isTraversal encodeDecode .&. prism_yin encodeDecode
   where encodeDecode = prism' encode decode :: Prism' LBS.ByteString a
-
-bad :: Lens' (Int,Int) Int
-bad f (a,b) = (,) b <$> f a

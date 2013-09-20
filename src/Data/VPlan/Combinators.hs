@@ -20,6 +20,7 @@ module Data.VPlan.Combinators
   ) where
 
 import           Control.Lens                  hiding (at)
+import           Data.Monoid
 import           Data.VPlan.Builder
 import           Data.VPlan.Modifier.Combine
 import           Data.VPlan.Modifier.Constant
@@ -85,5 +86,5 @@ swap :: (Supported Combine s, Supported Limit s, Supported R.Reference s, Ord i)
 swap a b s = except b (except a s) -||- eq b (ref a s) -||- eq a (ref b s)
 
 -- | Repeat a given schedule every n time units.
-every :: (Supported Repeat s, Num i) => i -> s c i v -> s c i v
-every n = new . Repeat (n,0)
+every :: (Supported Repeat s, Monoid i) => i -> s c i v -> s c i v
+every n = new . Repeat (n,mempty)
