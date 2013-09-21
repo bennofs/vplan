@@ -5,9 +5,9 @@ module Data.VPlan.Util
    -- * Group and Monoid functions
    -- Note: The functions for monoids/groups in this module are not really efficient, but
    -- that shouldn't matter most of the time.
-    gdiv
+    gquot
   , gmod
-  , gdivMod
+  , gquotMod
   , glcm
   ) where
 
@@ -23,7 +23,7 @@ import           Data.Monoid
 
 -- | This is the inverse of 'timesN'. It calculates how many times a given
 -- group object fits into another object of the same group. It's basically
--- a 'div' function that works on arbitrary groups.
+-- a 'quot' function that works on arbitrary groups.
 --
 -- Examples:
 --
@@ -32,17 +32,17 @@ import           Data.Monoid
 --
 -- >>> (Product 27) `gmod` (Product 3)
 -- 3
-gdiv :: (Ord a, Group a) => a -> a -> Int
-gdiv xs x = fst $ xs `gdivMod` x
+gquot :: (Ord a, Group a) => a -> a -> Int
+gquot xs x = fst $ xs `gquotMod` x
 
 -- | A version of divMod that works for arbitrary groups.
-gdivMod :: (Ord a, Group a) => a -> a -> (Int, a)
-gdivMod xs x
-  | xs < mempty = over _1 negate $ over _2 (\r -> if r /= mempty then x <> invert r else r) $ gdivMod (invert xs) x
-  | x < mempty = over _1 negate $ over _2 (mappend x) $ gdivMod xs (invert x)
+gquotMod :: (Ord a, Group a) => a -> a -> (Int, a)
+gquotMod xs x
+  | xs < mempty = over _1 negate $ over _2 (\r -> if r /= mempty then x <> invert r else r) $ gquotMod (invert xs) x
+  | x < mempty = over _1 negate $ over _2 (mappend x) $ gquotMod xs (invert x)
   | x > xs = (0,xs)
   | x == xs = (1,mempty)
-  | otherwise = over _1 (+ getSum steps) $ (xs <> invert half) `gdivMod` x
+  | otherwise = over _1 (+ getSum steps) $ (xs <> invert half) `gquotMod` x
   where (steps, half) = until moreThanHalf (join mappend) (Sum 1, x)
         moreThanHalf (_,a) = (xs <> invert a) < a
 
@@ -56,7 +56,7 @@ gdivMod xs x
 -- >>> (Product 29) `gmod` (Product $ 3 % 1)
 -- Product {getProduct = 29 % 27}
 gmod :: (Ord a, Group a) => a -> a -> a
-gmod xs x = snd $ xs `gdivMod` x
+gmod xs x = snd $ xs `gquotMod` x
 
 -- | This is like lcm, but for arbitrary monoids.
 --
