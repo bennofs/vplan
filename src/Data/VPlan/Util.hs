@@ -17,28 +17,28 @@ import           Data.Group
 import           Data.Monoid
 
 -- TODO: Maybe a better name for the following 3 functions?
--- Suggestions:  gdiv:    howMany
---               gdivMod: ???
---               gmod:    rest?, ???
+-- Suggestions:  gquot:    howMany
+--               gquotRem: ???
+--               grem:     rest?, ???
 
 -- | This is the inverse of 'timesN'. It calculates how many times a given
 -- group object fits into another object of the same group. It's basically
--- a 'div' function that works on arbitrary groups.
+-- a 'quot' function that works on arbitrary groups.
 --
 -- Examples:
 --
--- >>> (Sum 11) `gmod` (Sum 2) (Sum 11)
+-- >>> (Sum 11) `gquot` (Sum 2) (Sum 11)
 -- 5
 --
--- >>> (Product 27) `gmod` (Product 3)
+-- >>> (Product 27) `gquot` (Product 3)
 -- 3
-gdiv :: (Ord a, Group a) => a -> a -> Int
-gdiv n d = fst $ n `gdivMod` d
+gquot :: (Ord a, Group a) => a -> a -> Int
+gquot n d = fst $ n `gquotRem` d
 
--- | A version of divMod that works for arbitrary groups.
-gdivMod :: (Ord a, Group a) => a -> a -> (Int, a)
-gdivMod n d
-  | n < mempty = over _1 negate $ over _2 (\r -> d <> invert r) $ gdivMod (invert n) d
+-- | A version of quotRem that works for arbitrary groups.
+gquotRem :: (Ord a, Group a) => a -> a -> (Int, a)
+gquotRem n d
+  | n < mempty = over _1 negate $ over _2 (\r -> invert r) $ gdivMod (invert n) d
   | d < mempty = over _1 negate $ over _2 (mappend d) $ gdivMod n (invert d)
   | d > n = (0,n)
   | d == n = (1,mempty)
@@ -46,17 +46,17 @@ gdivMod n d
   where (steps, half) = until moreThanHalf (join mappend) (Sum 1, d)
         moreThanHalf (_,a) = (n <> invert a) < a
 
--- | This is like mod, but for arbitrary groups.
+-- | This is like rem, but for arbitrary groups.
 --
 -- Examples:
 --
--- >>> (Sum 11) `gmod` (Sum 2)
+-- >>> (Sum 11) `grem` (Sum 2)
 -- Sum 1
 --
--- >>> (Product 29) `gmod` (Product $ 3 % 1)
+-- >>> (Product 29) `grem` (Product $ 3 % 1)
 -- Product {getProduct = 29 % 27}
-gmod :: (Ord a, Group a) => a -> a -> a
-gmod n d = snd $ n `gdivMod` d
+grem :: (Ord a, Group a) => a -> a -> a
+grem n d = snd $ n `gquotRem` d
 
 -- | This is like lcm, but for arbitrary monoids.
 --
