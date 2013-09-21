@@ -33,18 +33,18 @@ import           Data.Monoid
 -- >>> (Product 27) `gmod` (Product 3)
 -- 3
 gdiv :: (Ord a, Group a) => a -> a -> Int
-gdiv xs x = fst $ xs `gdivMod` x
+gdiv n d = fst $ n `gdivMod` d
 
 -- | A version of divMod that works for arbitrary groups.
 gdivMod :: (Ord a, Group a) => a -> a -> (Int, a)
-gdivMod xs x
-  | xs < mempty = over _1 negate $ over _2 (\r -> if r /= mempty then x <> invert r else r) $ gdivMod (invert xs) x
-  | x < mempty = over _1 negate $ over _2 (mappend x) $ gdivMod xs (invert x)
-  | x > xs = (0,xs)
-  | x == xs = (1,mempty)
-  | otherwise = over _1 (+ getSum steps) $ (xs <> invert half) `gdivMod` x
-  where (steps, half) = until moreThanHalf (join mappend) (Sum 1, x)
-        moreThanHalf (_,a) = (xs <> invert a) < a
+gdivMod n d
+  | n < mempty = over _1 negate $ over _2 (\r -> d <> invert r) $ gdivMod (invert n) d
+  | d < mempty = over _1 negate $ over _2 (mappend d) $ gdivMod n (invert d)
+  | d > n = (0,n)
+  | d == n = (1,mempty)
+  | otherwise = over _1 (+ getSum steps) $ (n <> invert half) `gdivMod` d
+  where (steps, half) = until moreThanHalf (join mappend) (Sum 1, d)
+        moreThanHalf (_,a) = (n <> invert a) < a
 
 -- | This is like mod, but for arbitrary groups.
 --
@@ -56,7 +56,7 @@ gdivMod xs x
 -- >>> (Product 29) `gmod` (Product $ 3 % 1)
 -- Product {getProduct = 29 % 27}
 gmod :: (Ord a, Group a) => a -> a -> a
-gmod xs x = snd $ xs `gdivMod` x
+gmod n d = snd $ n `gdivMod` d
 
 -- | This is like lcm, but for arbitrary monoids.
 --
