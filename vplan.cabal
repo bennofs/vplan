@@ -19,68 +19,13 @@ source-repository head
 library
 
   build-depends:
-      base
-    , lens > 3.8
-    , mtl
-    , dlist
-    , template-haskell
-    , typeable-th
-    , void
-    , boxes
-    , tagged
-    , containers
-    , profunctors
-    , bifunctors
-    , syb
-    , ghc-prim
-    , aeson
-    , lens-aeson
-    , text
-    , groups
-    , semigroups
-
-  exposed-modules:
-      Data.VPlan
-    , Data.VPlan.Schedule
-    , Data.VPlan.Builder
-    , Data.VPlan.Combinators
-    , Data.VPlan.Modifier.Enum
-    , Data.VPlan.Modifier.Reference
-    , Data.VPlan.Modifier.Constant
-    , Data.VPlan.Modifier.Empty
-    , Data.VPlan.Modifier.Limit
-    , Data.VPlan.Modifier.Combine
-    , Data.VPlan.Modifier.Annotate
-    , Data.VPlan.Modifier.Repeat
-    , Data.VPlan.Print
-    , Data.VPlan.Class
-    , Data.VPlan.Time
-    , Data.VPlan.Util
-    , Data.VPlan.At
-    , Data.VPlan.TH
-
+     base
+   , profunctors
+   , lens
+   , bifunctors
+   , contravariant
+  exported-modules:
+    Data.VPlan
   hs-source-dirs:    src
   ghc-options: -Wall -Werror -fwarn-tabs
   default-language: Haskell2010  
-
-test-suite vplan-tests
-  type:           exitcode-stdio-1.0
-  main-is:        Main.hs
-  hs-source-dirs: tests
-  build-depends:
-      base
-    , transformers
-    , QuickCheck
-    , tasty
-    , tasty-th
-    , nats
-    , semigroups
-    , bifunctors
-    , tasty-quickcheck
-    , vplan
-    , lens
-    , bytestring
-    , aeson
-    , mtl
-    , void
-  ghc-options:   -Wall
