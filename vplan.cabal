@@ -16,16 +16,48 @@ source-repository head
   type: git
   location: git://github.com/bennofs/vplan.git
 
-library
+flag lib-Werror
+  default: False
+  manual: True
 
+library
   build-depends:
      base
-   , profunctors
-   , lens
-   , bifunctors
-   , contravariant
-  exported-modules:
-    Data.VPlan
+   , lens >= 4
+   , constraints
+   , groups
+   , semigroups
+   , aeson
+   , monoid-extras
+   , xml-conduit
+   , html-conduit
+   , http-client
+  exposed-modules:
+    VPlan.Plan
+    VPlan.Util
+    VPlan.Time
+    VPlan.Combinators
+    VPlan.Lesson
+    VPlan.Change
+    VPlan
   hs-source-dirs:    src
-  ghc-options: -Wall -Werror -fwarn-tabs
+  if flag(lib-Werror)
+    ghc-options: -Werror
+  ghc-options: -Wall
   default-language: Haskell2010  
+
+test-suite vplan-tests
+  build-depends: 
+     base
+   , vplan
+   , tasty
+   , tasty-th
+   , tasty-quickcheck
+   , QuickCheck
+   , lens
+   , bytestring
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  hs-source-dirs: tests
+  ghc-options: -Wall -Werror
+  default-language: Haskell2010

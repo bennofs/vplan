@@ -1,0 +1,186 @@
+
+./Setup.hs,11
+main =1,2
+
+./src/Data/VPlan.hs,22
+module Data.VPlan0,1
+
+./src/Data/VPlan/Util.hs,149
+module Data.VPlan.Util2,3
+gquot ::29,30
+gquot xs30,31
+gquotMod ::33,34
+gquotMod xs34,35
+gmod ::52,53
+gmod xs53,54
+glcm ::65,66
+glcm a'66,67
+
+./src/Data/VPlan/Plan.hs,1017
+module Data.VPlan.Plan where4,5
+data Transformation i13,14
+data Transformation i = Every i13,14
+                      | Exclude (i,i)14,15
+runTransform ::18,19
+runTransform (Every19,20
+data Matcher i26,27
+data Matcher i = Or (Matcher26,27
+               | And (Matcher27,28
+               | Not (Matcher28,29
+               | When Ordering29,30
+               | Always Bool30,31
+type instance Index32,33
+type instance Index (Matcher32,33
+instance (Group34,35
+data Entry i48,49
+data Entry i v = Entry48,49
+  { _value ::49,50
+  , _matcher ::50,51
+type instance Index54,55
+type instance IxValue55,56
+type instance IxValue (Entry55,56
+data Plan i68,69
+data Plan i v = Plan {68,69
+data Plan i v = Plan { _entries ::68,69
+              | Transformed {69,70
+              | Transformed { _transformation ::69,70
+              | Transformed { _transformation :: Transformation i, _transformed :: Plan69,70
+type instance Index73,74
+type instance IxValue74,75
+entriesAt ::92,93
+entriesAt i93,94
+
+./src/Data/VPlan/Combinators.hs,209
+module Data.VPlan.Combinators where0,1
+on ::9,10
+on i10,11
+delete ::12,13
+delete i13,14
+exclude ::17,18
+exclude =18,19
+swap ::21,22
+swap a22,23
+move ::27,28
+move f28,29
+every ::31,32
+every =32,33
+
+./src/Data/VPlan/Time.hs,1393
+module Data.VPlan.Time where12,13
+import           Control.Lens15,16
+newtype DiscreteTime =25,26
+newtype DiscreteTime = DiscreteTime {25,26
+newtype DiscreteTime = DiscreteTime { getDiscreteTime ::25,26
+instance Num27,28
+_DiscreteTime ::47,48
+_DiscreteTime =48,49
+newtype ContinuousTime =52,53
+newtype ContinuousTime = ContinuousTime {52,53
+newtype ContinuousTime = ContinuousTime { getContinuousTime ::52,53
+_ContinuousTime ::75,76
+_ContinuousTime =76,77
+newtype WeekDay =79,80
+newtype WeekDay = WeekDay {79,80
+newtype WeekDay = WeekDay { getWeekDay ::79,80
+_WeekDay ::82,83
+_WeekDay =83,84
+monday, tuesday, wednesday, thursday, friday, saturday, sunday :: WeekDay99,100
+monday, tuesday, wednesday, thursday, friday, saturday, sunday :: WeekDay99,100
+monday, tuesday, wednesday, thursday, friday, saturday, sunday :: WeekDay99,100
+monday, tuesday, wednesday, thursday, friday, saturday, sunday ::99,100
+monday, tuesday, wednesday, thursday, friday, saturday,99,100
+monday, tuesday, wednesday, thursday,99,100
+monday, tuesday,99,100
+monday    =100,101
+tuesday   =101,102
+wednesday =102,103
+thursday  =103,104
+friday    =104,105
+saturday  =105,106
+sunday    =106,107
+data WeekDate =109,110
+data WeekDate = WeekDate {109,110
+data WeekDate = WeekDate { _weekdateWeek ::109,110
+data WeekDate = WeekDate { _weekdateWeek :: Integer, _weekdateDay :: WeekDay109,110
+
+./dist/build/autogen/Paths_vplan.hs,914
+module Paths_vplan (0,1
+catchIO ::11,12
+catchIO =12,13
+version ::15,16
+version =16,17
+bindir, libdir, datadir, libexecdir, sysconfdir :: FilePath17,18
+bindir, libdir, datadir, libexecdir, sysconfdir :: FilePath17,18
+bindir, libdir, datadir, libexecdir, sysconfdir ::17,18
+bindir, libdir, datadir, libexecdir,17,18
+bindir, libdir,17,18
+bindir     =19,20
+libdir     =20,21
+datadir    =21,22
+libexecdir =22,23
+sysconfdir =23,24
+getBinDir, getLibDir, getDataDir, getLibexecDir, getSysconfDir :: IO FilePath25,26
+getBinDir, getLibDir, getDataDir, getLibexecDir, getSysconfDir :: IO FilePath25,26
+getBinDir, getLibDir, getDataDir, getLibexecDir, getSysconfDir ::25,26
+getBinDir, getLibDir, getDataDir, getLibexecDir,25,26
+getBinDir, getLibDir,25,26
+getBinDir =26,27
+getLibDir =27,28
+getDataDir =28,29
+getLibexecDir =29,30
+getSysconfDir =30,31
+getDataFileName ::32,33
+getDataFileName name33,34
+
+./dist/setup/setup.hs,32
+import Distribution.Simple;0,1
+
+./tests/Main.hs,23
+main ::5,6
+main =6,7
+
+./tests/Plan.hs,47
+module Plan where1,2
+group ::7,8
+group =8,9
+
+./tests/Instances.hs,95
+module Instances where2,3
+instance Arbitrary16,17
+decreaseSize ::19,20
+decreaseSize g20,21
+
+./tests/Combinators.hs,443
+module Combinators where1,2
+type Timetable =12,13
+neither ::14,15
+neither of'15,16
+forIndicesEqual ::17,18
+forIndicesEqual g18,19
+forIndicesEmpty ::20,21
+forIndicesEmpty g21,22
+prop_empty ::23,24
+prop_empty =24,25
+prop_on ::26,27
+prop_on i27,28
+prop_delete ::30,31
+prop_delete i31,32
+prop_move ::34,35
+prop_move f35,36
+prop_swap ::44,45
+prop_swap i145,46
+prop_repeat ::48,49
+prop_repeat i49,50
+group ::53,54
+group =54,55
+
+./tests/Util.hs,47
+module Util where1,2
+group ::6,7
+group =7,8
+
+./tests/flycheck-Instances.hs,95
+module Instances where2,3
+instance Arbitrary16,17
+decreaseSize ::19,20
+decreaseSize g20,21
